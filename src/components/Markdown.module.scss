@@ -110,4 +110,9 @@
     margin: 0 auto;
     max-width: 100%;
   }
+
+  hr {
+	margin: 2em 0;
+    border-top: 0.75em dotted $color-decoration;
+  }
 }
