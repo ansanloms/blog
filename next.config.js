@@ -11,6 +11,8 @@ module.exports = {
     TRACKING_ID: "G-7RDLMRRRDG",
   },
 
+  basePath: "/blog",
+
   webpack: (config, {}) => {
     config.module.rules.push({
       test: /\.(png|jpe?g|gif|svg)$/i,
