@@ -7,7 +7,7 @@
   h4,
   h5,
   h6 {
-    margin: 0 0 1em;
+    margin: 4em 0 0.5em;
     font-weight: bold;
 
     &::before {
@@ -42,7 +42,7 @@
   }
 
   p {
-    margin-bottom: 1.5em;
+    margin: 1.5em 0 1.5em;
   }
 
   li {
@@ -61,22 +61,16 @@
 
   ul {
     margin-left: 1em;
-    margin-bottom: 1.5em;
 
     li {
       &::before {
         content: "-";
-      }
-
-      ul {
-        margin-bottom: 0;
       }
     }
   }
 
   ol {
     margin-left: 1em;
-    margin-bottom: 1.5em;
 
     counter-reset: section;
     li {
