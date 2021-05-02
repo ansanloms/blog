@@ -1,0 +1,51 @@
+{
+  "name": "blog",
+  "version": "1.0.0",
+  "description": "blog",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "export": "next export",
+    "deploy": "npm run build && npm run export",
+    "lint": "run-s lint:*",
+    "lint:eslint": "eslint --ignore-path .gitignore .",
+    "lint:prettier": "prettier --check --ignore-path .gitignore .",
+    "fix": "run-s fix:*",
+    "fix:eslint": "eslint --ignore-path .gitignore --fix .",
+    "fix:prettier": "prettier --write --ignore-path .gitignore ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ansanloms/blog.git"
+  },
+  "dependencies": {
+    "dayjs": "^1.10.4",
+    "destyle.css": "^2.0.2",
+    "gray-matter": "^4.0.3",
+    "next": "10.2.0",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
+    "react-markdown": "^6.0.1",
+    "react-syntax-highlighter": "^15.4.3",
+    "rehype-raw": "^5.1.0",
+    "remark-gfm": "^1.0.0",
+    "sass": "^1.32.12"
+  },
+  "devDependencies": {
+    "@types/node": "^15.0.1",
+    "@types/react": "^17.0.4",
+    "@types/react-syntax-highlighter": "^13.5.0",
+    "@types/webpack-env": "^1.16.0",
+    "@typescript-eslint/eslint-plugin": "^4.22.0",
+    "@typescript-eslint/parser": "^4.22.0",
+    "eslint": "^7.25.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-react": "^7.23.2",
+    "file-loader": "^6.2.0",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.2.1",
+    "typescript": "^4.2.4"
+  }
+}
