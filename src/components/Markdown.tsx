@@ -8,6 +8,7 @@ import styles from "./Markdown.module.scss";
 
 import Code from "./Code";
 import Image from "./Image";
+import Link from "./Link";
 
 const Markdown: React.FC<{
   markdown: string;
@@ -17,14 +18,15 @@ const Markdown: React.FC<{
     plugins={[gfm]}
     rehypePlugins={[raw]}
     components={{
-      code: ({ className, children }) => {
-        return (
-          <Code identifier={className as string}>
-            {(children as string[])[0]}
-          </Code>
-        );
-      },
+      code: ({ className, children }) => (
+        <Code identifier={className as string}>
+          {(children as string[])[0]}
+        </Code>
+      ),
       img: ({ src, alt }) => <Image src={src as string} alt={alt as string} />,
+      a: ({ href, children }) => (
+        <Link href={href as string}>{(children as string[])[0]}</Link>
+      ),
     }}
   >
     {markdown}
