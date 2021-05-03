@@ -1,3 +1,5 @@
+const basePath = "/blog";
+
 module.exports = {
   future: {
     webpack5: true,
@@ -11,7 +13,7 @@ module.exports = {
     TRACKING_ID: "G-7RDLMRRRDG",
   },
 
-  basePath: "/blog",
+  basePath: basePath,
 
   webpack: (config, {}) => {
     config.module.rules.push({
@@ -20,7 +22,7 @@ module.exports = {
         loader: "file-loader",
         options: {
           outputPath: "static/images/",
-          publicPath: "/_next/static/images",
+          publicPath: `${basePath}/_next/static/images`,
         },
       },
     });
