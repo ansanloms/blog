@@ -1,6 +1,6 @@
 import React from "react";
 
-import NextLink from "next/link";
+import NextLink, { LinkProps } from "next/link";
 import ExternalLink from "./ExternalLink";
 
 const Link: React.FC<{
@@ -15,7 +15,16 @@ const Link: React.FC<{
       </ExternalLink>
     );
   } else {
-    return <NextLink href={href}>{children}</NextLink>;
+    const props: React.PropsWithChildren<LinkProps> = {
+      href: href,
+    };
+
+    if (href.startsWith("/articles/")) {
+      props.href = "/articles/[slug]";
+      props.as = href;
+    }
+
+    return <NextLink {...props}>{children}</NextLink>;
   }
 };
 

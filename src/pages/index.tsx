@@ -13,7 +13,9 @@ const Index: NextPage<{ posts: PostContent[] }> = ({ posts }) => {
     list.push(
       <li key={post.slug}>
         {dayjs(post.date).format("YYYY.MM.DD")} -{" "}
-        <Link href={`/articles/${post.slug}`}>{post.title}</Link>
+        <Link href="/articles/[slug]" as={`/articles/${post.slug}`}>
+          {post.title}
+        </Link>
       </li>
     );
   }
