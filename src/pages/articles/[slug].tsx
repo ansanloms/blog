@@ -6,8 +6,8 @@ import ErrorPage from "next/error";
 import dayjs from "dayjs";
 
 import { getPosts, PostContent } from "../../libraries/posts";
-import Layout from "../../components/Layout";
-import Markdown from "../../components/Markdown";
+import Layout from "../../components/templates/Layout";
+import Markdown from "../../components/molecules/Markdown";
 
 import styles from "./Article.module.scss";
 

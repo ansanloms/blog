@@ -1,7 +1,7 @@
 import React from "react";
 import { NextPage } from "next";
 
-import Layout from "../components/Layout";
+import Layout from "../components/templates/Layout";
 
 const Error: NextPage = () => (
   <Layout title="Error">

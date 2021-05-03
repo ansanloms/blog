@@ -1,16 +1,16 @@
 import React from "react";
 import path from "path";
 
-const Image: React.FC<{
+const PostImage: React.FC<{
   src?: string;
   alt?: string;
 }> = ({ src, alt }) => {
   let newSrc = src || "";
 
-  if (!newSrc.startsWith("http://") || !newSrc.startsWith("https://")) {
+  if (!newSrc.startsWith("http://") && !newSrc.startsWith("https://")) {
     const images: { [key in string]: string } = {};
     const r = require.context(
-      "../../content/posts/images/",
+      "../../../content/posts/images/",
       true,
       /\.(png|jpe?g|gif|svg)$/i
     );
@@ -28,4 +28,4 @@ const Image: React.FC<{
   return newSrc ? <img src={newSrc} alt={alt} /> : <span />;
 };
 
-export default Image;
+export default PostImage;

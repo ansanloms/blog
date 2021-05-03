@@ -3,7 +3,7 @@ import { NextPage, GetStaticProps } from "next";
 import Link from "next/link";
 
 import { getPosts, PostContent } from "../libraries/posts";
-import Layout from "../components/Layout";
+import Layout from "../components/templates/Layout";
 
 import dayjs from "dayjs";
 
@@ -12,7 +12,7 @@ const Index: NextPage<{ posts: PostContent[] }> = ({ posts }) => {
   for (const post of posts) {
     list.push(
       <li key={post.slug}>
-        {dayjs(post.date).format("YYYY.MM.DD HH:mm")} -{" "}
+        {dayjs(post.date).format("YYYY.MM.DD")} -{" "}
         <Link href={`/articles/${post.slug}`}>{post.title}</Link>
       </li>
     );

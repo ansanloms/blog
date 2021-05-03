@@ -6,9 +6,9 @@ import raw from "rehype-raw";
 
 import styles from "./Markdown.module.scss";
 
-import Code from "./Code";
-import Image from "./Image";
-import Link from "./Link";
+import Code from "../atoms/Code";
+import Image from "../atoms/PostImage";
+import Link from "../atoms/Link";
 
 const Markdown: React.FC<{
   markdown: string;

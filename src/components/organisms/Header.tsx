@@ -1,5 +1,5 @@
 import React from "react";
-import Link from "next/link";
+import Link from "../atoms/Link";
 
 import styles from "./Header.module.scss";
 
