@@ -2,6 +2,7 @@
   "name": "blog",
   "version": "1.0.0",
   "description": "blog",
+  "author": "ansanloms",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
