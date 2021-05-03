@@ -5,7 +5,7 @@ const ExternalLink: React.FC<{
   target?: string;
   children?: string;
 }> = ({ href, target, children }) => {
-  const props = {
+  const props: React.AnchorHTMLAttributes<HTMLAnchorElement> = {
     href: href,
   };
 
