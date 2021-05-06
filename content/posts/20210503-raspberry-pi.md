@@ -90,14 +90,12 @@ scoop install raspberry-pi-imager
 cloud-init におけるユーザ情報の設定を行います。こんなかんじで書き換えました。
 
 ```diff:user-data
-@@ -15,10 +15,20 @@
  chpasswd:
    expire: true
    list:
 -  - ubuntu:ubuntu
 +  - ansanloms:ubuntu
 +
-+# Override the default user name defined in cloud.cfg
 +system_info:
 +  default_user:
 +    name: ansanloms
