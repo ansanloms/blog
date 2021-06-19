@@ -20,8 +20,7 @@ const Link: React.FC<{
     };
 
     if (href.startsWith("/articles/")) {
-      props.href = "/articles/[slug]";
-      props.as = href;
+      <ExternalLink href={"/blog" + href}>{children}</ExternalLink>;
     }
 
     return <NextLink {...props}>{children}</NextLink>;
