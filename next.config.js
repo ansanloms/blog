@@ -1,10 +1,4 @@
-const basePath = "/blog";
-
 module.exports = {
-  future: {
-    webpack5: true,
-  },
-
   env: {
     TITLE: "ansanloms blog",
     DESCRIPTION: "備忘録まとめ",
@@ -13,20 +7,5 @@ module.exports = {
     TRACKING_ID: "G-7RDLMRRRDG",
   },
 
-  basePath: basePath,
-
-  webpack: (config, {}) => {
-    config.module.rules.push({
-      test: /\.(png|jpe?g|gif|svg)$/i,
-      use: {
-        loader: "file-loader",
-        options: {
-          outputPath: "static/images/",
-          publicPath: `${basePath}/_next/static/images`,
-        },
-      },
-    });
-
-    return config;
-  },
+  basePath: "/blog",
 };

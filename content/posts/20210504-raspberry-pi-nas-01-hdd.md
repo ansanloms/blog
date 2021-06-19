@@ -19,7 +19,7 @@ date: 2021-05-04T00:00+09:00
 
 ## 実施内容
 
-Raspberry Pi に HDD をつないで マウントして Samba をいれます。
+Raspberry Pi に HDD をつないでマウントして Samba をいれます。
 
 <p style="color: red;">以降の手順で HDD 内の全データが消えます。</p>
 
@@ -136,7 +136,7 @@ Information: You may need to update /etc/fstab.
 ```
 
 1. `print` で念の為現行のディスク情報を確認します。 `Partition Table: msdos` となっているので MBR です。
-2. `mklabel gpt` で GPT に変更します。 **ディスク上の全データが削除される** 旨が確認されるので問題なければ `y` とします。すぐおわります。
+2. `mklabel gpt` で GPT に変更します。 **ディスク上の全データが削除される** ので問題なければ `y` とします。すぐおわります。
 3. 再度 `print` でディスク情報を確認します。 `Partition Table: gpt` となっているので GPT です。
 4. `quit` で終了します。
 
@@ -206,7 +206,7 @@ Device     Start         End     Sectors  Size Type
 
 ### パーティションのフォーマット
 
-作成したパーティションをフォーマットします。ファイルタイプは Ubuntu の標準である `ext4` にしようと思います。
+作成したパーティションをフォーマットします。ファイルタイプは Ubuntu 標準の `ext4` にします。
 
 1 分くらいでおわります。
 
@@ -244,7 +244,7 @@ Number  Start   End     Size    File system  Name  Flags
 
 ### マウントする
 
-今回は `/mnt/media` にマウントしようと思います。
+今回は `/mnt/media` にマウントします。
 
 ```
 sudo mkdir -p /mnt/media
@@ -339,4 +339,4 @@ $ df -h | grep media
 
 ## ここまで
 
-次回は samba のセットアップをしたいと思います。
+次回は samba のセットアップをします。

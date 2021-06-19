@@ -55,7 +55,7 @@ PC に SD カードスロットがあるので用意していないです。
 
 <https://ubuntu.com/download/raspberry-pi>
 
-Ubuntu の サイト上に[チュートリアル](https://ubuntu.com/tutorials/how-to-install-ubuntu-on-your-raspberry-pi)が載っていました。これにそってやっていきます。
+Ubuntu のサイト上に[チュートリアル](https://ubuntu.com/tutorials/how-to-install-ubuntu-on-your-raspberry-pi)が載っていました。これにそってやっていきます。
 
 今回はマイクロ HDMI ケーブルがないので、所謂ヘッドレス状態でのセットアップとなります。あと LAN ケーブルもないので LAN には wi-fi でつなぐことになります。
 
@@ -77,7 +77,7 @@ scoop install raspberry-pi-imager
 
 `WRITE` を押下します。 microSD カードの中身が全部消える旨の Confirm がでるので、問題なければ `YES` を押下します。
 
-問題なければ書き込みがはじまります。[チュートリアル](https://ubuntu.com/tutorials/how-to-install-ubuntu-on-your-raspberry-pi#2-prepare-the-sd-card)によると魔法がかかっちゃうらしいです！
+問題なければ書き込みがはじまります。[チュートリアル](https://ubuntu.com/tutorials/how-to-install-ubuntu-on-your-raspberry-pi#2-prepare-the-sd-card)によると魔法がかかっちゃうらしいです。
 
 魔法は 10 分くらいでかかりました。自動的に microSD がアンマウントされるので、再度 PC にマウントさせます。 `system-boot` ってパーティションのみになっているはずです。
 
@@ -87,7 +87,7 @@ scoop install raspberry-pi-imager
 
 #### user-data
 
-cloud-init におけるユーザ情報の設定を行います。こんなかんじで書き換えました。
+cloud-init におけるユーザ情報を設定します。こんなかんじで書き換えました。
 
 ```diff:user-data
  chpasswd:
@@ -113,13 +113,13 @@ cloud-init におけるユーザ情報の設定を行います。こんなかん
  ## the default user
 ```
 
-`system_info` で作成されるユーザのユーザ名を設定します。デフォルトのユーザ名ではコメントにある通り `ubuntu` になります。
+`system_info` で作成されるユーザのユーザ名を設定します。デフォルトのユーザ名ではコメントの通り `ubuntu` になります。
 
 > By default this sets up an initial user called "ubuntu" with password "ubuntu",
 
 `chpasswd` はユーザのパスワードを設定します。デフォルトのユーザ名を変更したので、ここも書き換えます。尚、デフォルトユーザのパスワードは `ubuntu` になります。パスワードは初回ログイン時に変更を促されます。ちなみに `expire` を false にすると、初回ログイン時にパスワード変更を実施しなくなります。
 
-`ssh_pwauth` は ssh でのパスワード認証を有効にするかどうかの設定です。 ssh でパスワード認証ををしたくないので、これを false にします。
+`ssh_pwauth` は ssh でのパスワード認証を有効にするかどうかの設定です。 ssh でパスワード認証をしたくないので、これを false にします。
 
 `ssh_authorized_keys` は ssh での公開鍵認証で使用する公開鍵を設定します。
 
@@ -127,7 +127,7 @@ cloud-init におけるユーザ情報の設定を行います。こんなかん
 
 #### network-config
 
-cloud-init におけるネットワークの設定を行います。こんなかんじで書き換えました。
+cloud-init におけるネットワーク設定です。こんなかんじで書き換えました。
 
 ```diff:network-config
 @@ -12,13 +12,13 @@
@@ -157,13 +157,13 @@ cloud-init におけるネットワークの設定を行います。こんなか
 
 ### 起動する
 
-microSD を Raspberry-pi に差し込んだ後に USB Type-C ケーブルを電源につなぎます。
+microSD を Raspberry-pi に差し込んだ後 USB Type-C ケーブルを電源につなぎます。
 
 これで cloud-init の処理とかがうごいている…はずです。いかんせんなにもみえないので。
 
 ### 再起動する
 
-[チュートリアル](https://ubuntu.com/tutorials/how-to-install-ubuntu-on-your-raspberry-pi#3-wifi-or-ethernet)にもある通り、初回起動時にはネットワークに接続されません。再起動後にはじめてネットワークに接続されるようです。
+[チュートリアル](https://ubuntu.com/tutorials/how-to-install-ubuntu-on-your-raspberry-pi#3-wifi-or-ethernet)にもある通り、初回起動時はネットワークに接続されません。再起動後、はじめてネットワークに接続されるようです。
 
 > Note: During the first boot, your Raspberry Pi will try to connect to this network. It will fail the first time around. Simply reboot sudo reboot and it will work.
 
@@ -206,4 +206,4 @@ sudo apt upgrade
 
 これからこれでいろいろやっていきたいとおもいます。
 
-![Raspberry Pi 4](./images/20210503-raspberry-pi/raspberry-pi.png)
+![Raspberry Pi 4](/images/20210503-raspberry-pi/raspberry-pi.png)

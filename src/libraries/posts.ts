@@ -14,7 +14,9 @@ const postsDirectory = path.join(process.cwd(), "content/posts");
 
 export const getPosts = async (slug?: string): Promise<PostContent[]> => {
   const list: PostContent[] = await Promise.all(
-    (await util.promisify(fs.readdir)(postsDirectory))
+    (
+      await util.promisify(fs.readdir)(postsDirectory)
+    )
       .filter(
         (it) =>
           it.endsWith(".md") &&

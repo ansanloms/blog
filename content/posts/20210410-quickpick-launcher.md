@@ -11,7 +11,7 @@ date: 2021-04-10T00:00+09:00
 
 最近 CtrlP から [quickpick.vim](https://github.com/prabirshrestha/quickpick.vim) という便利な FF プラグインに移行したりしています。
 
-なので quickpick.vim 上で ctrlp-launcher とおなじようなことができるプラグインをつくろうとおもいました。
+なので quickpick.vim 上で ctrlp-launcher と同じようなことができるプラグインをつくろうとおもいました。
 
 ## quickpick-launcher.vim
 

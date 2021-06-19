@@ -9,7 +9,7 @@ date: 2021-05-04T01:00+09:00
 
 ### HDD のマウントまで
 
-[このまえの記事](/articles/20210504-raspberry-pi-nas-01-hdd)を見てもらえればと思います。
+[このまえの記事](/articles/20210504-raspberry-pi-nas-01-hdd)を見てください。
 
 ### Samba のインストール
 
@@ -38,13 +38,13 @@ force user = ansanloms
 
 - `path` : Samba の対象パスを記述します。
 - `public` : ゲストアカウントでのログイン可不可を指定します。今回は不可にします。
-- `read only` : 読み取り専用にするかどうかです。今回は no にします。
+- `read only` : 読み取り専用にするかです。今回は no にします。
 - `browseable` : ネットワーク上で他の端末から検索できるかを指定します。今回は no にします。
 - `force user` : アクセス可能な Samba ユーザを指定します。
 
 ### Samba のユーザを作成する。
 
-`force user` に指定した通りに Samba のユーザを作成します。 これは Linux のユーザではないですが、関連するので先に Linux ユーザが必要です。
+`force user` で指定した通りに Samba のユーザを作成します。 これは Linux のユーザではないですが、関連するので先に Linux ユーザが必要です。
 
 `pdbedit --create` でやっていきます。
 
