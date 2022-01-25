@@ -14,7 +14,7 @@ const Markdown: React.FC<{
 }> = ({ markdown }) => (
   <ReactMarkdown
     className={styles.container}
-    plugins={[gfm]}
+    remarkPlugins={[gfm]}
     rehypePlugins={[raw]}
     components={{
       code: ({ className, children }) => (
