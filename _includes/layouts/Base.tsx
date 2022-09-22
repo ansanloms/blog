@@ -15,7 +15,10 @@ export default (props: Props) => (
       <title>{props.title}</title>
       <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js">
       </script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css" />
+      <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css"
+      />
       <link
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/ress@5.0.2/dist/ress.min.css"
