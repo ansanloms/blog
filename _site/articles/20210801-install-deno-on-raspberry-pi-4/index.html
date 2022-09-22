@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Raspberry pi 4 に Deno をインストールしました</title><script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ress@5.0.2/dist/ress.min.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100;300;400;500;700;900&amp;display=swap"><link rel="stylesheet" href="/styles/main.css"><link rel="stylesheet" href="/styles/article.css"></head><body><header><a href="/">ansanloms blog</a></header><div class="container"><article class="article"><h1>Raspberry pi 4 に Deno をインストールしました</h1><div><h2>Rust のインストール</h2>
+<pre class="language-none" tabindex="0"><code class="language-none">$ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+$ source $HOME/.cargo/env
+</code></pre>
+<h2>Deno のインストール</h2>
+<pre class="language-none" tabindex="0"><code class="language-none">sudo apt install libfuse-dev
+cargo install deno --locked
+</code></pre>
+</div></article></div><footer>(C) <a href="https://twitter.com/ansanloms">ansanloms</a></footer></body></html>

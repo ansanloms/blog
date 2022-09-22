@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>ブログをつくりました</title><script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ress@5.0.2/dist/ress.min.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100;300;400;500;700;900&amp;display=swap"><link rel="stylesheet" href="/styles/main.css"><link rel="stylesheet" href="/styles/article.css"></head><body><header><a href="/">ansanloms blog</a></header><div class="container"><article class="article"><h1>ブログをつくりました</h1><div><p>このブログをつくったときの話です。</p>
+<h2>やりたかったこと</h2>
+<ul>
+<li>markdown でかいていきたい
+<ul>
+<li>他のシステムに移行するとき、簡単に剥がせるようにしたいです。</li>
+<li>第三のサービス上(マイクロ CMS 等)で記事は管理したくないです。</li>
+</ul>
+</li>
+<li>デプロイ先は GitHub Pages にしたい
+<ul>
+<li>SSG(Static Site Generator)をつかうことになります。</li>
+</ul>
+</li>
+</ul>
+<h2>環境構築</h2>
+<p><a href="/articles/20210430-nextjs">この記事</a>を参照してください。</p>
+<h2>ブログ記事を表示するとこ</h2>
+<p>ブログ記事はリポジトリ内に markdown を配置してそこへ記述することにしました。</p>
+<p>markdown の読み込みは <a href="https://github.com/jonschlinkert/gray-matter">gray-matter</a>
+を使用しました。ビルド時に全部の記事をよみこむかんじになっちゃいましたが SSG なんでどうせ全記事を見るのは必至だしいいかなっておもったりしました。</p>
+<pre class="language-typescript" tabindex="0"><code class="language-typescript">import util from "util";
+import fs from "fs";
+import path from "path";
+import matter from "gray-matter";
+
+const postsDirectory = "path/to/content/posts";
+
+export const getPosts = async (): Promise&lt;
+  {
+    readonly title: string;
+    readonly slug: string;
+    readonly date: string;
+    readonly content: string;
+  }[]
+&gt; =&gt; {
+  return await Promise.all(
+    (
+      await util.promisify(fs.readdir)(postsDirectory)
+    )
+      .filter((it) =&gt; it.endsWith(".md"))
+      .map(async (file) =&gt; {
+        const content = matter(
+          await util.promisify(fs.readFile)(
+            path.join(postsDirectory, file),
+            "utf8",
+          ),
+        );
+
+        return {
+          title: content.data.title,
+          slug: path.basename(file, ".md"),
+          date: content.data.date,
+          content: content.content,
+        };
+      }),
+  );
+};
+</code></pre>
+<p>markdown を HTML として出力する処理は
+<a href="https://github.com/remarkjs/react-markdown">react-markdown</a>
+を使用しました。タグ単位でをコンポーネントを操作できてべんりでした。</p>
+<pre class="language-typescript" tabindex="0"><code class="language-typescript">import React from "react";
+
+import ReactMarkdown from "react-markdown";
+import gfm from "remark-gfm";   // GFM をつかえるようにする
+import raw from "rehype-raw";   // 生の HTML をかけるようにする
+
+const Markdown: React.FC&lt;{
+  markdown: string;
+}&gt; = ({ markdown }) =&gt; (
+  &lt;ReactMarkdown
+    plugins={[gfm]}
+    rehypePlugins={[raw]}
+    components={{
+      code: props =&gt; (/* ... */),
+      img: props =&gt; (/* ... */),
+      // ...
+    }}
+  &gt;
+    {markdown}
+  &lt;/ReactMarkdown&gt;
+);
+</code></pre>
+<h3>それいがい</h3>
+<p>webpack の <code>require.context</code> でうなったりしました。 webpack のきもちを理解しないといけないとおもいました。</p>
+<p>Atomic Desigin を基にしてコンポーネントをつくったりしましたがよくわかっていなかったりしました。</p>
+<h2>おわり</h2>
+<p>たのしかったです。</p>
+</div></article></div><footer>(C) <a href="https://twitter.com/ansanloms">ansanloms</a></footer></body></html>

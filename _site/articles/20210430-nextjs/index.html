@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Next.js + TypeScript でやっていきをはじめる手順をまとめました</title><script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ress@5.0.2/dist/ress.min.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100;300;400;500;700;900&amp;display=swap"><link rel="stylesheet" href="/styles/main.css"><link rel="stylesheet" href="/styles/article.css"></head><body><header><a href="/">ansanloms blog</a></header><div class="container"><article class="article"><h1>Next.js + TypeScript でやっていきをはじめる手順をまとめました</h1><div><p>このブログとかつくりはじめるときの手順とかをまとめようとおもいました。</p>
+<p>2020 年 4 月時点の手順です。</p>
+<h2>使用する技術</h2>
+<ul>
+<li><a href="https://reactjs.org/">React</a> / <a href="https://nextjs.org/">Next.js</a></li>
+<li><a href="https://www.typescriptlang.org/">TypeScript</a></li>
+<li><a href="https://sass-lang.com/">Sass / SCSS</a></li>
+</ul>
+<h2>環境構築</h2>
+<pre class="language-none" tabindex="0"><code class="language-none">mkdir blog
+cd blog
+npm init -y
+</code></pre>
+<h3>TypeScript + Next.js</h3>
+<p>TypeScript + Next.js でやっていきます。</p>
+<p><a href="https://nextjs.org/docs/basic-features/typescript">https://nextjs.org/docs/basic-features/typescript</a></p>
+<pre class="language-none" tabindex="0"><code class="language-none">npm i next react react-dom
+npm i -D typescript @types/react @types/react-dom @types/node
+</code></pre>
+<p>取り急ぎ開発サーバを起動できる為、 <code>./src/pages</code> に <code>index.tsx</code> を用意します。</p>
+<pre class="language-none" tabindex="0"><code class="language-none">mkdir ./src/pages
+vim ./src/pages/index.tsx
+</code></pre>
+<pre class="language-none" tabindex="0"><code class="language-typescript:index.tsx language-none">import React from "react";
+import { NextPage } from "next";
+
+const Index: NextPage = () =&gt; &lt;div&gt;Hello! Next.js&lt;/div&gt;;
+
+export default Index;
+</code></pre>
+<p>開発サーバを起動してみます。</p>
+<pre class="language-none" tabindex="0"><code class="language-none">npx next dev
+</code></pre>
+<p><a href="http://localhost:3000/">http://localhost:3000/</a> にて開発サーバを起動していることを確認します。</p>
+<h4>tsconfig.json</h4>
+<p><code>next dev</code> 時に TypeScript を使用していることを検知すると、自動的に next-env.d.ts および tsconfig.json
+を生成します。 tsconfig.json のデフォルトでは <code>"strict": false</code> となっています。今回は <code>"strict": true</code>
+に書き換えてやっていきます。</p>
+<h4>scripts</h4>
+<p><code>next build</code> / <code>next start</code> / <code>next export</code> も実行できることを試し、問題なくば package.json の
+scripts に記述しときます。</p>
+<pre class="language-none" tabindex="0"><code class="language-json:package.json language-none">{
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "export": "next export"
+  }
+}
+</code></pre>
+<h4>.gitigonre</h4>
+<p>ついでに <code>.gitigonre</code> も用意しておきます。</p>
+<pre class="language-none" tabindex="0"><code class="language-.gitignore language-none">node_modules
+.next
+out
+</code></pre>
+<h3>ESLint と Prettier の導入</h3>
+<p>ソースコードをきれいにしてく為に <a href="https://eslint.org/">ESLint</a> と
+<a href="https://prettier.io/">Prettier</a> を導入していきます。</p>
+<p>ESLint では <strong>書式ルール(Formatting rules)</strong> に対応し、 Prettier では <strong>品質ルール(Code-quality
+rules)</strong> に対応します。</p>
+<blockquote>
+<p><a href="https://prettier.io/docs/en/comparison.html">https://prettier.io/docs/en/comparison.html</a></p>
+</blockquote>
+<h4>ESLint</h4>
+<pre class="language-none" tabindex="0"><code class="language-none">npm i -D eslint
+</code></pre>
+<p><code>eslint --init</code> で ESLint の初期設定をします。今回はこんなかんじにしました。</p>
+<pre class="language-none" tabindex="0"><code class="language-none">❯ npx eslint --init
+√ How would you like to use ESLint? · style
+√ What type of modules does your project use? · esm
+√ Which framework does your project use? · react
+√ Does your project use TypeScript? · Yes
+√ Where does your code run? · browser, node
+√ How would you like to define a style for your project? · guide
+√ Which style guide do you want to follow? · google
+√ What format do you want your config file to be in? · JavaScript
+√ Would you like to install them now with npm? · Yes
+</code></pre>
+<p>直下に .eslintrc.js が生成されます。</p>
+<p>実行直後に
+<code>Warning: React version not specified in eslint-plugin-react settings. See https://github.com/yannickcr/eslint-plugin-react#configuration .</code>
+と怒られました。</p>
+<p><a href="https://github.com/yannickcr/eslint-plugin-react#configuration">eslint-plugin-react の README.md</a>
+を参考に .eslintrc.js を以下の通り修正します。</p>
+<pre class="language-none" tabindex="0"><code class="language-diff:.eslintrc.js language-none">@@ -20,6 +20,11 @@
+     'react',
+     '@typescript-eslint',
+   ],
++  'settings': {
++    'react': {
++      'version': 'detect',
++    },
++  },
+   'rules': {
+   },
+ };
+</code></pre>
+<p>取り急ぎ <code>eslint --ignore-path .gitignore .</code> を実行し、問題なく Lint
+処理ができることを確認します。ソースコードに何も問題なければなにも出力されないはずです。</p>
+<h4>Prettier</h4>
+<pre class="language-none" tabindex="0"><code class="language-none">npm i -D prettier
+</code></pre>
+<p>取り急ぎ <code>prettier --check --ignore-path .gitignore .</code> を実行し、問題なく Lint
+処理ができることを確認します。</p>
+<pre class="language-none" tabindex="0"><code class="language-none">❯ npx prettier --check --ignore-path .gitignore .
+Checking formatting...
+[warn] .eslintrc.js
+[warn] next-env.d.ts
+[warn] tsconfig.json
+[warn] Code style issues found in the above file(s). Forgot to run Prettier?
+</code></pre>
+<p>そうすると現時点でフォーマット対象のファイルがあるようです。このうち next-env.d.ts 内の
+<a href="https://www.typescriptlang.org/docs/handbook/triple-slash-directives.html">Triple-slash directives</a>
+がフォーマット対象になってしまうので、とりあえず .prettierignore を用意して next-env.d.ts を Prettier
+対象から除外します。</p>
+<pre class="language-none" tabindex="0"><code class="language-.prettierignore language-none">next-env.d.ts
+</code></pre>
+<h4>ESLint と Prettier の併用に伴う設定</h4>
+<p>ちょっと前まではよく
+<a href="https://www.npmjs.com/package/eslint-plugin-prettier">eslint-plugin-prettier</a>
+を導入して ESLint 側から Prettier を実行するようにしていましたが、 2021 年 4
+月時点で<a href="https://prettier.io/docs/en/integrating-with-linters.html">公式</a>で推奨していない方式のようです。</p>
+<p>現行は ESLint 上で Prettier と競合するルールを OFF にし、 ESLint と Prettier
+を別々に実行する方式が推奨されているようです。</p>
+<p>Prettier と競合するルールをすべて OFF にする
+<a href="https://www.npmjs.com/package/eslint-config-prettier">eslint-config-prettier</a>
+を導入し .eslintrc.js に旨追記します。</p>
+<pre class="language-none" tabindex="0"><code class="language-none">npm i -D eslint-config-prettier
+</code></pre>
+<pre class="language-none" tabindex="0"><code class="language-diff:.eslintrc.js language-none">@@ -7,6 +7,7 @@
+   'extends': [
+     'plugin:react/recommended',
+     'google',
++    'prettier',
+   ],
+   'parser': '@typescript-eslint/parser',
+   'parserOptions': {
+</code></pre>
+<h4>scripts</h4>
+<p>package.json に lint およびそれを fix させる script を追記します。</p>
+<pre class="language-none" tabindex="0"><code class="language-json:package.json language-none">"scripts": {
+  "lint:eslint": "eslint --ignore-path .gitignore .",
+  "lint:prettier": "prettier --check --ignore-path .gitignore .",
+  "fix:eslint": "eslint --ignore-path .gitignore --fix .",
+  "fix:prettier": "prettier --write --ignore-path .gitignore ."
+},
+</code></pre>
+<p><a href="https://www.npmjs.com/package/npm-run-all">npm-run-all</a> を導入し lint および fix
+を一括でできるようにします。</p>
+<pre class="language-none" tabindex="0"><code class="language-none">npm i -D npm-run-all
+</code></pre>
+<pre class="language-none" tabindex="0"><code class="language-json:package.json language-none">"scripts": {
+  "lint": "run-s lint:*",
+  "fix": "run-s fix:*"
+},
+</code></pre>
+<h3>Sass / SCSS</h3>
+<p><a href="https://nextjs.org/docs/basic-features/built-in-css-support#sass-support">https://nextjs.org/docs/basic-features/built-in-css-support#sass-support</a></p>
+<p>SCSS をかいていけるようにします。 Next.js では <a href="https://www.npmjs.com/package/sass">sass</a>
+を導入するだけでつかえます。</p>
+<pre class="language-none" tabindex="0"><code class="language-none">npm install sass
+</code></pre>
+<p>尚 <a href="https://github.com/css-modules/css-modules">Css Modules</a> でやっていくつもりです。 Next.js
+では何も設定せずに CSS Modules がつかえます。</p>
+<h2>おわり</h2>
+<p>ボイラープレートてきなそれとして用意しておけばいいとは思いましたが、すぐに手順とかかわりそうだなとおもってやめたりしました。</p>
+</div></article></div><footer>(C) <a href="https://twitter.com/ansanloms">ansanloms</a></footer></body></html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Raspberry Pi 4 に NAS を構築しました(Samba の設定)</title><script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ress@5.0.2/dist/ress.min.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100;300;400;500;700;900&amp;display=swap"><link rel="stylesheet" href="/styles/main.css"><link rel="stylesheet" href="/styles/article.css"></head><body><header><a href="/">ansanloms blog</a></header><div class="container"><article class="article"><h1>Raspberry Pi 4 に NAS を構築しました(Samba の設定)</h1><div><p><a href="/articles/20210504-raspberry-pi-nas-01-hdd">このまえ</a>のつづきです。</p>
+<h2>実施内容</h2>
+<h3>HDD のマウントまで</h3>
+<p><a href="/articles/20210504-raspberry-pi-nas-01-hdd">このまえの記事</a>を見てください。</p>
+<h3>Samba のインストール</h3>
+<pre class="language-none" tabindex="0"><code class="language-none">sudo apt install samba
+</code></pre>
+<h3>Samba の設定ファイルを更新する</h3>
+<pre class="language-none" tabindex="0"><code class="language-none">sudo cp -p /etc/samba/smb.conf /etc/samba/smb.conf.20210504
+sudo vim /etc/samba/smb.conf
+</code></pre>
+<p>ファイル末尾にこのように追記しました。</p>
+<pre class="language-none" tabindex="0"><code class="language-conf:smb.conf language-none">[media]
+comment = nas
+path = /mnt/media
+public = no
+read only = no
+browsable = no
+force user = ansanloms
+</code></pre>
+<ul>
+<li><code>path</code> : Samba の対象パスを記述します。</li>
+<li><code>public</code> : ゲストアカウントでのログイン可不可を指定します。今回は不可にします。</li>
+<li><code>read only</code> : 読み取り専用にするかです。今回は no にします。</li>
+<li><code>browseable</code> : ネットワーク上で他の端末から検索できるかを指定します。今回は no にします。</li>
+<li><code>force user</code> : アクセス可能な Samba ユーザを指定します。</li>
+</ul>
+<h3>Samba のユーザを作成する。</h3>
+<p><code>force user</code> で指定した通りに Samba のユーザを作成します。 これは Linux のユーザではないですが、関連するので先に Linux
+ユーザが必要です。</p>
+<p><code>pdbedit --create</code> でやっていきます。</p>
+<pre class="language-none" tabindex="0"><code class="language-none">$ sudo pdbedit --create ansanloms
+new password:
+retype new password:
+</code></pre>
+<p>作成されたか確認します。</p>
+<pre class="language-none" tabindex="0"><code class="language-none">$ sudo pdbedit --list | grep ansanloms
+ansanloms:1000:Ubuntu
+</code></pre>
+<p>できました。</p>
+<h3>Samba を起動する</h3>
+<p>起動します。</p>
+<pre class="language-none" tabindex="0"><code class="language-none">sudo systemctl start smbd
+</code></pre>
+<p>確認してみます。</p>
+<pre class="language-none" tabindex="0"><code class="language-none">$ ps aux | grep smbd
+root        3421  0.5  0.2  58264 20848 ?        Ss   22:18   0:00 /usr/sbin/smbd --foreground --no-process-group
+root        3423  0.0  0.0  55848  6160 ?        S    22:18   0:00 /usr/sbin/smbd --foreground --no-process-group
+root        3424  0.0  0.0  55848  4700 ?        S    22:18   0:00 /usr/sbin/smbd --foreground --no-process-group
+root        3425  0.0  0.1  58264 11872 ?        S    22:18   0:00 /usr/sbin/smbd --foreground --no-process-group
+ansanlo+    3428  0.0  0.0   8724   640 pts/0    S+   22:18   0:00 grep --color=auto smbd
+</code></pre>
+<p>起動しているようです。</p>
+<h3>Windows からアクセスしてみる</h3>
+<p>エクスプローラから <code>\\192.168.xx.xx\media</code> にアクセスします。</p>
+<p>資格情報の入力を求められるので Samba で作成したユーザ情報を入力します。</p>
+<p>問題なく閲覧、更新できたら成功です。よかったですね。</p>
+<h2>おわり</h2>
+<p>たのしかったです。</p>
+</div></article></div><footer>(C) <a href="https://twitter.com/ansanloms">ansanloms</a></footer></body></html>
