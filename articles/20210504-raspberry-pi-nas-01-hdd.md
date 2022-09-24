@@ -29,7 +29,7 @@ Raspberry Pi に HDD をつないでマウントして Samba をいれます。
 
 起動中の Raspberry Pi に HDD をつないで `lsblk` で HDD を確認します。
 
-```
+```bash
 $ lsblk
 NAME        MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
 --- 中略
@@ -41,7 +41,7 @@ sda           8:0    0  7.3T  0 disk
 
 `fdisk -l` で HDD の状況を確認します。
 
-```
+```bash
 $ sudo fdisk -l /dev/sda
 Disk /dev/sda: 7.28 TiB, 8001563222016 bytes, 15628053168 sectors
 Disk model: HDCZ-UT
@@ -67,7 +67,7 @@ Device     Boot Start        End    Sectors Size Id Type
 
 先ずはパーティションを削除します。
 
-```
+```bash
 $ sudo fdisk /dev/sda
 
 Welcome to fdisk (util-linux 2.34).
@@ -94,7 +94,7 @@ Syncing disks.
 
 確認してみます。
 
-```
+```bash
 $ sudo fdisk -l /dev/sda
 Disk /dev/sda: 7.28 TiB, 8001563222016 bytes, 15628053168 sectors
 Disk model: HDCZ-UT
@@ -111,7 +111,7 @@ Disk identifier: 0x76024314
 
 `parted` をつかって GPT にします。
 
-```
+```bash
 $ sudo parted /dev/sda
 GNU Parted 3.3
 Using /dev/sda
@@ -148,7 +148,7 @@ Information: You may need to update /etc/fstab.
 
 fdisk でも確認してみます。
 
-```
+```bash
 $ sudo fdisk -l /dev/sda
 Disk /dev/sda: 7.28 TiB, 8001563222016 bytes, 15628053168 sectors
 Disk model: HDCZ-UT
@@ -165,7 +165,7 @@ Disk identifier: 5647BD4F-A277-459D-9F06-741C66266ACC
 
 今回は `fdisk` をつかってパーティションを作成します。
 
-```
+```bash
 $ sudo fdisk /dev/sda
 
 Welcome to fdisk (util-linux 2.34).
@@ -194,7 +194,7 @@ Syncing disks.
 
 確認してみます。
 
-```
+```bash
 $ sudo fdisk -l /dev/sda
 Disk /dev/sda: 7.28 TiB, 8001563222016 bytes, 15628053168 sectors
 Disk model: HDCZ-UT
@@ -216,7 +216,7 @@ Device     Start         End     Sectors  Size Type
 
 1 分くらいでおわります。
 
-```
+```bash
 $ sudo mkfs -t ext4 /dev/sda1
 mke2fs 1.45.5 (07-Jan-2020)
 Creating filesystem with 1953506385 4k blocks and 244191232 inodes
@@ -234,7 +234,7 @@ Writing superblocks and filesystem accounting information: done
 
 確認してみます。
 
-```
+```bash
 $ sudo parted -l
 Model: I-O DATA HDCZ-UT (scsi)
 Disk /dev/sda: 8002GB
@@ -252,21 +252,21 @@ Number  Start   End     Size    File system  Name  Flags
 
 今回は `/mnt/media` にマウントします。
 
-```
+```bash
 sudo mkdir -p /mnt/media
 sudo mount -t ext4 /dev/sda1 /mnt/media
 ```
 
 確認してみます。
 
-```
+```bash
 $ df -h | grep sda1
 /dev/sda1       7.3T   93M  6.9T   1% /mnt/media
 ```
 
 マウントされました。マウント先を確認してみます。
 
-```
+```bash
 $ ll /mnt/media
 total 24
 drwxr-xr-x 3 root root  4096 May  4 21:01 ./
@@ -276,13 +276,13 @@ drwx------ 2 root root 16384 May  4 21:01 lost+found/
 
 所有者が `root` になっているので、自分のユーザに変えます。
 
-```
+```bash
 sudo chown -R ansanloms:ansanloms /mnt/media
 ```
 
 実際にファイルが設置できるか確認してみます。
 
-```
+```bash
 $ touch /mnt/media/test.txt
 ansanloms@ubuntu:~$ ll /mnt/media
 total 24
@@ -298,31 +298,31 @@ drwx------ 2 ansanloms ansanloms 16384 May  4 21:01 lost+found/
 
 このままだと再起動するとアンマウントされるので、起動時もマウントされるように `/etc/fstab` に追記します。
 
-```
+```bash
 $ sudo cp -p /etc/fstab /etc/fstab.20210504
 $ sudo vim /etc/fstab
 ```
 
-```:/etc/fstab
+```ini:/etc/fstab
 # media
 /dev/sda1     /mnt/media    ext4    defaults    0   0
 ```
 
 fstab の設定でちゃんとマウントされるか確認する為に、一旦アンマウントします。
 
-```
+```bash
 sudo umount /mnt/media
 ```
 
 アンマウントされたことを確認します。
 
-```
+```bash
 df -h | grep media
 ```
 
 `mount -a` で fstab の内容からもマウントされます。
 
-```
+```bash
 $ sudo mount -a
 $ df -h | grep media
 /dev/sda1       7.3T   93M  6.9T   1% /mnt/media
@@ -332,11 +332,11 @@ $ df -h | grep media
 
 再起動してみます。
 
-```
+```bash
 sudo reboot
 ```
 
-```
+```bash
 $ df -h | grep media
 /dev/sda1       7.3T   93M  6.9T   1% /mnt/media
 ```

@@ -14,20 +14,20 @@ date: 2021-05-04 01:00:00
 
 ### Samba のインストール
 
-```
+```bash
 sudo apt install samba
 ```
 
 ### Samba の設定ファイルを更新する
 
-```
+```bash
 sudo cp -p /etc/samba/smb.conf /etc/samba/smb.conf.20210504
 sudo vim /etc/samba/smb.conf
 ```
 
 ファイル末尾にこのように追記しました。
 
-```conf:smb.conf
+```ini:smb.conf
 [media]
 comment = nas
 path = /mnt/media
@@ -50,7 +50,7 @@ force user = ansanloms
 
 `pdbedit --create` でやっていきます。
 
-```
+```bash
 $ sudo pdbedit --create ansanloms
 new password:
 retype new password:
@@ -58,7 +58,7 @@ retype new password:
 
 作成されたか確認します。
 
-```
+```bash
 $ sudo pdbedit --list | grep ansanloms
 ansanloms:1000:Ubuntu
 ```
@@ -69,13 +69,13 @@ ansanloms:1000:Ubuntu
 
 起動します。
 
-```
+```bash
 sudo systemctl start smbd
 ```
 
 確認してみます。
 
-```
+```bash
 $ ps aux | grep smbd
 root        3421  0.5  0.2  58264 20848 ?        Ss   22:18   0:00 /usr/sbin/smbd --foreground --no-process-group
 root        3423  0.0  0.0  55848  6160 ?        S    22:18   0:00 /usr/sbin/smbd --foreground --no-process-group

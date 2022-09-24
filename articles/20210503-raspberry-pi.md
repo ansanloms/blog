@@ -69,7 +69,7 @@ Ubuntu
 
 [scoop](https://scoop.sh/) の extas bucket にあったのでここからインストールします。
 
-```
+```txt
 scoop install raspberry-pi-imager
 ```
 
@@ -192,13 +192,13 @@ microSD を Raspberry-pi に差し込んだ後 USB Type-C ケーブルを電源�
 [Raspberry Pi の MAC アドレスの範囲](https://udger.com/resources/mac-address-vendor-detail?name=raspberry_pi_foundation)と関連する
 IP アドレスを調べます。
 
-```
+```bash
 arp -a | findstr dc-a6-32
 ```
 
 IP アドレスがわかったら SSH 接続を試みます。今回はデフォルトのユーザ名を変えているので、そのユーザ名で SSH 接続してみます。
 
-```
+```bash
 ssh ansanloms@192.168.xx.xx
 ```
 
@@ -209,7 +209,7 @@ SSH ログイン成功後、 `user-data` の `chpasswd.expire` を true
 
 SSH ログインできたら、とりあえずパッケージの更新をしておきます。
 
-```
+```bash
 sudo apt update
 sudo apt upgrade
 ```

@@ -1,4 +1,14 @@
 {
+  "lint": {
+    "files": {
+      "exclude": ["README.md", "articles/"]
+    }
+  },
+  "fmt": {
+    "files": {
+      "exclude": ["README.md", "articles/"]
+    }
+  },
   "importMap": "import_map.json",
   "tasks": {
     "lume": "deno eval \"import 'lume/task.ts'\" --",

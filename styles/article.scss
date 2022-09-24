@@ -17,32 +17,43 @@
     }
   }
 
-h1 {
-  margin: 0;
-}
+  h1 {
+    margin: 0;
 
-  h1::before {
-    content: "#";
+    &::before {
+      content: "#";
+    }
   }
 
-  h2::before {
-    content: "##";
+
+  h2 {
+    &::before {
+      content: "##";
+    }
   }
 
-  h3::before {
-    content: "###";
+  h3 {
+      &::before {
+      content: "###";
+    }
   }
 
-  h4::before {
-    content: "####";
+  h4 {
+    &::before {
+      content: "####";
+    }
   }
 
-  h5::before {
-    content: "#####";
+  h5 {
+      &::before {
+      content: "#####";
+    }
   }
 
-  h6::before {
-    content: "######";
+  h6 {
+      &::before {
+      content: "######";
+    }
   }
 
   p {
