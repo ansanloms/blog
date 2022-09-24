@@ -10,10 +10,21 @@ body {
   width: 100%;
   max-width: 960px;
   margin: 1.6rem auto;
-  display: grid;
-  row-gap: 4.8rem;
   font: $font-body;
+
+  .header {
+    margin-bottom: 4.8rem;
+  }
+
+  .content {
+    word-break: break-all;
+  }
+
+  .footer {
+    margin-top: 4.8rem;
+  }
 }
+
 
 a {
   color: $color-text;

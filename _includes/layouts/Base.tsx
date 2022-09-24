@@ -28,13 +28,13 @@ export default (props: Props) => (
       />
     </head>
     <body>
-      <header>
+      <header className="header">
         <a href="/">ansanloms blog</a>
       </header>
-      <div className="container">
+      <div className="content">
         {props.children}
       </div>
-      <footer>
+      <footer className="footer">
         (C) <a href="https://twitter.com/ansanloms">ansanloms</a>
       </footer>
     </body>
