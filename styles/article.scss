@@ -134,5 +134,15 @@
     padding: 0 1rem;
     color: $color-decoration;
   }
+
+  code {
+    font: $font-terminal;
+  }
+
+  pre {
+    code {
+      line-height: 2;
+    }
+  }
 }
 

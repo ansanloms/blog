@@ -1,7 +1,3 @@
-@import "https://cdn.jsdelivr.net/npm/ress@5.0.2/dist/ress.min.css";
-@import "https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100;300;400;500;700;900&display=swap";
-@import "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.6.0/build/styles/github.min.css";
-
 @import "styles/palette.scss";
 
 html {
@@ -12,9 +8,10 @@ html {
 
 body {
   width: 100%;
+  max-width: 960px;
+  margin: 1.6rem auto;
   display: grid;
   row-gap: 4.8rem;
-  line-height: 1.5;
   font: $font-body;
 }
 
