@@ -1,3 +1,6 @@
+import Header from "../Header.tsx";
+import Footer from "../Footer.tsx";
+
 type Props = {
   title: string;
   layout: string;
@@ -28,15 +31,11 @@ export default (props: Props) => (
       />
     </head>
     <body>
-      <header className="header">
-        <a href="/">ansanloms blog</a>
-      </header>
+      <Header />
       <div className="content">
         {props.children}
       </div>
-      <footer className="footer">
-        (C) <a href="https://twitter.com/ansanloms">ansanloms</a>
-      </footer>
+      <Footer />
     </body>
   </html>
 );

@@ -56,8 +56,7 @@ PC に SD カードスロットがあるので用意していないです。
 
 <https://ubuntu.com/download/raspberry-pi>
 
-Ubuntu
-のサイト上に[チュートリアル](https://ubuntu.com/tutorials/how-to-install-ubuntu-on-your-raspberry-pi)が載っていました。これにそってやっていきます。
+Ubuntu のサイト上に[チュートリアル](https://ubuntu.com/tutorials/how-to-install-ubuntu-on-your-raspberry-pi)が載っていました。これにそってやっていきます。
 
 今回はマイクロ HDMI ケーブルがないので、所謂ヘッドレス状態でのセットアップとなります。あと LAN ケーブルもないので LAN には wi-fi
 でつなぐことになります。
