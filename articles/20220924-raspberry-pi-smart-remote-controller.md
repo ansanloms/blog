@@ -127,7 +127,7 @@ Okay
 以下の通り実行すると信号データを送信します。
 
 ```bash
-$ python3 ./irrp.py --play --gpio 22 --file codes.json test
+python3 ./irrp.py --play --gpio 22 --file codes.json test
 ```
 
 ### 長い信号データの送信
