@@ -1,6 +1,6 @@
 ---
 layout: layouts/Article.tsx
-title: Raspberry Pi Zero WH でスマートリモコン的なものをつくりました - そのいち
+title: Raspberry Pi Zero WH でスマートリモコン的なものをつくりました
 date: 2022-09-24 00:00:00
 ---
 
@@ -126,6 +126,10 @@ Okay
 
 以下の通り実行すると信号データを送信します。
 
+```bash
+$ python3 ./irrp.py --play --gpio 22 --file codes.json test
+```
+
 ### 長い信号データの送信
 
 エアコンの冷房の信号データを送信してみたら以下のようなエラーになりました。
@@ -165,4 +169,3 @@ pigpio.error: 'chain is too long'
 - <https://bsblog.casareal.co.jp/archives/5891>
 - <https://korintje.com/archives/28>
 - <http://www.neko.ne.jp/~freewing/raspberry_pi/raspberry_pi_gpio_pigpio_ir_remote_control/>
-
