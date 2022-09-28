@@ -1,16 +1,16 @@
 ---
 layout: layouts/Article.tsx
 title: Raspberry Pi 4 に NAS を構築しました(Samba の設定)
-date: 2021-05-04 01:00:00
+date: 2021-05-05 01:00:00
 ---
 
-[このまえ](/articles/20210504-raspberry-pi-nas-01-hdd)のつづきです。
+[このまえ](/articles/20210504-raspberry-pi-nas-hdd)のつづきです。
 
 ## 実施内容
 
 ### HDD のマウントまで
 
-[このまえの記事](/articles/20210504-raspberry-pi-nas-01-hdd)を見てください。
+[このまえの記事](/articles/20210504-raspberry-pi-nas-hdd)を見てください。
 
 ### Samba のインストール
 
