@@ -1,7 +1,6 @@
 ---
-layout: layouts/Article.tsx
 title: Raspberry pi に Deno をインストールしました
-date: 2021-08-01 00:00:00
+postDate: "2021-08-01T00:00:00+09:00"
 ---
 
 ## 第三者のビルドを利用する

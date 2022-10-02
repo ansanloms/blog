@@ -1,7 +1,6 @@
 ---
-layout: layouts/Article.tsx
 title: Raspberry Pi を mDNS に対応させました
-date: 2022-09-25 00:00:00
+postDate: "2022-09-25T00:00:00+09:00"
 ---
 
 Raspberry Pi の名前解決には Bonjour を利用していましたが、 Raspberry Pi 上に mDNS を設定するようにしました。

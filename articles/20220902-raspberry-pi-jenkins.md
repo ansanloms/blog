@@ -1,7 +1,6 @@
 ---
-layout: layouts/Article.tsx
 title: Raspberry Pi 4 (Ubuntu Server) に Jenkins をインストールしました
-date: 2022-09-02 00:00:00
+postDate: "2022-09-02T00:00:00+09:00"
 ---
 
 ## Java のインストール

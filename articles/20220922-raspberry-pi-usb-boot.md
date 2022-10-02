@@ -1,7 +1,6 @@
 ---
-layout: layouts/Article.tsx
 title: Raspberry Pi 4 で USB に繋いだ SSD から起動するようにしました
-date: 2022-09-22 00:00:00
+postDate: "2022-09-22T00:00:00+09:00"
 ---
 
 M.2 拡張スロットが付いた Raspberry Pi 4 のケースを買ったので、SSD から起動するようにしました。

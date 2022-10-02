@@ -1,8 +1,0 @@
-metas:
-  site: ansanloms blog
-  twitter: "@ansanloms"
-  icon: /assets/images/profile.png
-  lang: ja
-
-mergedKeys:
-  metas: object

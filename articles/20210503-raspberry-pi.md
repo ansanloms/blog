@@ -1,7 +1,6 @@
 ---
-layout: layouts/Article.tsx
 title: Raspberry Pi 4 に Ubuntu Server を導入しました
-date: 2021-05-03 00:00:00
+postDate: "2021-05-03T00:00:00+09:00"
 ---
 
 Raspberry Pi 4 を買いました。うまれてはじめての Raspberry Pi です。

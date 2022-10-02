@@ -5,7 +5,7 @@ type Props = {
 };
 
 export default (props: Props) => (
-  <Base title="ansanloms blog" layout="index">
+  <Base title="ansanloms blog" layout="top">
     {props.children}
   </Base>
 );

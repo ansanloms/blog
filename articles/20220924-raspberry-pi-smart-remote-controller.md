@@ -1,7 +1,6 @@
 ---
-layout: layouts/Article.tsx
 title: Raspberry Pi Zero WH でスマートリモコン的なものをつくりました
-date: 2022-09-24 00:00:00
+postDate: "2022-09-24T00:00:00+09:00"
 ---
 
 Raspberry Pi Zero WH を手に入れました。ちょっと前に Google Home も買ったのでスマートリモコン的なことをしようとおもいました。

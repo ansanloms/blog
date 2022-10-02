@@ -1,7 +1,6 @@
 ---
-layout: layouts/Article.tsx
 title: ctrlp-launcher をもとに quickpick-launcher.vim をつくりました
-date: 2021-04-10 00:00:00
+postDate: "2021-04-10T00:00:00+09:00"
 ---
 
 [CtrlP](https://github.com/ctrlpvim/ctrlp.vim)

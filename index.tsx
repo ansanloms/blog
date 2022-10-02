@@ -2,7 +2,7 @@ import * as path from "std/path/mod.ts";
 import * as datetime from "std/datetime/mod.ts";
 import { Marked } from "markdown/mod.ts";
 
-import Layout from "./_includes/layouts/Index.tsx";
+export const layout = "layouts/Top.tsx";
 
 const getArticles = async (): { slug: string; title: string; date: Date }[] => {
   const list: { slug: string; title: string; date: Date }[] = [];
@@ -16,7 +16,7 @@ const getArticles = async (): { slug: string; title: string; date: Date }[] => {
       list.push({
         slug,
         title: typeof meta.title === "string" ? meta.title : slug,
-        date: new Date(meta.date),
+        date: new Date(meta.postDate),
       });
     }
   }
@@ -38,7 +38,7 @@ const index = async () => {
   const articles = (await getArticles()).map((v) => (
     <li key={v.slug}>
       <p className="date">
-        {datetime.format(v.date, "yyyy-MM-dd")}
+        {datetime.format(v.date, "yyyy.MM.dd")}
       </p>
       <a href={`/articles/${v.slug}`}>
         {v.title}
@@ -46,11 +46,7 @@ const index = async () => {
     </li>
   ));
 
-  return (
-    <Layout>
-      <ul className="list">{articles}</ul>
-    </Layout>
-  );
+  return <ul className="list">{articles}</ul>;
 };
 
 export default index;

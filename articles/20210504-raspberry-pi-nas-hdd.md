@@ -1,7 +1,6 @@
 ---
-layout: layouts/Article.tsx
 title: Raspberry Pi 4 に NAS を構築しました(HDD の準備)
-date: 2021-05-04 00:00:00
+postDate: "2021-05-04T00:00:00+09:00"
 ---
 
 [先日セットアップした Raspberry Pi 4](/articles/20210503-raspberry-pi) で NAS をやっていきます。

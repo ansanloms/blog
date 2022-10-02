@@ -1,7 +1,6 @@
 ---
-layout: layouts/Article.tsx
 title: Raspberry Pi 4 に NAS を構築しました(Samba の設定)
-date: 2021-05-05 01:00:00
+postDate: 2021-05-05T01:00:00+09:00"
 ---
 
 [このまえ](/articles/20210504-raspberry-pi-nas-hdd)のつづきです。
