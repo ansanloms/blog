@@ -1,5 +1,5 @@
 ---
-title: Google Home から自前のスマートリモコンを操作しました
+title: Google Home から自前のスマートリモコンを操作しました(とちゅう)
 postDate: "2022-10-01T00:00:00+09:00"
 ---
 
@@ -320,3 +320,5 @@ i  functions: deleting Node.js 16 function helloWorld(us-central1)...
 > curl https://asia-northeast1-smart-home-sample02.cloudfunctions.net/helloWorld
 Hello from Firebase!
 ```
+
+@todo……………
