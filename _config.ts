@@ -5,6 +5,7 @@ import jsx from "lume/plugins/jsx_preact.ts";
 import sass from "lume/plugins/sass.ts";
 import metas from "lume/plugins/metas.ts";
 import codeHighlight from "lume/plugins/code_highlight.ts";
+import plantuml from "./_includes/plugins/plantuml.ts";
 
 const site = lume({
   location: new URL("https://ansanloms.github.io/blog"),
@@ -17,6 +18,7 @@ site.use(jsx());
 site.use(sass());
 site.use(metas());
 site.use(codeHighlight());
+site.use(plantuml());
 
 site.copy("assets");
 
