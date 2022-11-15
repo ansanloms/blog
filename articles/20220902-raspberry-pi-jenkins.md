@@ -27,17 +27,6 @@ sudo apt install jenkins
 
 ## 実行ユーザの変更
 
-```bash
-sudo vim /etc/default/jenkins
-```
-
-`JENKINS_USER` / `JENKINS_GROUP` を変更します。
-
-```ini:/etc/default/jenkins
-JENKINS_USER=ansanloms
-JENKINS_GROUP=ansanloms
-```
-
 関連するファイルやディレクトリの権限を変更します。
 
 ```bash
