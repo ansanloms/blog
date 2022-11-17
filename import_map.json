@@ -1,10 +1,8 @@
 {
   "imports": {
-    "lume/": "https://deno.land/x/lume@v1.12.1/",
-    "std/": "https://deno.land/std@0.162.0/",
+    "lume/": "https://deno.land/x/lume@v1.13.0/",
+    "std/": "https://deno.land/std@0.165.0/",
     "markdown/": "https://deno.land/x/markdown@v2.0.0/",
-    "preact/jsx-runtime": "https://deno.land/x/lume@v1.12.1/deps/preact_runtime.ts",
-    "preact": "https://deno.land/x/lume@v1.12.1/deps/preact.ts",
     "plantuml-encoder": "npm:plantuml-encoder@1.4.0"
   }
 }

@@ -1,24 +1,14 @@
 import { merge } from "lume/core/utils.ts";
 import type { Page, Site } from "lume/core.ts";
-import plantumlEncoder from "plantuml-encoder";
 
 export interface Options {
   extensions: string[];
   cssSelector: string;
-  generate: (uml: string, page: Page) => Promise<Element>;
 }
 
 export const defaults: Options = {
   extensions: [".html"],
-  cssSelector: "pre code.language-plantuml",
-  generate: async (uml, page) => {
-    const img = page.document!.createElement("img");
-    img.setAttribute(
-      "src",
-      `https://www.plantuml.com/plantuml/svg/${plantumlEncoder.encode(uml)}`,
-    );
-    return img;
-  },
+  cssSelector: "pre code.language-mermaid",
 };
 
 export default function (userOptions?: Partial<Options>) {
@@ -26,12 +16,19 @@ export default function (userOptions?: Partial<Options>) {
 
   return (site: Site) => {
     site.process(options.extensions, (page) => {
+      const script = page.document!.createElement("script");
+      script.setAttribute("type", "module");
+      script.innerHTML = `
+        import mermaid from 'https://unpkg.com/mermaid@9/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true });
+      `;
+      page.document!.head.appendChild(script);
+
       page.document!.querySelectorAll(options.cssSelector!).forEach(
         async (element) => {
-          element.replaceChild(
-            await options.generate(element.textContent.trim(), page),
-            element.firstChild,
-          );
+          const graph = element.textContent.trim();
+          element.className = "mermaid";
+          element.innerText = graph;
         },
       );
     });
