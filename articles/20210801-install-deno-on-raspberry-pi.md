@@ -15,14 +15,16 @@ postDate: "2021-08-01T00:00:00+09:00"
 
 ### Rust のインストール
 
+<https://www.rust-lang.org/learn/get-started>
+
 ```bash
-$ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-$ source $HOME/.cargo/env
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source $HOME/.cargo/env
 ```
 
 ### Deno のインストール
 
 ```bash
-sudo apt install libfuse-dev
+sudo apt install build-essential libfuse-dev
 cargo install deno --locked
 ```
