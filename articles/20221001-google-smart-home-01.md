@@ -1,35 +1,39 @@
 ---
-title: Google Home から自前のスマートリモコンを操作しました(とちゅう)
+title: Google Home から自前のスマートリモコンを操作しました - 01. プロジェクト構築
 postDate: "2022-10-01T00:00:00+09:00"
 ---
 
-[このまえ](./20220924-raspberry-pi-smart-remote-controller.md)作ったリモコンを Google Home から操作できるようにします。
+[このまえ](/articles/20220924-raspberry-pi-smart-remote-controller)作ったリモコンを Google Home から操作できるようにします。
 
 触ったことがない firebase の素振りも兼ねています。
 
-## 概要
+## 構成概要
 
-@todo
+[Smart Home platform](https://developers.google.com/assistant/smarthome/overview) を構築して、そこで Raspberry PI 上に構築した自前のスマートリモコンを操作します。
+
+Google Home から Google Assistant を介して Raspberry PI 上に構築した自前のスマートリモコンを操作できるようにします。
 
 ## スマートホームのアクションを作成
 
+<https://developers.google.com/assistant/smarthome/develop/create>
+
 [Actions Console](https://console.actions.google.com/) にアクセスし、 New Project から Actions プロジェクトを作成します。
 
-|                                   | 値                                                            |
-| :---                              | :---                                                          |
-| Project Name                      | 任意のプロジェクト名 (今回はとりあえず `smart-home-sample02`) |
-| Choose a language for your action | Japanese                                                      |
-| Choose your country or region     | Japan                                                         |
+|                                   | 値                   |
+| :---                              | :---                 |
+| Project Name                      | 任意のプロジェクト名 |
+| Choose a language for your action | Japanese             |
+| Choose your country or region     | Japan                |
 
-![Create Action project](/assets/images/20221001-google-smart-home/actions-console-create-project.png)
+![Create Action project](/assets/images/20221001-google-smart-home-01/actions-console-create-project.png)
 
 What kind of Action do you want to build? の画面にて Smart Home を選択して Start Building を押下します。
 
-![Get started](/assets/images/20221001-google-smart-home/actions-console-get-started.png)
+![Get started](/assets/images/20221001-google-smart-home-01/actions-console-get-started.png)
 
 ここまで実施すると Actions Console にプロジェクトができていると同時に、 [Firebase console](https://console.firebase.google.com/) 上にもプロジェクトができているはずです。
 
-![Get started](/assets/images/20221001-google-smart-home/firebase-console-project.png)
+![Get started](/assets/images/20221001-google-smart-home-01/firebase-console-project.png)
 
 ## Firebase cli のインストール
 
@@ -150,6 +154,8 @@ Functions の設定をしていきます。
 
 とりあえず Hello World していきます。
 
+`functions/src/index.ts` 上に既のコードがあります。
+
 ```typescript:functions/src/index.ts
 import * as functions from "firebase-functions";
 
@@ -162,15 +168,38 @@ export const helloWorld = functions.https.onRequest((request, response) => {
 });
 ```
 
-deploy してみます。
+#### ローカル上で起動
+
+deploy する前に、ローカル上に functions をエミュレートして確認してみます。
+
+まずはコードをビルドします。
+
+```bash
+npm run build
+```
+
+続いてエミュレータを起動します。
+
+```bash
+firebase emulators:start
+```
+
+これで local 上で funcitions の検証ができます。
+
+```bash
+$ curl http://127.0.0.1:5001/smart-home-sample02/us-central1/helloWorld
+Hello from Firebase!
+```
+
+#### Deploy
+
+local で確認できたので、実際に deploy してみます。
 
 ```bash
 firebase deploy
 ```
 
-エラーになりました。料金プランを変更する必要があるようです。 Blaze プランにします。
-
-無料枠内の利用に留まる筈なので、余程変な使い方をしないかぎりお金はかからないはずです。けど一応 [Cloud Console](https://console.cloud.google.com/) 上の予算とアラートからアラートを設定しておいたほうがいいとおもいます。
+エラーになりました。
 
 ```txt
 Error: Your project smart-home-sample02 must be on the Blaze (pay-as-you-go) plan to complete this command. Required API artifactregistry.googleapis.com can't be enabled until the upgrade is complete. To upgrade, visit the following URL:
@@ -178,13 +207,11 @@ Error: Your project smart-home-sample02 must be on the Blaze (pay-as-you-go) pla
 https://console.firebase.google.com/project/smart-home-sample02/usage/details
 ```
 
-あらためて deploy してみます。
+料金プランを変更する必要があるようです。 Blaze プランにします。
 
-```bash
-firebase deploy
-```
+無料枠内の利用に留まる筈なので、余程変な使い方をしないかぎりお金はかからないはずです。けど一応 [Cloud Console](https://console.cloud.google.com/) 上の予算とアラートからアラートを設定しておいたほうがいいとおもいます。
 
-うまくいきました。
+料金プランを変更したら、あらためて deploy してみます。
 
 ```txt
 +  Deploy complete!
@@ -192,10 +219,10 @@ firebase deploy
 Project Console: https://console.firebase.google.com/project/smart-home-sample02/overview
 ```
 
-fuctions の関数を実行してみます。
+うまくいきました。 fuctions の関数を実行してみます。
 
 ```txt
-> curl https://us-central1-smart-home-sample02.cloudfunctions.net/helloWorld
+$ curl https://us-central1-smart-home-sample02.cloudfunctions.net/helloWorld
 Hello from Firebase!
 ```
 
@@ -253,7 +280,7 @@ npm i -D prettier eslint-config-prettier
    ],
 ```
 
-lint のコマンドも更新します。
+npm script の順次実行ができる `npm-run-all` を導入し、 lint のコマンドも更新します。
 
 ```bash
 npm i -D npm-run-all
@@ -272,6 +299,16 @@ npm i -D npm-run-all
 ```
 
 これで `npm run fix` を実行すると ESLint と Prettier による Lint & Format がかかるはずです。
+
+#### 依存のアップデート
+
+とりあえず雑にアップデートしておきます。別に誰かが使うわけでもないし。
+
+```bash
+npx npm-check-updates -u
+rm -rfv node_modules\ package-lock.json
+npm install
+```
 
 #### デプロイ先のロケーションを変更する
 
@@ -321,4 +358,8 @@ i  functions: deleting Node.js 16 function helloWorld(us-central1)...
 Hello from Firebase!
 ```
 
-@todo……………
+## つづく
+
+ここまででとりあえずスマートホーム操作アプリ構築の事前準備が完了しました。
+
+次は認証処理を用意してきます。
