@@ -46,7 +46,7 @@ winget install RaspberryPiFoundation.RaspberryPiImager
 ssh pi@192.168.x.x
 ```
 
-とりいそぎ各種ライブラリの更新を行います。
+とりいそぎ各種ライブラリを更新します。
 
 ```bash
 $ sudo apt update
@@ -173,7 +173,7 @@ $ sudo shutdown now
 
 Raspberry Pi から microSD を外して電源を入れます。
 
-Ubuntu Server の場合[初回起動時はネットワークに接続されない](https://ubuntu.com/tutorials/how-to-install-ubuntu-on-your-raspberry-pi#3-wifi-or-ethernet)ので、よきにはからってて電源コードを引っこ抜いて再起動します。
+Ubuntu Server の場合[初回起動時はネットワークに接続されない](https://ubuntu.com/tutorials/how-to-install-ubuntu-on-your-raspberry-pi#3-wifi-or-ethernet)ので、よきにはからって電源コードを引っこ抜いて再起動します。
 
 再起動後に SSH 接続できたら成功です。
 

@@ -7,7 +7,7 @@ postDate: "2022-10-01T04:00:00+09:00"
 
 ## HomeGraph の有効化
 
-例えば現状照明が点いているかどうか等、デバイスの状態を管理する必要があります。
+例えば現状照明が点いているか等、デバイスの状態を管理する必要があります。
 
 これには [HomeGraph](https://developers.google.com/assistant/smarthome/concepts/homegraph) を利用します。
 
@@ -20,7 +20,7 @@ HomeGraph とは、デバイスの状態を管理する所謂データベース�
 まずはプロジェクト上で HomeGraph API を利用できるようにします。
 
 1. [Google Cloud Console](https://console.cloud.google.com/) 上から対象のプロジェクトを選択します。
-2. [API ライブラリ](https://console.cloud.google.com/apis/library) 上で [`HomeGraph` 等で検索](https://console.cloud.google.com/apis/library/browse?q=homegraph)します。
+2. [API ライブラリ](https://console.cloud.google.com/apis/library) 上にて [`HomeGraph` 等で検索](https://console.cloud.google.com/apis/library/browse?q=homegraph)します。
 3. `HomeGraph API` を有効にします。
 
 ### サービス アカウント キーの作成
@@ -93,7 +93,7 @@ app.onSync(async (body, headers) => {
 
 <https://developers.google.com/assistant/smarthome/develop/process-intents#handle_query_intents>
 
-現在のデバイスの状態、例えば照明がついているかどうかとうか取得します。
+現在のデバイスの状態、例えば照明がついているかを取得します。
 
 HomeGraph 上にあるデバイスの状態を取得し、レスポンスボディに含めます。
 

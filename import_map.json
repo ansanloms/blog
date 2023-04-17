@@ -3,6 +3,7 @@
     "lume/": "https://deno.land/x/lume@v1.16.2/",
     "std/": "https://deno.land/std@0.183.0/",
     "markdown/": "https://deno.land/x/markdown@v2.0.0/",
-    "plantuml-encoder": "npm:plantuml-encoder@1.4.0"
+    "plantuml-encoder": "npm:plantuml-encoder@1.4.0",
+    "textlint": "npm:textlint@13.3.2"
   }
 }

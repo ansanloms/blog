@@ -5,7 +5,7 @@ postDate: "2022-09-24T00:00:00+09:00"
 
 Raspberry Pi Zero WH を手に入れました。ちょっと前に Google Home も買ったのでスマートリモコン的なことをしようとおもいました。
 
-電子工作なんて工業高校でやった PIC マイコン以来でなにもかもわすれています。
+電子工作なんて工業高校でやった PIC マイコン以来です。なにもかもわすれています。
 
 ## Raspberry Pi Zero WH の準備
 
@@ -63,7 +63,7 @@ curl http://abyz.me.uk/rpi/pigpio/code/irrp_py.zip | zcat > irrp.py
 
 <https://www.raspberrypi.com/documentation/computers/os.html#gpio-and-the-40-pin-header>
 
-今回は GPIO 22 で赤外線の送信を、 GPIO 23 で赤外線の受信を行います。
+今回は GPIO 22 で赤外線の送信を、 GPIO 23 で赤外線を受信します。
 
 以下の通りに設定します。設定内容の詳細は <http://abyz.me.uk/rpi/pigpio/pigs.html> にあります。
 
@@ -104,7 +104,7 @@ Recording
 Press key for 'test'
 ```
 
-そうしたら赤外線リモコン受信モジュールに向けて登録したいリモコン操作を行います。問題なく受信できれば `Okay` と表示されるはずです。
+そうしたら赤外線リモコン受信モジュールに向けて登録したいリモコン操作します。問題なく受信できれば `Okay` と表示されるはずです。
 
 確認の為再度受信待機状態になるので、再度リモコン操作します。問題なければ再度 `Okay` と表示されるはずです。因みに確認をスキップしたい場合は `--no-confirm` オプションを付与します。
 

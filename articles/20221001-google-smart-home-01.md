@@ -27,7 +27,7 @@ Google Home から Google Assistant を介して Raspberry PI 上に構築した
 
 ![Create Action project](/assets/images/20221001-google-smart-home-01/actions-console-create-project.png)
 
-What kind of Action do you want to build? の画面にて Smart Home を選択して Start Building を押下します。
+`What kind of Action do you want to build?` の画面にて Smart Home を選択して Start Building を押下します。
 
 ![Get started](/assets/images/20221001-google-smart-home-01/actions-console-get-started.png)
 
@@ -184,7 +184,7 @@ npm run build
 firebase emulators:start
 ```
 
-これで local 上で funcitions の検証ができます。
+これで local 上に funcitions の検証ができます。
 
 ```bash
 $ curl http://127.0.0.1:5001/smart-home-sample02/us-central1/helloWorld

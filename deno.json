@@ -17,6 +17,10 @@
   },
   "importMap": "import_map.json",
   "tasks": {
+    "lint": "deno lint && deno task lint:textlint",
+    "lint:textlint": "deno run --allow-env --allow-read --allow-sys textlint.ts .",
+    "fix": "deno fmt && deno task fix:textlint",
+    "fix:textlint": "deno run --allow-env --allow-read --allow-write --allow-sys textlint.ts . --fix",
     "lume": "echo \"import 'lume/cli.ts'\" | deno run --unstable -A -",
     "build": "deno task lume",
     "serve": "deno task lume -s"

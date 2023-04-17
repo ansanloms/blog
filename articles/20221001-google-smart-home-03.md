@@ -28,13 +28,13 @@ Smart Home Action と Google Assistant ないしは Home アプリとのやり�
 | [action.devices.EXECUTE](https://developers.google.com/assistant/smarthome/concepts/intents#execute)       | デバイスの操作。                                                         |
 | [action.devices.DISCONNECT](https://developers.google.com/assistant/smarthome/concepts/intents#disconnect) | スマートホームアプリの解除。                                             |
 
-HTTP METHOD でいうなら、 SYNC は PUT、 QUERY は GET、 EXECUTE は POST、 DISCONNECT は DELETE ってところでしょうか。知らんけど。
+HTTP METHOD でいうなら、 SYNC: PUT / QUERY: GET / EXECUTE: POST / DISCONNECT: DELETE ってところでしょうか。知らんけど。
 
 ## インテントの実装
 
 <https://developers.google.com/assistant/smarthome/develop/process-intents>
 
-実際に functions 上に実装していきます。
+実際に functions 上へ実装していきます。
 
 > 以降の実装はこうもうろもろと「とりあえず」的なアレです。
 
@@ -180,7 +180,7 @@ const getAgentUserId = async (
 
 一旦スマートホームアプリと HOME アプリを連携するところまでみたいので、とりあえずフルフィルメントを実装します。
 
-認証するだけなら SYNC だけあればいいと思いますが、まぁ全部書いておきます。
+認証するだけなら SYNC のみあればいいと思いますが、まぁ全部書いておきます。
 
 ```ts:functions/src/index.ts
 app.onSync(async (body, headers) => {

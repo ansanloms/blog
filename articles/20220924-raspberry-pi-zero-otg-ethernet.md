@@ -42,9 +42,9 @@ modules-load=dwc2,g_ether
 
 ### Bonjour のインストール
 
-Windows 側に Bonjour をインストールします。 Bonjour とは、 DNS とかそういう設定とかをせずに IP アドレスにいいかんじにホスト名を割り当てるモノです。
+Windows 側に Bonjour をインストールします。 Bonjour とは DNS とかそういう設定とかをせず、 IP アドレスへいいかんじにホスト名を割り当てるモノです。
 
-正直入れなくていいなら入れたくないんですけど、この後に Windows に繋げた Raspberry Pi (の USB Ethernet)の IP が分からなかったので、これで名前解決てきなことをします。
+正直入れなくていいなら入れたくないんですけど、この後 Windows に繋げた Raspberry Pi (の USB Ethernet)の IP が分からなかったので、これで名前解決てきなことをします。
 
 <https://support.apple.com/kb/dl999>
 

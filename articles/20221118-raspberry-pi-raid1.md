@@ -319,7 +319,7 @@ $ sudo mdadm --detail /dev/md0
 mdadm: cannot open /dev/md1: No such file or directory
 ```
 
-あれ…？
+あれ…。
 
 ```bash
 $ sudo parted -l
@@ -388,7 +388,7 @@ ARRAY /dev/md0 metadata=1.2 name=raspberrypi:0 UUID=7726b25c:ae1b5573:5c8b07a6:b
 
 `/dev/md0` の構成になっています。
 
-どうも initramfs 上にあるディスク情報が実際のディスク情報と異なる場合、デバイス名は md127 から降順に自動的に振られるとのことです。
+どうも initramfs 上にあるディスク情報が実際のディスク情報と異なる場合、デバイス名は md127 から降順で自動的に振られるとのことです。
 
 なんで更新します。
 

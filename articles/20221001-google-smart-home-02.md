@@ -56,7 +56,7 @@ Create を押下で Application が作成されます。 Quick Start が表示�
 
 #### Application URIs
 
-`Allowded Callback URLs` には以下を設定します。カンマ区切りで 1 行で指定します。
+`Allowded Callback URLs` には以下を設定します。カンマ区切り 1 行で指定します。
 
 [PROJECT_ID] には Actions Console 上(ないしは Firebase の) Project ID を指定します。
 
@@ -68,7 +68,7 @@ Create を押下で Application が作成されます。 Quick Start が表示�
 
 [B] / [C] は承認リクエストを処理する際に利用します。詳しくは <https://developers.google.com/assistant/smarthome/develop/implement-oauth#implement_your_oauth_20_server> を参照ください。
 
-`Allowed Web Origins` には以下を設定します。カンマ区切りで 1 行で指定します。
+`Allowed Web Origins` には以下を設定します。カンマ区切り 1 行で指定します。
 
 - `https://oauth-redirect.googleusercontent.com`
 - `https://oauth-redirect-sandbox.googleusercontent.com`
@@ -100,4 +100,4 @@ Create を押下で Application が作成されます。 Quick Start が表示�
 
 ここまでで認証処理を用意しました。
 
-次は実際に Home アプリに Smart Home Action を追加してきます。
+次は実際に Home アプリへ Smart Home Action を追加してきます。

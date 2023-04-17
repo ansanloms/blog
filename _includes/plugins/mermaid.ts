@@ -1,5 +1,5 @@
 import { merge } from "lume/core/utils.ts";
-import type { Page, Site } from "lume/core.ts";
+import type { Site } from "lume/core.ts";
 
 export interface Options {
   extensions: string[];
@@ -25,7 +25,7 @@ export default function (userOptions?: Partial<Options>) {
       page.document!.head.appendChild(script);
 
       page.document!.querySelectorAll(options.cssSelector!).forEach(
-        async (element) => {
+        (element) => {
           const graph = element.textContent.trim();
           element.className = "mermaid";
           element.innerText = graph;
