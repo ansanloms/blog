@@ -11,13 +11,13 @@ export interface Options {
 export const defaults: Options = {
   extensions: [".html"],
   cssSelector: "pre code.language-plantuml",
-  generate: async (uml, page) => {
+  generate: (uml, page) => {
     const img = page.document!.createElement("img");
     img.setAttribute(
       "src",
       `https://www.plantuml.com/plantuml/svg/${plantumlEncoder.encode(uml)}`,
     );
-    return img;
+    return Promise.resolve(img);
   },
 };
 
