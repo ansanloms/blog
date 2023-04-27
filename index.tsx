@@ -1,6 +1,6 @@
 import * as path from "std/path/mod.ts";
 import * as datetime from "std/datetime/mod.ts";
-import { Marked } from "markdown/mod.ts";
+import matter from "gray-matter";
 
 export const layout = "layouts/Top.tsx";
 
@@ -11,7 +11,7 @@ const getArticles = async (): { slug: string; title: string; date: Date }[] => {
     if (article.isFile && path.extname(article.name) === ".md") {
       const slug = path.basename(article.name, ".md");
       const md = await Deno.readTextFile(`./articles/${slug}.md`);
-      const { meta } = Marked.parse(md);
+      const { data: meta } = matter(md);
 
       list.push({
         slug,
