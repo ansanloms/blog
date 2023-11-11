@@ -18,7 +18,7 @@
   "imports": {
     "lume/": "https://deno.land/x/lume@v1.19.3/",
     "std/": "https://deno.land/std@0.206.0/",
-    "plantuml-encoder": "npm:plantuml-encoder@1.4.0",
+    "lume-plugin-plantuml/": "https://raw.githubusercontent.com/ansanloms/lume-plugin-plantuml/v0.1.4/",
     "gray-matter": "npm:gray-matter@4.0.3",
     "textlint": "npm:textlint@13.4.0"
   },
