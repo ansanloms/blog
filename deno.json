@@ -15,7 +15,13 @@
       ]
     }
   },
-  "importMap": "import_map.json",
+  "imports": {
+    "lume/": "https://deno.land/x/lume@v1.19.3/",
+    "std/": "https://deno.land/std@0.206.0/",
+    "plantuml-encoder": "npm:plantuml-encoder@1.4.0",
+    "gray-matter": "npm:gray-matter@4.0.3",
+    "textlint": "npm:textlint@13.4.0"
+  },
   "tasks": {
     "lint": "deno lint && deno task lint:textlint",
     "lint:textlint": "deno run --allow-env --allow-read --allow-sys textlint.ts .",
@@ -27,6 +33,6 @@
   },
   "compilerOptions": {
     "jsx": "react-jsx",
-    "jsxImportSource": "npm:preact"
+    "jsxImportSource": "npm:preact@10.19.1"
   }
 }
