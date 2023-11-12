@@ -86,7 +86,7 @@ echo "pud 22 u" > /dev/pigpio
 [赤外線リモコン受信モジュール](https://akizukidenshi.com/catalog/g/gI-04659/)を用います。
 
 |        | 位置 | 接続先  | 物理番号 |
-| :---   | :--- | :---    | :---     |
+| :----- | :--- | :------ | :------- |
 | OUTPUT | 左   | GPIO 23 | 16       |
 | GROUND | 中央 | GROUND  | 6        |
 | VCC    | 右   | 3.3 V   | 1        |

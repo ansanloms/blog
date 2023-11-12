@@ -1,19 +1,8 @@
 {
   "lint": {
-    "files": {
-      "exclude": [
-        "README.md",
-        "articles/"
-      ]
-    }
   },
   "fmt": {
-    "files": {
-      "exclude": [
-        "README.md",
-        "articles/"
-      ]
-    }
+    "proseWrap": "preserve"
   },
   "imports": {
     "lume/": "https://deno.land/x/lume@v1.19.3/",

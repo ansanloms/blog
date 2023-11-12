@@ -20,7 +20,7 @@ Google Home から Google Assistant を介して Raspberry PI 上に構築した
 [Actions Console](https://console.actions.google.com/) にアクセスし、 New Project から Actions プロジェクトを作成します。
 
 |                                   | 値                   |
-| :---                              | :---                 |
+| :-------------------------------- | :------------------- |
 | Project Name                      | 任意のプロジェクト名 |
 | Choose a language for your action | Japanese             |
 | Choose your country or region     | Japan                |

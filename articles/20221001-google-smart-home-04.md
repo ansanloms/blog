@@ -33,7 +33,7 @@ Action Console の対象プロジェクトに遷移し、上記メニューの [
 ![Actions](/assets/images/20221001-google-smart-home-04/actions-console-actions.png)
 
 |                   | 値                                                    |
-| :---              | :---                                                  |
+| :---------------- | :---------------------------------------------------- |
 | Fulfillment URL   | `/fulfillment` が function 上にデプロイされた際の URL |
 | Log level control | とりあえず `All`                                      |
 
@@ -56,7 +56,7 @@ Action Console の対象プロジェクトに遷移し、上記メニューの [
 `Authorization URL` と `Token URL` に関しては Auth0 コンソールの [Applications] -> [対象 Application] -> [Settings] 内の Advanced Settings からも確認できます。
 
 |                                            | 値                                   |
-| :---                                       | :---                                 |
+| :----------------------------------------- | :----------------------------------- |
 | Client ID issued by your Actions to Google | `[AUTH0_CLIENT_ID]`                  |
 | Client secret                              | `[AUTH0_CLIENT_SECRET]`              |
 | Authorization URL                          | `https://[AUTH0_DOMAIN]/authorize`   |

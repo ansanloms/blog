@@ -37,7 +37,7 @@ SSH サービスの設定します。サンプルがあるのでそのままそ�
 
 ```bash
 sudo cp /usr/share/doc/avahi-daemon/examples/ssh.service /etc/avahi/services/ssh.service
-````
+```
 
 デーモンを再起動します。
 

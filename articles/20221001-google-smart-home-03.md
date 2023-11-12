@@ -22,7 +22,7 @@ Smart Home Action と Google Assistant ないしは Home アプリとのやり�
 インテント上にフルフィルメント、つまり各種の処理定義を記述していきます。
 
 | フルフィルメント                                                                                           | 概要                                                                     |
-| :---                                                                                                       | :---                                                                     |
+| :--------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------- |
 | [action.devices.SYNC](https://developers.google.com/assistant/smarthome/concepts/intents#sync)             | 操作可能なデバイス一覧の取得(スマートホームアプリセットアップ時の登録)。 |
 | [action.devices.QUERY](https://developers.google.com/assistant/smarthome/concepts/intents#query)           | デバイスの状態を取得。                                                   |
 | [action.devices.EXECUTE](https://developers.google.com/assistant/smarthome/concepts/intents#execute)       | デバイスの操作。                                                         |
@@ -81,8 +81,8 @@ export const fulfillment = functions.region(region).https.onRequest(app);
 LIGHT には以下トレイトが定義されています。
 
 | トレイト                                                                                                    | 実装必須 | 概要                            |
-| :---                                                                                                        | :---:    | :---                            |
-| [action.devices.traits.OnOff](https://developers.google.com/assistant/smarthome/traits/onoff)               | ✅       | ライトの ON および OFF を行う。 |
+| :---------------------------------------------------------------------------------------------------------- | :------: | :------------------------------ |
+| [action.devices.traits.OnOff](https://developers.google.com/assistant/smarthome/traits/onoff)               |    ✅    | ライトの ON および OFF を行う。 |
 | [action.devices.traits.ColorSetting](https://developers.google.com/assistant/smarthome/traits/colorsetting) |          | ライトの色見を調整する。        |
 | [action.devices.traits.Brightness](https://developers.google.com/assistant/smarthome/traits/brightness)     |          | ライトの明るさを調整する。      |
 
