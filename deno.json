@@ -1,8 +1,18 @@
 {
   "lint": {
+    "exclude": [
+      "articles/",
+      "_site/",
+      "_bin/"
+    ]
   },
   "fmt": {
-    "proseWrap": "preserve"
+    "proseWrap": "preserve",
+    "exclude": [
+      "articles/",
+      "_site/",
+      "_bin/"
+    ]
   },
   "imports": {
     "lume/": "https://deno.land/x/lume@v1.19.3/",
