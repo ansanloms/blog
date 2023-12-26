@@ -1,17 +1,17 @@
 {
   "lint": {
     "exclude": [
-      "articles/",
       "_site/",
-      "_bin/"
+      "_bin/",
+      "_cache/"
     ]
   },
   "fmt": {
     "proseWrap": "preserve",
     "exclude": [
-      "articles/",
       "_site/",
-      "_bin/"
+      "_bin/",
+      "_cache/"
     ]
   },
   "imports": {
