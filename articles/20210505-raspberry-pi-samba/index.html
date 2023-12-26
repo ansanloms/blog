@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Raspberry Pi 4 に NAS を構築しました(Samba の設定)</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.6.0/styles/obsidian.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ress@5.0.2/dist/ress.min.css"><link rel="stylesheet" href="/blog/styles/main.css"><link rel="stylesheet" href="/blog/styles/article.css"><meta property="og:type" content="website">
+<meta property="og:site_name" content="ansanloms blog">
+<meta property="og:locale" content="ja">
+<meta property="og:url" content="https://ansanloms.github.io/blog/articles/20210505-raspberry-pi-samba/">
+<meta property="og:image" content="https://ansanloms.github.io/blog/assets/images/profile.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@ansanloms">
+<script type="module">
+          import mermaid from 'https://unpkg.com/mermaid@9/dist/mermaid.esm.min.mjs';
+          mermaid.initialize({ startOnLoad: true });
+        </script></head><body><header class="header"><h1><a href="/blog/">ansanloms blog</a></h1></header><div class="content"><ul class="tags"></ul><div class="meta"><p class="postDate"><span class="label">投稿</span><span class="date">2021.05.04</span></p></div><article class="article"><h1>Raspberry Pi 4 に NAS を構築しました(Samba の設定)</h1><div><p><a href="/blog/articles/20210504-raspberry-pi-nas-hdd">このまえ</a>のつづきです。</p>
+<h2>実施内容</h2>
+<h3>HDD のマウントまで</h3>
+<p><a href="/blog/articles/20210504-raspberry-pi-nas-hdd">このまえの記事</a>を見てください。</p>
+<h3>Samba のインストール</h3>
+<pre><code class="language-bash hljs">sudo apt install samba
+</code></pre>
+<h3>Samba の設定ファイルを更新する</h3>
+<pre><code class="language-bash hljs">sudo <span class="hljs-built_in">cp</span> -p /etc/samba/smb.conf /etc/samba/smb.conf.20210504
+sudo vim /etc/samba/smb.conf
+</code></pre>
+<p>ファイル末尾にこのように追記しました。</p>
+<pre><code class="language-ini:smb.conf hljs language-ini"><span class="hljs-section">[media]</span>
+<span class="hljs-attr">comment</span> = nas
+<span class="hljs-attr">path</span> = /mnt/media
+<span class="hljs-attr">public</span> = <span class="hljs-literal">no</span>
+read <span class="hljs-attr">only</span> = <span class="hljs-literal">no</span>
+<span class="hljs-attr">browsable</span> = <span class="hljs-literal">no</span>
+force <span class="hljs-attr">user</span> = ansanloms
+</code></pre>
+<ul>
+<li><code>path</code> : Samba の対象パスを記述します。</li>
+<li><code>public</code> : ゲストアカウントでのログイン可不可を指定します。今回は不可にします。</li>
+<li><code>read only</code> : 読み取り専用にするかです。今回は no にします。</li>
+<li><code>browseable</code> : ネットワーク上で他の端末から検索できるかを指定します。今回は no にします。</li>
+<li><code>force user</code> : アクセス可能な Samba ユーザを指定します。</li>
+</ul>
+<h3>Samba のユーザを作成する。</h3>
+<p><code>force user</code> で指定した通りに Samba のユーザを作成します。 これは Linux のユーザではないですが、関連するので先に Linux
+ユーザが必要です。</p>
+<p><code>pdbedit --create</code> でやっていきます。</p>
+<pre><code class="language-bash hljs">$ sudo pdbedit --create ansanloms
+new password:
+retype new password:
+</code></pre>
+<p>作成されたか確認します。</p>
+<pre><code class="language-bash hljs">$ sudo pdbedit --list | grep ansanloms
+ansanloms:1000:Ubuntu
+</code></pre>
+<p>できました。</p>
+<h3>Samba を起動する</h3>
+<p>起動します。</p>
+<pre><code class="language-bash hljs">sudo systemctl start smbd
+</code></pre>
+<p>確認してみます。</p>
+<pre><code class="language-bash hljs">$ ps aux | grep smbd
+root        3421  0.5  0.2  58264 20848 ?        Ss   22:18   0:00 /usr/sbin/smbd --foreground --no-process-group
+root        3423  0.0  0.0  55848  6160 ?        S    22:18   0:00 /usr/sbin/smbd --foreground --no-process-group
+root        3424  0.0  0.0  55848  4700 ?        S    22:18   0:00 /usr/sbin/smbd --foreground --no-process-group
+root        3425  0.0  0.1  58264 11872 ?        S    22:18   0:00 /usr/sbin/smbd --foreground --no-process-group
+ansanlo+    3428  0.0  0.0   8724   640 pts/0    S+   22:18   0:00 grep --color=auto smbd
+</code></pre>
+<p>起動しているようです。</p>
+<h3>Windows からアクセスしてみる</h3>
+<p>エクスプローラから <code>\\192.168.xx.xx\media</code> にアクセスします。</p>
+<p>資格情報の入力を求められるので Samba で作成したユーザ情報を入力します。</p>
+<p>問題なく閲覧、更新できたら成功です。よかったですね。</p>
+<h2>おわり</h2>
+<p>たのしかったです。</p>
+</div></article></div><footer class="footer">(C) <a href="https://twitter.com/ansanloms">ansanloms</a></footer></body></html>

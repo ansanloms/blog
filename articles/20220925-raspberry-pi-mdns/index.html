@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Raspberry Pi を mDNS に対応させました</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.6.0/styles/obsidian.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ress@5.0.2/dist/ress.min.css"><link rel="stylesheet" href="/blog/styles/main.css"><link rel="stylesheet" href="/blog/styles/article.css"><meta property="og:type" content="website">
+<meta property="og:site_name" content="ansanloms blog">
+<meta property="og:locale" content="ja">
+<meta property="og:url" content="https://ansanloms.github.io/blog/articles/20220925-raspberry-pi-mdns/">
+<meta property="og:image" content="https://ansanloms.github.io/blog/assets/images/profile.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@ansanloms">
+<script type="module">
+          import mermaid from 'https://unpkg.com/mermaid@9/dist/mermaid.esm.min.mjs';
+          mermaid.initialize({ startOnLoad: true });
+        </script></head><body><header class="header"><h1><a href="/blog/">ansanloms blog</a></h1></header><div class="content"><ul class="tags"></ul><div class="meta"><p class="postDate"><span class="label">投稿</span><span class="date">2022.09.24</span></p></div><article class="article"><h1>Raspberry Pi を mDNS に対応させました</h1><div><p>Raspberry Pi の名前解決には Bonjour を利用していましたが、 Raspberry Pi 上に mDNS を設定するようにしました。</p>
+<h2>Avahi のインストール</h2>
+<p><a href="http://avahi.org/">http://avahi.org/</a></p>
+<pre><code class="language-bash hljs">sudo apt install avahi-daemon
+</code></pre>
+<h2>ホスト名の解決</h2>
+<p>Avahi には <code>hostname.local</code> という名前を使ってローカルでホスト名を解決する機能があります。</p>
+<p>とりあえずホスト名を設定します。 <code>/etc/hostname</code> にホスト名を記述して再起動します。</p>
+<pre><code class="language-bash hljs">$ <span class="hljs-built_in">cat</span> /etc/hostname
+raspberrypi
+</code></pre>
+<p>続いて <code>/etc/nsswitch.conf</code> の host 行を修正します。 <code>resolve</code> と <code>dns</code> の前に <code>mdns4_minimal</code> を追記します。が、おそらくデフォルトでそのようになっているはずです。</p>
+<pre><code class="language-bash hljs">$ <span class="hljs-built_in">cat</span> /etc/nsswitch.conf | grep hosts
+hosts:          files mdns4_minimal [NOTFOUND=<span class="hljs-built_in">return</span>] dns
+</code></pre>
+<h2>サービスの設定</h2>
+<p>SSH サービスの設定します。サンプルがあるのでそのままそれを利用します。</p>
+<pre><code class="language-bash hljs">sudo <span class="hljs-built_in">cp</span> /usr/share/doc/avahi-daemon/examples/ssh.service /etc/avahi/services/ssh.service
+</code></pre>
+<p>デーモンを再起動します。</p>
+<pre><code class="language-bash hljs">sudo systemctl daemon-reload
+sudo systemctl restart avahi-daemon
+</code></pre>
+<p>起動しているか確認します。</p>
+<pre><code class="language-bash hljs">sudo systemctl status avahi-daemon
+</code></pre>
+<h2>おわり</h2>
+<p>これで <code>raspberrypi.local</code> で SSH できるはずです。 Samba 等もこのホスト名でいけるはずです。</p>
+<h2>参考にしたドキュメント</h2>
+<ul>
+<li><a href="https://wiki.archlinux.jp/index.php/Avahi">https://wiki.archlinux.jp/index.php/Avahi</a></li>
+</ul>
+</div></article></div><footer class="footer">(C) <a href="https://twitter.com/ansanloms">ansanloms</a></footer></body></html>

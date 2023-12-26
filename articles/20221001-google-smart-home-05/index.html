@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Google Home から自前のスマートリモコンを操作しました - 05. フルフィルメントの実装</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.6.0/styles/obsidian.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ress@5.0.2/dist/ress.min.css"><link rel="stylesheet" href="/blog/styles/main.css"><link rel="stylesheet" href="/blog/styles/article.css"><meta property="og:type" content="website">
+<meta property="og:site_name" content="ansanloms blog">
+<meta property="og:locale" content="ja">
+<meta property="og:url" content="https://ansanloms.github.io/blog/articles/20221001-google-smart-home-05/">
+<meta property="og:image" content="https://ansanloms.github.io/blog/assets/images/profile.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@ansanloms">
+<script type="module">
+          import mermaid from 'https://unpkg.com/mermaid@9/dist/mermaid.esm.min.mjs';
+          mermaid.initialize({ startOnLoad: true });
+        </script></head><body><header class="header"><h1><a href="/blog/">ansanloms blog</a></h1></header><div class="content"><ul class="tags"></ul><div class="meta"><p class="postDate"><span class="label">投稿</span><span class="date">2022.09.30</span></p></div><article class="article"><h1>Google Home から自前のスマートリモコンを操作しました - 05. フルフィルメントの実装</h1><div><p><a href="/blog/articles/20221001-google-smart-home-04">このまえ</a>からの続きです。</p>
+<h2>HomeGraph の有効化</h2>
+<p>例えば現状照明が点いているか等、デバイスの状態を管理する必要があります。</p>
+<p>これには <a href="https://developers.google.com/assistant/smarthome/concepts/homegraph">HomeGraph</a> を利用します。</p>
+<p>HomeGraph とは、デバイスの状態を管理する所謂データベースになります。</p>
+<h3>HomeGraph API の有効化</h3>
+<p><a href="https://developers.google.com/assistant/smarthome/develop/report-state?hl=ja#homegraph-api">https://developers.google.com/assistant/smarthome/develop/report-state?hl=ja#homegraph-api</a></p>
+<p>まずはプロジェクト上で HomeGraph API を利用できるようにします。</p>
+<ol>
+<li><a href="https://console.cloud.google.com/">Google Cloud Console</a> 上から対象のプロジェクトを選択します。</li>
+<li><a href="https://console.cloud.google.com/apis/library">API ライブラリ</a> 上にて <a href="https://console.cloud.google.com/apis/library/browse?q=homegraph"><code>HomeGraph</code> 等で検索</a>します。</li>
+<li><code>HomeGraph API</code> を有効にします。</li>
+</ol>
+<h3>サービス アカウント キーの作成</h3>
+<p><a href="https://developers.google.com/assistant/smarthome/develop/report-state?hl=ja#service-account-key">https://developers.google.com/assistant/smarthome/develop/report-state?hl=ja#service-account-key</a></p>
+<p>API を実行する為の認証情報を用意します。</p>
+<ol>
+<li><a href="https://console.cloud.google.com/">Google Cloud Console</a> 上から対象のプロジェクトを選択します。</li>
+<li><a href="https://console.cloud.google.com/apis/credentials/serviceaccountkey">サービス アカウント キーの作成</a>に移動します。</li>
+<li>[サービス アカウント キーの作成] ページに移動</li>
+<li>[サービス アカウント] リストから [新しいサービス アカウント] を選択します。</li>
+<li>[サービス アカウント名] フィールドに名前を入力します。</li>
+<li>[サービス アカウント ID] フィールドに ID を入力します。</li>
+<li>[ロール] リストから、[サービス アカウント] &gt; [サービス アカウント トークン作成者] を選択します。</li>
+<li>[キーのタイプ] として [JSON] を選択します。</li>
+<li>[作成] をクリックするとキーが含まれている JSON ファイルがパソコンにダウンロードされます。</li>
+</ol>
+<p>JSON ファイルは <code>functions/service-account.json</code> に置いておきます。認証情報なので <code>.gitignore</code> 等で除外しておく必要があります。</p>
+<h3>functions 上で HomeGraph API を利用する</h3>
+<p>API クライアントのライブラリを導入します。</p>
+<pre><code>npm i googleapis
+</code></pre>
+<p>こんなかんじでクライアントを定義します。</p>
+<pre><code class="language-typescript:funcitons/src/index.ts hljs language-typescript"><span class="hljs-keyword">import</span> { google } <span class="hljs-keyword">from</span> <span class="hljs-string">"googleapis"</span>;
+
+<span class="hljs-keyword">const</span> homegraph = google.<span class="hljs-title function_">homegraph</span>({
+  <span class="hljs-attr">version</span>: <span class="hljs-string">"v1"</span>,
+  <span class="hljs-attr">auth</span>: <span class="hljs-keyword">new</span> google.<span class="hljs-property">auth</span>.<span class="hljs-title class_">GoogleAuth</span>({
+    <span class="hljs-attr">credentials</span>: <span class="hljs-built_in">require</span>(<span class="hljs-string">"../service-account.json"</span>),
+    <span class="hljs-attr">scopes</span>: [<span class="hljs-string">"https://www.googleapis.com/auth/homegraph"</span>],
+  }),
+});
+</code></pre>
+<h2>フルフィルメントの実装</h2>
+<p>前回適当に実装したフルフィルメントをそれなりに実装していきます。</p>
+<h3>SYNC</h3>
+<p><a href="https://developers.google.com/assistant/smarthome/develop/process-intents#list-devices">https://developers.google.com/assistant/smarthome/develop/process-intents#list-devices</a></p>
+<p>特にスマートホームアプリセットアップ時に実行されます。操作可能なデバイス一覧を返します。</p>
+<p>前回のとりあえず処理から特に変更ないです。</p>
+<pre><code class="language-ts:functions/src/index.ts hljs language-typescript">app.<span class="hljs-title function_">onSync</span>(<span class="hljs-keyword">async</span> (body, headers) =&gt; {
+  <span class="hljs-keyword">const</span> id = <span class="hljs-keyword">await</span> <span class="hljs-title function_">getAgentUserId</span>(headers);
+
+  <span class="hljs-keyword">return</span> {
+    <span class="hljs-attr">requestId</span>: body.<span class="hljs-property">requestId</span>,
+    <span class="hljs-attr">payload</span>: {
+      <span class="hljs-attr">agentUserId</span>: id || <span class="hljs-string">""</span>,
+      <span class="hljs-attr">devices</span>: <span class="hljs-keyword">typeof</span> id === <span class="hljs-string">"undefined"</span> ? [] : [<span class="hljs-title class_">CeilingLight</span>],
+    },
+  };
+});
+</code></pre>
+<h3>QUERY</h3>
+<p><a href="https://developers.google.com/assistant/smarthome/develop/process-intents#handle_query_intents">https://developers.google.com/assistant/smarthome/develop/process-intents#handle_query_intents</a></p>
+<p>現在のデバイスの状態、例えば照明がついているかを取得します。</p>
+<p>HomeGraph 上にあるデバイスの状態を取得し、レスポンスボディに含めます。</p>
+<pre><code class="language-ts:functions/src/index.ts hljs language-typescript">app.<span class="hljs-title function_">onQuery</span>(<span class="hljs-keyword">async</span> (body, headers) =&gt; {
+  <span class="hljs-keyword">const</span> id = <span class="hljs-keyword">await</span> <span class="hljs-title function_">getAgentUserId</span>(headers);
+
+  <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> id === <span class="hljs-string">"undefined"</span>) {
+    <span class="hljs-keyword">return</span> {
+      <span class="hljs-attr">requestId</span>: body.<span class="hljs-property">requestId</span>,
+      <span class="hljs-attr">payload</span>: {
+        <span class="hljs-attr">devices</span>: {},
+      },
+    };
+  }
+
+  <span class="hljs-comment">// 本当は CeilingLight であることを確認するべき。</span>
+  <span class="hljs-keyword">const</span> device = body.<span class="hljs-property">inputs</span>[<span class="hljs-number">0</span>].<span class="hljs-property">payload</span>.<span class="hljs-property">devices</span>[<span class="hljs-number">0</span>];
+
+  <span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> homegraph.<span class="hljs-property">devices</span>.<span class="hljs-title function_">query</span>({
+    <span class="hljs-attr">requestBody</span>: {
+      <span class="hljs-attr">requestId</span>: body.<span class="hljs-property">requestId</span>,
+      <span class="hljs-attr">agentUserId</span>: id,
+      <span class="hljs-attr">inputs</span>: [
+        {
+          <span class="hljs-attr">payload</span>: {
+            <span class="hljs-attr">devices</span>: [
+              {
+                <span class="hljs-attr">id</span>: device.<span class="hljs-property">id</span>,
+              },
+            ],
+          },
+        },
+      ],
+    },
+  });
+
+  <span class="hljs-keyword">return</span> {
+    <span class="hljs-attr">requestId</span>: body.<span class="hljs-property">requestId</span>,
+    <span class="hljs-attr">payload</span>: {
+      <span class="hljs-attr">devices</span>: {
+        [<span class="hljs-title class_">CeilingLight</span>.<span class="hljs-property">id</span>]: {
+          <span class="hljs-attr">status</span>: <span class="hljs-string">"SUCCESS"</span>,
+          <span class="hljs-attr">online</span>: <span class="hljs-literal">true</span>,
+          <span class="hljs-comment">// とりあえず照明の ON / OFF だけ。</span>
+          <span class="hljs-attr">on</span>:
+            <span class="hljs-keyword">typeof</span> res.<span class="hljs-property">data</span>.<span class="hljs-property">payload</span>?.<span class="hljs-property">devices</span>?.[<span class="hljs-title class_">CeilingLight</span>.<span class="hljs-property">id</span>]?.<span class="hljs-property">on</span> ===
+            <span class="hljs-string">"boolean"</span>
+              ? res.<span class="hljs-property">data</span>.<span class="hljs-property">payload</span>.<span class="hljs-property">devices</span>[<span class="hljs-title class_">CeilingLight</span>.<span class="hljs-property">id</span>].<span class="hljs-property">on</span>
+              : <span class="hljs-literal">false</span>,
+        },
+      },
+    },
+  };
+});
+</code></pre>
+<h3>EXECUTE</h3>
+<p><a href="https://developers.google.com/assistant/smarthome/develop/process-intents#handle_query_intents">https://developers.google.com/assistant/smarthome/develop/process-intents#handle_query_intents</a></p>
+<p>デバイスの状態を更新します。</p>
+<p>HomeGraph 上にあるデバイスの状態を更新するには <a href="https://developers.google.com/assistant/smarthome/develop/report-state">Report State</a> を利用します。</p>
+<pre><code class="language-ts:functions/src/index.ts hljs language-typescript">app.<span class="hljs-title function_">onExecute</span>(<span class="hljs-keyword">async</span> (body, headers) =&gt; {
+  <span class="hljs-keyword">const</span> id = <span class="hljs-keyword">await</span> <span class="hljs-title function_">getAgentUserId</span>(headers);
+
+  <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> id === <span class="hljs-string">"undefined"</span>) {
+    <span class="hljs-keyword">return</span> {
+      <span class="hljs-attr">requestId</span>: body.<span class="hljs-property">requestId</span>,
+      <span class="hljs-attr">payload</span>: { <span class="hljs-attr">commands</span>: [] },
+    };
+  }
+
+  <span class="hljs-comment">// とりあえず照明の ON / OFF だけみる。</span>
+  <span class="hljs-keyword">const</span> device = body.<span class="hljs-property">inputs</span>[<span class="hljs-number">0</span>].<span class="hljs-property">payload</span>.<span class="hljs-property">commands</span>[<span class="hljs-number">0</span>].<span class="hljs-property">devices</span>[<span class="hljs-number">0</span>];
+  <span class="hljs-keyword">const</span> execution = body.<span class="hljs-property">inputs</span>[<span class="hljs-number">0</span>].<span class="hljs-property">payload</span>.<span class="hljs-property">commands</span>[<span class="hljs-number">0</span>].<span class="hljs-property">execution</span>[<span class="hljs-number">0</span>];
+  <span class="hljs-keyword">const</span> states = {
+    <span class="hljs-attr">on</span>: execution.<span class="hljs-property">params</span>?.<span class="hljs-property">on</span> === <span class="hljs-literal">true</span>,
+  };
+
+  <span class="hljs-keyword">await</span> homegraph.<span class="hljs-property">devices</span>.<span class="hljs-title function_">reportStateAndNotification</span>({
+    <span class="hljs-attr">requestBody</span>: {
+      <span class="hljs-attr">requestId</span>: body.<span class="hljs-property">requestId</span>,
+      <span class="hljs-attr">agentUserId</span>: id,
+      <span class="hljs-attr">payload</span>: {
+        <span class="hljs-attr">devices</span>: {
+          <span class="hljs-attr">states</span>: {
+            [device.<span class="hljs-property">id</span>]: states,
+          },
+        },
+      },
+    },
+  });
+
+  <span class="hljs-keyword">return</span> {
+    <span class="hljs-attr">requestId</span>: body.<span class="hljs-property">requestId</span>,
+    <span class="hljs-attr">payload</span>: {
+      <span class="hljs-attr">commands</span>: [
+        {
+          <span class="hljs-attr">ids</span>: [device.<span class="hljs-property">id</span>],
+          <span class="hljs-attr">status</span>: <span class="hljs-string">"SUCCESS"</span>,
+          <span class="hljs-attr">states</span>: { ...states, <span class="hljs-attr">online</span>: <span class="hljs-literal">true</span> },
+        },
+      ],
+    },
+  };
+});
+</code></pre>
+<h3>DISCONNECT</h3>
+<p><a href="https://developers.google.com/assistant/smarthome/develop/process-intents#unlink">https://developers.google.com/assistant/smarthome/develop/process-intents#unlink</a></p>
+<p>アプリを Google Assistant 上から解除する際に実行されます。</p>
+<p>前回のとりあえず処理から特に変更ないです。</p>
+<pre><code class="language-ts:functions/src/index.ts hljs language-typescript">app.<span class="hljs-title function_">onDisconnect</span>(<span class="hljs-function">() =&gt;</span> {
+  functions.<span class="hljs-property">logger</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">"User account unlinked from Google Assistant"</span>);
+  <span class="hljs-keyword">return</span> {};
+});
+</code></pre>
+<h2>実際に動かしてみる</h2>
+<p>ここで deploy して…でもいいですが、デバッグ等で頻繁にデバッグすることになるので、 local 上で functions を起動し、 <a href="https://ngrok.com/">ngrok</a> で公開して検証します。</p>
+<p>先ずは ngrok をインストールします。</p>
+<pre><code class="language-bash hljs">scoop install ngrok
+</code></pre>
+<p>別途エミュレータも起動しておきます。</p>
+<pre><code class="language-bash hljs">npm run build
+firebase emulators:start
+</code></pre>
+<p>エミュレータ上では functions が 5001 ポートで起動しているはずです。なので ngrok で 5001 ポートを公開します。</p>
+<pre><code class="language-bash hljs">ngrok http 5001
+</code></pre>
+<p>これで ngrok 上から local の <code>/fulfillment</code> にアクセスできるはずです。</p>
+<pre><code class="language-bash hljs">https://example.ngrok.io/[PROJECT_ID]/asia-northeast1/fulfillment
+</code></pre>
+<p>この URL を(前回)[/articles/20221001-google-smart-home-04]実施したアクションの登録と同様に登録します。既存通りこれで動作するはずです。</p>
+<h2>デバッグ</h2>
+<p>local 上のログは <a href="http://127.0.0.1:4000/logs">http://127.0.0.1:4000/logs</a> より確認できるはずです。</p>
+<p>HomeGraph の状況は <a href="https://smarthome-test-suite.withgoogle.com/devices">Home Graph Viewer</a> より確認できます。</p>
+<h2>つづく</h2>
+<p>次は自宅にある実際の家電と連携させます。</p>
+</div></article></div><footer class="footer">(C) <a href="https://twitter.com/ansanloms">ansanloms</a></footer></body></html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Raspberry pi に Deno をインストールしました</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.6.0/styles/obsidian.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ress@5.0.2/dist/ress.min.css"><link rel="stylesheet" href="/blog/styles/main.css"><link rel="stylesheet" href="/blog/styles/article.css"><meta property="og:type" content="website">
+<meta property="og:site_name" content="ansanloms blog">
+<meta property="og:locale" content="ja">
+<meta property="og:url" content="https://ansanloms.github.io/blog/articles/20210801-install-deno-on-raspberry-pi/">
+<meta property="og:image" content="https://ansanloms.github.io/blog/assets/images/profile.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@ansanloms">
+<script type="module">
+          import mermaid from 'https://unpkg.com/mermaid@9/dist/mermaid.esm.min.mjs';
+          mermaid.initialize({ startOnLoad: true });
+        </script></head><body><header class="header"><h1><a href="/blog/">ansanloms blog</a></h1></header><div class="content"><ul class="tags"></ul><div class="meta"><p class="postDate"><span class="label">投稿</span><span class="date">2021.07.31</span></p></div><article class="article"><h1>Raspberry pi に Deno をインストールしました</h1><div><h2>第三者のビルドを利用する</h2>
+<p>64 bit ARM 用のビルドが以下で配布されています。</p>
+<p><a href="https://github.com/LukeChannings/deno-arm64">https://github.com/LukeChannings/deno-arm64</a></p>
+<p>32 bit ARM 上でも<a href="https://github.com/LukeChannings/deno-arm64#what-about-32-bit-arm">一応利用できますがバグがある</a>とのことです。</p>
+<h2>自前でビルドする</h2>
+<h3>Rust のインストール</h3>
+<p><a href="https://www.rust-lang.org/learn/get-started">https://www.rust-lang.org/learn/get-started</a></p>
+<pre><code class="language-bash hljs">curl --proto <span class="hljs-string">'=https'</span> --tlsv1.2 -sSf https://sh.rustup.rs | sh
+<span class="hljs-built_in">source</span> <span class="hljs-variable">$HOME</span>/.cargo/env
+</code></pre>
+<h3>Deno のインストール</h3>
+<pre><code class="language-bash hljs">sudo apt install build-essential libfuse-dev
+cargo install deno --locked
+</code></pre>
+</div></article></div><footer class="footer">(C) <a href="https://twitter.com/ansanloms">ansanloms</a></footer></body></html>
