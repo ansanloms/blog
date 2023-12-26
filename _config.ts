@@ -21,11 +21,14 @@ site.use(metas());
 site.use(codeHighlight());
 site.use(plantuml({
   binary: {
-    version: "v1.2023.6",
+    version: "v1.2023.13",
     dest: "./_bin/plantuml.jar",
     checksum:
-      "bf2dee10750fd1794ad9eac7de020064d113838ec169448a16b639dbfb67617d",
+      "e68a770f8fd386ca6787589ffd70741303187ee214a075ee85a444fcd8a6da59",
   },
+  config: "./plantuml-config.puml",
+  cacheDir: "_cache/plantuml",
+  works: 3,
 }));
 site.use(mermaid());
 

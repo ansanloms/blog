@@ -15,11 +15,11 @@
     ]
   },
   "imports": {
-    "lume/": "https://deno.land/x/lume@v1.19.3/",
-    "std/": "https://deno.land/std@0.206.0/",
-    "lume-plugin-plantuml/": "https://raw.githubusercontent.com/ansanloms/lume-plugin-plantuml/v0.1.4/",
+    "lume/": "https://deno.land/x/lume@v2.0.1/",
+    "std/": "https://deno.land/std@0.210.0/",
+    "lume-plugin-plantuml/": "https://raw.githubusercontent.com/ansanloms/lume-plugin-plantuml/v0.1.5/",
     "gray-matter": "npm:gray-matter@4.0.3",
-    "textlint": "npm:textlint@13.4.0"
+    "textlint": "npm:textlint@13.4.1"
   },
   "tasks": {
     "lint": "deno lint && deno task lint:textlint",
@@ -32,6 +32,6 @@
   },
   "compilerOptions": {
     "jsx": "react-jsx",
-    "jsxImportSource": "npm:preact@10.19.1"
+    "jsxImportSource": "npm:preact@10.19.3"
   }
 }
