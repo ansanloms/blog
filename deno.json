@@ -15,23 +15,26 @@
     ]
   },
   "imports": {
-    "lume/": "https://deno.land/x/lume@v2.0.1/",
-    "std/": "https://deno.land/std@0.210.0/",
+    "lume/": "https://deno.land/x/lume@v2.2.2/",
+    "std/": "https://deno.land/std@0.224.0/",
     "lume-plugin-plantuml/": "https://raw.githubusercontent.com/ansanloms/lume-plugin-plantuml/v0.1.5/",
     "gray-matter": "npm:gray-matter@4.0.3",
-    "textlint": "npm:textlint@13.4.1"
+    "textlint": "npm:textlint@14.0.4"
   },
   "tasks": {
     "lint": "deno lint && deno task lint:textlint",
     "lint:textlint": "deno run --allow-env --allow-read --allow-sys textlint.ts .",
     "fix": "deno fmt && deno task fix:textlint",
     "fix:textlint": "deno run --allow-env --allow-read --allow-write --allow-sys textlint.ts . --fix",
-    "lume": "echo \"import 'lume/cli.ts'\" | deno run --unstable -A -",
+    "lume": "echo \"import 'lume/cli.ts'\" | deno run -A -",
     "build": "deno task lume",
     "serve": "deno task lume -s"
   },
   "compilerOptions": {
     "jsx": "react-jsx",
-    "jsxImportSource": "npm:preact@10.19.3"
+    "jsxImportSource": "npm:preact@10.22.1",
+    "types": [
+      "lume/types.ts"
+    ]
   }
 }
