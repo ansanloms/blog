@@ -486,7 +486,7 @@ drwx------ 2 ansanloms ansanloms 16384 Nov 19 13:28 lost+found/
 $ sudo vim /etc/fstab
 ```
 
-```conf:/etc/fstab
+```conf
 # media
 /dev/md0     /mnt/media    ext4    defaults    0   0
 ```
