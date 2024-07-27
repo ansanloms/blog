@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Google Home から自前のスマートリモコンを操作しました - 01. プロジェクト構築</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.6.0/styles/obsidian.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ress@5.0.2/dist/ress.min.css"><link rel="stylesheet" href="/blog/styles/main.css"><link rel="stylesheet" href="/blog/styles/article.css"><meta property="og:type" content="website">
+<meta property="og:site_name" content="ansanloms blog">
+<meta property="og:locale" content="ja">
+<meta property="og:url" content="https://ansanloms.github.io/blog/articles/20221001-google-smart-home-01/">
+<meta property="og:image" content="https://ansanloms.github.io/blog/assets/images/profile.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@ansanloms">
+<script type="module">
+          import mermaid from 'https://unpkg.com/mermaid@9/dist/mermaid.esm.min.mjs';
+          mermaid.initialize({ startOnLoad: true });
+        </script></head><body><header class="header"><h1><a href="/blog/">ansanloms blog</a></h1></header><div class="content"><ul class="tags"></ul><div class="meta"><p class="postDate"><span class="label">投稿</span><span class="date">2022.09.30</span></p></div><article class="article"><h1>Google Home から自前のスマートリモコンを操作しました - 01. プロジェクト構築</h1><div><p><a href="/blog/articles/20220924-raspberry-pi-smart-remote-controller">このまえ</a>作ったリモコンを Google Home から操作できるようにします。</p>
+<p>触ったことがない firebase の素振りも兼ねています。</p>
+<h2>構成概要</h2>
+<p><a href="https://developers.google.com/assistant/smarthome/overview">Smart Home platform</a> を構築して、そこで Raspberry PI 上に構築した自前のスマートリモコンを操作します。</p>
+<p>Google Home から Google Assistant を介して Raspberry PI 上に構築した自前のスマートリモコンを操作できるようにします。</p>
+<h2>スマートホームのアクションを作成</h2>
+<p><a href="https://developers.google.com/assistant/smarthome/develop/create">https://developers.google.com/assistant/smarthome/develop/create</a></p>
+<p><a href="https://console.actions.google.com/">Actions Console</a> にアクセスし、 New Project から Actions プロジェクトを作成します。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left"></th>
+<th style="text-align:left">値</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Project Name</td>
+<td style="text-align:left">任意のプロジェクト名</td>
+</tr>
+<tr>
+<td style="text-align:left">Choose a language for your action</td>
+<td style="text-align:left">Japanese</td>
+</tr>
+<tr>
+<td style="text-align:left">Choose your country or region</td>
+<td style="text-align:left">Japan</td>
+</tr>
+</tbody>
+</table>
+<p><img src="/blog/assets/images/20221001-google-smart-home-01/actions-console-create-project.png" alt="Create Action project"></p>
+<p><code>What kind of Action do you want to build?</code> の画面にて Smart Home を選択して Start Building を押下します。</p>
+<p><img src="/blog/assets/images/20221001-google-smart-home-01/actions-console-get-started.png" alt="Get started"></p>
+<p>ここまで実施すると Actions Console にプロジェクトができていると同時に、 <a href="https://console.firebase.google.com/">Firebase console</a> 上にもプロジェクトができているはずです。</p>
+<p><img src="/blog/assets/images/20221001-google-smart-home-01/firebase-console-project.png" alt="Get started"></p>
+<h2>Firebase cli のインストール</h2>
+<p>Node.js と Firebase cli をインストールしておきます。</p>
+<p>Node.js のバージョン管理には <a href="https://volta.sh/">Volta</a> を利用しています。</p>
+<pre><code class="language-bash hljs">winget install Volta.Volta
+winget install Google.FirebaseCLI
+</code></pre>
+<pre><code class="language-txt hljs language-plaintext">&gt; node -v
+v16.17.1
+
+&gt; npm -v
+8.15.1
+
+&gt; firebase --version
+11.14.2
+</code></pre>
+<p>Google の開発アカウントでログインしておきます。</p>
+<pre><code class="language-bash hljs">firebase login
+</code></pre>
+<h2>スマートホーム操作アプリの構築</h2>
+<p>スマートホーム操作のもろもろはこの Firebase プロジェクト上に構築していきます。</p>
+<h3>Firebase プロジェクトの初期化</h3>
+<p>プロジェクトの作業ディレクトリを作成します。</p>
+<pre><code class="language-bash hljs"><span class="hljs-built_in">mkdir</span> smart-home
+<span class="hljs-built_in">cd</span> smart-home
+</code></pre>
+<p>Firebase プロジェクトを作成します。</p>
+<pre><code class="language-bash hljs">firebase init
+</code></pre>
+<p>やっていきます。</p>
+<pre><code class="language-txt hljs language-plaintext">&gt; firebase init
+
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  C:\dev\smart-home
+
+Before we get started, keep in mind:
+
+  * You are currently outside your home directory
+
+? Are you ready to proceed? (Y/n)
+</code></pre>
+<p>Firebase 機能は一旦確実に使う Functions のみ選択します。必要になったら <code>firebase use --add</code> で追加していくかんじで。</p>
+<pre><code class="language-txt hljs language-plaintext">? Which Firebase features do you want to set up for this directory? Press Space to select features, then Enter to confirm your choices. (Press &lt;space&gt; to select, &lt;a&gt; to toggle all,
+ &lt;i&gt; to invert selection, and &lt;enter&gt; to proceed)
+ ( ) Realtime Database: Configure a security rules file for Realtime Database and (optionally) provision default instance
+ ( ) Firestore: Configure security rules and indexes files for Firestore
+&gt;(*) Functions: Configure a Cloud Functions directory and its files
+ ( ) Hosting: Configure files for Firebase Hosting and (optionally) set up GitHub Action deploys
+ ( ) Hosting: Set up GitHub Action deploys
+ ( ) Storage: Configure a security rules file for Cloud Storage
+ ( ) Emulators: Set up local emulators for Firebase products
+(Move up and down to reveal more choices)
+</code></pre>
+<p>Actions Console でプロジェクトを作成した際に同時に作成された Firebase プロジェクトがあるので、それに関連付けます。</p>
+<pre><code class="language-txt hljs language-plaintext">? Please select an option: (Use arrow keys)
+&gt; Use an existing project
+  Create a new project
+  Add Firebase to an existing Google Cloud Platform project
+  Don't set up a default project
+
+? Select a default Firebase project for this directory:
+&gt; smart-home-sample02 (smart-home-sample02)
+</code></pre>
+<p>Functions の設定をしていきます。</p>
+<ul>
+<li>使用言語は TypeScript</li>
+<li>ESLint を導入</li>
+<li>npm 依存をインストール</li>
+</ul>
+<pre><code class="language-txt hljs language-plaintext">? What language would you like to use to write Cloud Functions? TypeScript
+? Do you want to use ESLint to catch probable bugs and enforce style? Yes
+? Do you want to install dependencies with npm now? Yes
+</code></pre>
+<p>完了しました。</p>
+<pre><code class="language-txt hljs language-plaintext">+  Firebase initialization complete!
+</code></pre>
+<h3>Functions 素振り</h3>
+<p>とりあえず Hello World していきます。</p>
+<p><code>functions/src/index.ts</code> 上に既のコードがあります。</p>
+<pre><code class="language-typescript:functions/src/index.ts hljs language-typescript"><span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> functions <span class="hljs-keyword">from</span> <span class="hljs-string">"firebase-functions"</span>;
+
+<span class="hljs-comment">// Start writing Firebase Functions</span>
+<span class="hljs-comment">// https://firebase.google.com/docs/functions/typescript</span>
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> helloWorld = functions.<span class="hljs-property">https</span>.<span class="hljs-title function_">onRequest</span>(<span class="hljs-function">(<span class="hljs-params">request, response</span>) =&gt;</span> {
+  functions.<span class="hljs-property">logger</span>.<span class="hljs-title function_">info</span>(<span class="hljs-string">"Hello logs!"</span>, {<span class="hljs-attr">structuredData</span>: <span class="hljs-literal">true</span>});
+  response.<span class="hljs-title function_">send</span>(<span class="hljs-string">"Hello from Firebase!"</span>);
+});
+</code></pre>
+<h4>ローカル上で起動</h4>
+<p>deploy する前に、ローカル上に functions をエミュレートして確認してみます。</p>
+<p>まずはコードをビルドします。</p>
+<pre><code class="language-bash hljs">npm run build
+</code></pre>
+<p>続いてエミュレータを起動します。</p>
+<pre><code class="language-bash hljs">firebase emulators:start
+</code></pre>
+<p>これで local 上に funcitions の検証ができます。</p>
+<pre><code class="language-bash hljs">$ curl http://127.0.0.1:5001/smart-home-sample02/us-central1/helloWorld
+Hello from Firebase!
+</code></pre>
+<h4>Deploy</h4>
+<p>local で確認できたので、実際に deploy してみます。</p>
+<pre><code class="language-bash hljs">firebase deploy
+</code></pre>
+<p>エラーになりました。</p>
+<pre><code class="language-txt hljs language-plaintext">Error: Your project smart-home-sample02 must be on the Blaze (pay-as-you-go) plan to complete this command. Required API artifactregistry.googleapis.com can't be enabled until the upgrade is complete. To upgrade, visit the following URL:
+
+https://console.firebase.google.com/project/smart-home-sample02/usage/details
+</code></pre>
+<p>料金プランを変更する必要があるようです。 Blaze プランにします。</p>
+<p>無料枠内の利用に留まる筈なので、余程変な使い方をしないかぎりお金はかからないはずです。けど一応 <a href="https://console.cloud.google.com/">Cloud Console</a> 上の予算とアラートからアラートを設定しておいたほうがいいとおもいます。</p>
+<p>料金プランを変更したら、あらためて deploy してみます。</p>
+<pre><code class="language-txt hljs language-plaintext">+  Deploy complete!
+
+Project Console: https://console.firebase.google.com/project/smart-home-sample02/overview
+</code></pre>
+<p>うまくいきました。 fuctions の関数を実行してみます。</p>
+<pre><code class="language-txt hljs language-plaintext">$ curl https://us-central1-smart-home-sample02.cloudfunctions.net/helloWorld
+Hello from Firebase!
+</code></pre>
+<p>できました。</p>
+<h3>Functions 開発事前準備</h3>
+<p>本格的に開発を始めるまえにもろもろ準備をしていきます。</p>
+<h4>Node.js バージョン固定</h4>
+<p>Volta には、<a href="https://docs.volta.sh/guide/#why-volta">プロジェクト毎に利用する Node.js / npm のバージョンを固定する機能</a>があります。</p>
+<p>これで <a href="https://cloud.google.com/functions/docs/concepts/nodejs-runtime">Functions で利用する Node ランタイム</a>にあわせてバージョンを固定します。</p>
+<pre><code class="language-bash hljs">volta pin node@16
+volta pin npm@8
+</code></pre>
+<p>バージョンを確認してみます。</p>
+<pre><code class="language-txt hljs language-plaintext">&gt; node -v
+v16.18.1
+
+&gt; npm -v
+8.19.3
+</code></pre>
+<p>package.json に固定バージョンが追記されます。</p>
+<pre><code class="language-diff:functions/package.json hljs language-diff"><span class="hljs-addition">+  "volta": {</span>
+<span class="hljs-addition">+    "node": "16.18.1",</span>
+<span class="hljs-addition">+    "npm": "8.19.3"</span>
+<span class="hljs-addition">+  }</span>
+</code></pre>
+<h4>Prettier の導入</h4>
+<p>ESLint とは別に、コードフォーマッタである <a href="https://prettier.io/">Prettier</a> を導入します。</p>
+<pre><code class="language-bash hljs">npm i -D prettier eslint-config-prettier
+</code></pre>
+<p>.eslintrc.js の <code>extends</code> に <code>prettier</code> を追記します。これによって ESLint 上の Prettier と競合するルールは無効になります。</p>
+<pre><code class="language-diff:functions/.eslintrc.js hljs language-diff">     "plugin:import/typescript",
+     "google",
+     "plugin:@typescript-eslint/recommended",
+<span class="hljs-addition">+    "prettier",</span>
+   ],
+</code></pre>
+<p>npm script の順次実行ができる <code>npm-run-all</code> を導入し、 lint のコマンドも更新します。</p>
+<pre><code class="language-bash hljs">npm i -D npm-run-all
+</code></pre>
+<pre><code class="language-diff:functions/package.json hljs language-diff">   "scripts": {
+<span class="hljs-deletion">-    "lint": "eslint --ext .js,.ts .",</span>
+<span class="hljs-addition">+    "lint": "run-p --continue-on-error lint:*",</span>
+<span class="hljs-addition">+    "lint:prettier": "prettier --loglevel warn --ignore-path .gitignore --check .",</span>
+<span class="hljs-addition">+    "lint:eslint": "eslint --ext \".js,.ts\" --ignore-path .gitignore .",</span>
+<span class="hljs-addition">+    "fix": "run-p --continue-on-error fix:*",</span>
+<span class="hljs-addition">+    "fix:prettier": "prettier --loglevel warn --ignore-path .gitignore --write .",</span>
+<span class="hljs-addition">+    "fix:eslint": "eslint --cache --ext \".js,.ts\" --ignore-path .gitignore --fix .",</span>
+     "build": "tsc",
+</code></pre>
+<p>これで <code>npm run fix</code> を実行すると ESLint と Prettier による Lint &amp; Format がかかるはずです。</p>
+<h4>依存のアップデート</h4>
+<p>とりあえず雑にアップデートしておきます。別に誰かが使うわけでもないし。</p>
+<pre><code class="language-bash hljs">npx npm-check-updates -u
+<span class="hljs-built_in">rm</span> -rfv node_modules\ package-lock.json
+npm install
+</code></pre>
+<h4>デプロイ先のロケーションを変更する</h4>
+<p><a href="https://firebase.google.com/docs/functions/locations#best_practices_for_changing_region">https://firebase.google.com/docs/functions/locations#best_practices_for_changing_region</a></p>
+<p>デフォルトのロケーションは <code>us-central1</code> なので、明示的に <code>asia-northeast1</code> を指定するようにします。</p>
+<pre><code class="language-diff:functions/src/index.ts hljs language-diff"><span class="hljs-deletion">-export const helloWorld = functions.https.onRequest((request, response) =&gt; {</span>
+<span class="hljs-deletion">-  functions.logger.info("Hello logs!", { structuredData: true });</span>
+<span class="hljs-deletion">-  response.send("Hello from Firebase!");</span>
+<span class="hljs-deletion">-});</span>
+<span class="hljs-addition">+const region = "asia-northeast1";</span>
+<span class="hljs-addition">+</span>
+<span class="hljs-addition">+export const helloWorld = functions</span>
+<span class="hljs-addition">+  .region(region)</span>
+<span class="hljs-addition">+  .https.onRequest((request, response) =&gt; {</span>
+<span class="hljs-addition">+    functions.logger.info("Hello logs!", { structuredData: true });</span>
+<span class="hljs-addition">+    response.send("Hello from Firebase!");</span>
+<span class="hljs-addition">+  });</span>
+</code></pre>
+<p>デプロイしてみます。</p>
+<pre><code class="language-bash hljs">firebase deploy
+</code></pre>
+<p><code>us-central1</code> 上のリソースを削除するか聞かれるはずです。削除します。</p>
+<pre><code class="language-txt hljs language-plaintext">? Would you like to proceed with deletion? Selecting no will continue the rest of the deployments. Yes
+i  functions: creating Node.js 16 function helloWorld(asia-northeast1)...
+i  functions: deleting Node.js 16 function helloWorld(us-central1)...
+</code></pre>
+<p>デプロイできました。</p>
+<pre><code class="language-txt hljs language-plaintext">+  Deploy complete!
+</code></pre>
+<p>実行してみます。</p>
+<pre><code class="language-txt hljs language-plaintext">&gt; curl https://asia-northeast1-smart-home-sample02.cloudfunctions.net/helloWorld
+Hello from Firebase!
+</code></pre>
+<h2>つづく</h2>
+<p>ここまででとりあえずスマートホーム操作アプリ構築の事前準備が完了しました。</p>
+<p>次は認証処理を用意してきます。</p>
+</div></article></div><footer class="footer">(C) <a href="https://twitter.com/ansanloms">ansanloms</a></footer></body></html>

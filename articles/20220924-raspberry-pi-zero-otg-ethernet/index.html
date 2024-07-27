@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Raspberry Pi Zero WH を OTG でセットアップしました</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.6.0/styles/obsidian.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ress@5.0.2/dist/ress.min.css"><link rel="stylesheet" href="/blog/styles/main.css"><link rel="stylesheet" href="/blog/styles/article.css"><meta property="og:type" content="website">
+<meta property="og:site_name" content="ansanloms blog">
+<meta property="og:locale" content="ja">
+<meta property="og:url" content="https://ansanloms.github.io/blog/articles/20220924-raspberry-pi-zero-otg-ethernet/">
+<meta property="og:image" content="https://ansanloms.github.io/blog/assets/images/profile.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@ansanloms">
+<script type="module">
+          import mermaid from 'https://unpkg.com/mermaid@9/dist/mermaid.esm.min.mjs';
+          mermaid.initialize({ startOnLoad: true });
+        </script></head><body><header class="header"><h1><a href="/blog/">ansanloms blog</a></h1></header><div class="content"><ul class="tags"></ul><div class="meta"><p class="postDate"><span class="label">投稿</span><span class="date">2022.09.23</span></p></div><article class="article"><h1>Raspberry Pi Zero WH を OTG でセットアップしました</h1><div><p>Raspberry Pi Zero WH を買いました。</p>
+<h2>作業環境</h2>
+<ul>
+<li>Windows 10 Pro</li>
+</ul>
+<h2>実施内容</h2>
+<h3>microSD に OS を書き込む</h3>
+<p>いつもどおり Raspberry Pi Imager で microSD に書き込みます。 OS は Raspberry Pi OS Lite (32 bit) にしました。</p>
+<p>SSH を使いたいので、書き込む際に右下の歯車から以下の通り詳細設定をします。</p>
+<ul>
+<li>「SSH を有効にする」にチェック。
+<ul>
+<li>「公開鍵認証のみを許可する」を選択し、 authorized_keys を入力。</li>
+</ul>
+</li>
+<li>「ユーザ名とパスワードを設定する」にチェック。
+<ul>
+<li>任意のユーザ名およびパスワードを入力。</li>
+</ul>
+</li>
+</ul>
+<h3>USB On-The-Go および USB Ethernet / RNDIS Gadget の有効化</h3>
+<p>書き込んだ microSD を再度マウントさせ、 <code>config.txt</code> を開き以下を追記し、 USB OTG (USB On-The-Go) を有効にします。</p>
+<p><a href="https://usb.org/usb-on-the-go">USB On-The-Go</a> とは、 USB 機器どうしを直接接続する規格です。</p>
+<pre><code class="language-txt:config.txt hljs language-plaintext">dtoverlay=dwc2
+</code></pre>
+<p>続いて <code>cmdline.txt</code> 内の <code>rootwait</code> 後に以下を追記し、 USB Ethernet / RNDIS Gadget を有効にします。</p>
+<p>USB Ethernet / RNDIS Gadget とは、 <a href="http://www.linux-usb.org/gadget/">Linux-USB Gadget</a> という Linux 上の USB 機器になんらかの機能を追加する仕組みを用いて、 USB でイーサネット的なことができるようにするモノです。</p>
+<pre><code class="language-txt:cmdline.txt hljs language-plaintext">modules-load=dwc2,g_ether
+</code></pre>
+<h3>Bonjour のインストール</h3>
+<p>Windows 側に Bonjour をインストールします。 Bonjour とは DNS とかそういう設定とかをせず、 IP アドレスへいいかんじにホスト名を割り当てるモノです。</p>
+<p>正直入れなくていいなら入れたくないんですけど、この後 Windows に繋げた Raspberry Pi (の USB Ethernet)の IP が分からなかったので、これで名前解決てきなことをします。</p>
+<p><a href="https://support.apple.com/kb/dl999">https://support.apple.com/kb/dl999</a></p>
+<p>なお Raspberry Pi OS でのデフォルトのホスト名は <code>raspberrypi</code> になります。</p>
+<h3>Raspberry Pi を Windows に USB で接続する</h3>
+<p>Raspberry Pi Zero の USB ポート(内側)と Windows の USB を接続します。初回起動でもろもろ動くはずなので 5 分程待ちます。</p>
+<p>初回起動後、 Windows のデバイスマネージャに <code>ポート(COM と LPT)</code> &gt; <code>USB シリアルデバイス(COM n)</code> があるはずです。</p>
+<h3>OTP のドライバをインストール</h3>
+<p><a href="https://caron.ws/wp-content/uploads/telechargement/RPI%20Driver%20OTG.zip">RPI Driver OTG</a>をダウンロードし、任意の場所に展開しておきます。</p>
+<p><code>USB シリアルデバイス(COM n)</code> の右クリックし「ドライバーの更新(P)」を選択し、 RPI Driver OTG をインストールします。</p>
+<p>そうすると Windows にはイーサネットアダプタとして認識されるはずです。デバイスマネージャに <code>ネットワーク アダプター</code> &gt; <code>USB Ethernet/RNDIS Gadget</code> があるはずです。</p>
+<p>また <code>コントロール パネル\ネットワークとインターネット\ネットワーク接続</code> にもイーサネットアダプタが確認できるはずです。</p>
+<h3>SSH 接続してみる</h3>
+<p><code>ssh ユーザ名@raspberrypi.local</code> で接続できるはずです。あとはよしなに。</p>
+<h2>おわり</h2>
+<p>よかったですね。</p>
+<h2>参考にしたドキュメント</h2>
+<ul>
+<li><a href="https://qiita.com/msquare33/items/dc6fc9098f50d9b9dbf2">https://qiita.com/msquare33/items/dc6fc9098f50d9b9dbf2</a></li>
+<li><a href="https://caron.ws/diy-cartes-microcontroleurs/raspberrypi/pi-zero-otg-ethernet/">https://caron.ws/diy-cartes-microcontroleurs/raspberrypi/pi-zero-otg-ethernet/</a></li>
+</ul>
+</div></article></div><footer class="footer">(C) <a href="https://twitter.com/ansanloms">ansanloms</a></footer></body></html>

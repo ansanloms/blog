@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Raspberry Pi 4 に mirakc を導入しました</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.6.0/styles/obsidian.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ress@5.0.2/dist/ress.min.css"><link rel="stylesheet" href="/blog/styles/main.css"><link rel="stylesheet" href="/blog/styles/article.css"><meta property="og:type" content="website">
+<meta property="og:site_name" content="ansanloms blog">
+<meta property="og:locale" content="ja">
+<meta property="og:url" content="https://ansanloms.github.io/blog/articles/20210617-mirakc/">
+<meta property="og:image" content="https://ansanloms.github.io/blog/assets/images/profile.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@ansanloms">
+<script type="module">
+          import mermaid from 'https://unpkg.com/mermaid@9/dist/mermaid.esm.min.mjs';
+          mermaid.initialize({ startOnLoad: true });
+        </script></head><body><header class="header"><h1><a href="/blog/">ansanloms blog</a></h1></header><div class="content"><ul class="tags"></ul><div class="meta"><p class="postDate"><span class="label">投稿</span><span class="date">2021.06.17</span></p><p class="updateDate"><span class="label">更新</span><span class="date">2023.12.26</span></p></div><article class="article"><h1>Raspberry Pi 4 に mirakc を導入しました</h1><div><p>Raspberry Pi 4 (Ubuntu Server 21.04) でテレビを見られるようにしました。</p>
+<h2>更新履歴</h2>
+<ul>
+<li>2022-09-19: mirakc の最新バージョン <code>1.1.0-dev.0</code> に追従しました。</li>
+<li>2022-11-03: PLEX PX-W3U4 向けの手順を追記しました。あわせて EPGStation の導入についても追加しました。</li>
+<li>2023-12-27: docker を用いた導入方法を追記しました。</li>
+<li>2024-07-02: PLEX PX-W3U4 のドライバは <a href="https://github.com/tsukumijima/px4_drv">https://github.com/tsukumijima/px4_drv</a> を用いるように更新しました。</li>
+</ul>
+<h2>用意したもの</h2>
+<ul>
+<li><a href="/blog/articles/20210503-raspberry-pi">先日セットアップした Raspberry Pi 4</a></li>
+<li>TV チューナー:
+<ul>
+<li><a href="https://www.amazon.co.jp/dp/B0141NFWSG">PLEX PX-S1UD</a></li>
+<li><a href="https://www.amazon.co.jp/dp/B079YD3QT3">PLEX PX-Q1UD</a></li>
+<li><a href="https://www.amazon.co.jp/dp/B01MR4SLB6">PLEX PX-W3U4</a></li>
+</ul>
+</li>
+<li>IC カードリーダー: <a href="https://www.amazon.co.jp/dp/B003XF2JJY">Gemalto IDBridge CT30</a></li>
+</ul>
+<p>B-CAS カードは古いテレビから拝借しました。</p>
+<h2>チューナーの設定</h2>
+<p>TV チューナーのドライバをインストールします。</p>
+<h3>PLEX PX-S1UD</h3>
+<pre><code class="language-bash hljs"><span class="hljs-built_in">cd</span> /usr/local/src
+sudo wget http://plex-net.co.jp/plex/px-s1ud/PX-S1UD_driver_Ver.1.0.1.zip
+sudo unzip PX-S1UD_driver_Ver.1.0.1.zip
+sudo <span class="hljs-built_in">cp</span> ./PX-S1UD_driver_Ver.1.0.1/x64/amd64/isdbt_rio.inp /lib/firmware/.
+</code></pre>
+<p>再起動後の Raspberry Pi に PX-Q1UD を接続し、確認します。</p>
+<pre><code class="language-bash hljs">dmesg | grep PX-S1UD
+</code></pre>
+<p><code>PX-S1UD Digital TV Tuner</code> が見えれば OK です。</p>
+<p>もしも <code>dmesg: read kernel buffer failed: Operation not permitted</code> みたいな表示がされた場合、これは通常ユーザにてアクセスできない設定になっています。</p>
+<p><code>kernel.dmesg_restrict</code> を OFF にして <code>dmesg</code> を実行できるか確認します。</p>
+<pre><code class="language-bash hljs">sudo sysctl kernel.dmesg_restrict=0
+</code></pre>
+<p>問題なく実行できたならば sysctl の設定に追記しておきます。</p>
+<pre><code class="language-bash hljs">sudo <span class="hljs-built_in">echo</span> <span class="hljs-string">"kernel.dmesg_restrict=0"</span> &gt; /etc/sysctl.d/10-local.conf
+sudo /sbin/sysctl --system
+</code></pre>
+<h3>PLEX PX-Q1UD</h3>
+<p>基本的には PLEX PX-S1UD と同様です。</p>
+<h3>PLEX PX-W3U4</h3>
+<p>公式より品質が良いと言われる、非公式のドライバ <a href="https://github.com/tsukumijima/px4_drv">https://github.com/tsukumijima/px4_drv</a> を導入します。</p>
+<pre><code class="language-bash hljs">sudo apt install linux-headers-6.8.0-1008-raspi
+wget https://github.com/tsukumijima/px4_drv/releases/download/v0.4.5/px4-drv-dkms_0.4.5_all.deb
+sudo apt install -y ./px4-drv-dkms_0.4.5_all.deb
+</code></pre>
+<p>カーネルモジュールがロードされていることを確認します。</p>
+<pre><code class="language-bash hljs">sudo modprobe px4_drv
+lsmod | grep -e ^px4_drv
+</code></pre>
+<p>ここで PLEX PX-W3U4 を接続し、デバイスファイルを確認します。</p>
+<pre><code class="language-bash hljs"><span class="hljs-built_in">ls</span> /dev/px4video*
+</code></pre>
+<p><code>/dev/px4video0</code> / <code>/dev/px4video1</code> / <code>/dev/px4video2</code> / <code>/dev/px4video3</code> を確認できるはずです。</p>
+<h2>カードリーダーの設定</h2>
+<p>カードリーダーのスキャンを行う為に <code>pcsc-tools</code> をインストールします。</p>
+<pre><code class="language-bash hljs">sudo apt install pcscd pcsc-tools
+</code></pre>
+<p>Raspberry Pi に B-CAS カードを挿入したカードリーダーを接続し、確認します。</p>
+<pre><code class="language-bash hljs">sudo pcsc_scan
+</code></pre>
+<p><code>Japanese Chijou Digital B-CAS Card (pay TV)</code> の表記が確認できれば切って大丈夫です。</p>
+<p><code>SCardEstablishContext: Service not available.</code> と表示された場合は pcscd が起動していないので起動します。</p>
+<pre><code class="language-bash hljs">sudo systemctl <span class="hljs-built_in">enable</span> pcscd
+sudo systemctl start pcscd
+</code></pre>
+<p><code>Unresponsive card</code> とか表示された場合はカードが認識されていません。カードを抜き差しして再度確認してみてください。</p>
+<h2>各種アプリケーションの導入(docker を用いた方法)</h2>
+<p><a href="https://github.com/ansanloms/docker-tv-recorder">docker-tv-recorder</a> に mirakc をはじめとした必要なアプリケーションを纏めました。</p>
+<p>あとは <a href="https://docs.docker.com/engine/install/ubuntu/">docker を 導入</a>して、<code>docker compose up</code> するだけです。</p>
+<pre><code class="language-bash hljs"><span class="hljs-built_in">cd</span> /usr/local/src
+sudo git <span class="hljs-built_in">clone</span> https://github.com/ansanloms/docker-tv-recorder.git
+<span class="hljs-built_in">cd</span> ./docker-tv-recorder
+<span class="hljs-built_in">cp</span> .env.sample .<span class="hljs-built_in">env</span>
+vim .<span class="hljs-built_in">env</span>    <span class="hljs-comment"># 録画保存先を設定</span>
+sudo docker compose up
+</code></pre>
+<p>別途ターミナル上で API にアクセスできるか確認します。</p>
+<pre><code class="language-bash hljs">curl http://localhost:40772/api/version
+</code></pre>
+<h3>docker-tv-recorder をサービスに登録する</h3>
+<p>systemd の設定ファイル <code>/etc/systemd/system/tv-recorder.service</code> を用意します。</p>
+<pre><code class="language-bash hljs">sudo vim /etc/systemd/system/tv-recorder.service
+</code></pre>
+<pre><code class="language-ini:/etc/systemd/system/tv-recorder.service hljs language-ini"><span class="hljs-section">[Unit]</span>
+<span class="hljs-attr">Description</span> = tv-recorder
+<span class="hljs-attr">Requires</span> = tv-recorder.service
+
+<span class="hljs-section">[Service]</span>
+<span class="hljs-attr">Type</span> = simple
+<span class="hljs-attr">ExecStartPre</span> = /usr/bin/docker compose --file /usr/local/src/docker-tv-recorder/docker-compose.yml down --volumes
+<span class="hljs-attr">ExecStart</span> = /usr/bin/docker compose --file /usr/local/src/docker-tv-recorder/docker-compose.yml up
+<span class="hljs-attr">ExecStop</span> = /usr/bin/docker compose --file /usr/local/src/docker-tv-recorder/docker-compose.yml down --volumes
+
+<span class="hljs-section">[Install]</span>
+<span class="hljs-attr">WantedBy</span> = multi-user.target
+</code></pre>
+<p>有効にし、起動してみます。</p>
+<pre><code class="language-bash hljs">sudo systemctl <span class="hljs-built_in">enable</span> tv-recorder
+sudo systemctl start tv-recorder
+</code></pre>
+<h2>各種アプリケーションの導入(旧版: docker を用いない方法)</h2>
+<h3>libarib25 のインストール</h3>
+<p>B25 デコード用のライブラリをインストールします。</p>
+<pre><code class="language-bash hljs">sudo apt install cmake g++ libpcsclite-dev
+<span class="hljs-built_in">cd</span> /usr/local/src
+sudo git <span class="hljs-built_in">clone</span> https://github.com/stz2012/libarib25
+<span class="hljs-built_in">cd</span> libarib25
+sudo cmake .
+sudo make
+sudo make install
+</code></pre>
+<h3>recdvb のインストール</h3>
+<p>PLEX PX-S1UD / PX-Q1UD にて利用する録画プログラムです。</p>
+<pre><code class="language-bash hljs">sudo apt install automake
+<span class="hljs-built_in">cd</span> /usr/local/src
+sudo git <span class="hljs-built_in">clone</span> https://github.com/ansanloms/recdvb.git
+<span class="hljs-built_in">cd</span> recdvb
+sudo <span class="hljs-built_in">chmod</span> +x ./autogen.sh
+sudo ./autogen.sh
+sudo ./configure --enable-b25
+sudo EXTRA_SID=1 make
+sudo make install
+</code></pre>
+<p>録画できることを確認します。</p>
+<pre><code class="language-bash hljs">recdvbchksig --dev 0 27
+
+<span class="hljs-comment"># 27 物理チャンネルを 3 秒録画し /mnt/media/test.m2ts に出力。</span>
+recdvb --b25 --strip --dev 0 27 3 /mnt/media/test.m2ts
+</code></pre>
+<h3>recpt1</h3>
+<p>PLEX PX-W3U4 にて利用する録画プログラムです。</p>
+<p>recdvb はデバイスファイルの名称で指定できない為利用できません。</p>
+<pre><code class="language-bash hljs"><span class="hljs-built_in">cd</span> /usr/local/src/
+sudo git <span class="hljs-built_in">clone</span> https://github.com/stz2012/recpt1.git
+<span class="hljs-built_in">cd</span> recpt1/recpt1
+sudo ./autogen.sh
+sudo ./configure --enable-b25
+sudo make
+sudo make install
+</code></pre>
+<p>録画できることを確認します。</p>
+<pre><code class="language-bash hljs"><span class="hljs-comment"># 27 物理チャンネルを 3 秒録画し /mnt/media/test.ts に出力。</span>
+recpt1 --b25 --strip 27 3 /mnt/media/test.ts
+</code></pre>
+<h3>mirakc のインストール</h3>
+<p><a href="https://mirakc.github.io/dekiru-mirakc/">mirakc</a> をインストールします。公式には docker でのインストールを推奨していますがいろいろあって自前でビルドします。</p>
+<p>先に <a href="https://github.com/mirakc/mirakc-arib">mirakc-arib</a> をインストールします。</p>
+<pre><code class="language-bash hljs">sudo apt install autoconf ninja-build pkg-config libtool
+<span class="hljs-built_in">cd</span> /usr/local/src
+sudo git <span class="hljs-built_in">clone</span> --recursive https://github.com/mirakc/mirakc-arib.git
+<span class="hljs-built_in">cd</span> mirakc-arib
+sudo cmake -S . -B build -G Ninja -D CMAKE_BUILD_TYPE=Release
+sudo ninja -C build vendor
+sudo ninja -C build
+sudo <span class="hljs-built_in">cp</span> ./build/bin/mirakc-arib /usr/local/bin/.
+</code></pre>
+<p>mirakc をインストールする為に先ずは <a href="https://www.rust-lang.org/">Rust</a> をインストールします。</p>
+<pre><code class="language-bash hljs">curl --proto <span class="hljs-string">'=https'</span> --tlsv1.2 -sSf https://sh.rustup.rs | sh
+<span class="hljs-built_in">source</span> <span class="hljs-variable">$HOME</span>/.cargo/env
+</code></pre>
+<p>続いて mirakc をインストールします。</p>
+<pre><code class="language-bash hljs">sudo apt install libfuse-dev
+<span class="hljs-built_in">cd</span> /usr/local/src
+sudo git <span class="hljs-built_in">clone</span> https://github.com/mirakc/mirakc.git
+sudo <span class="hljs-built_in">chown</span> -R $(<span class="hljs-built_in">whoami</span>) mirakc
+<span class="hljs-built_in">cd</span> mirakc
+cargo build --release
+sudo <span class="hljs-built_in">cp</span> ./target/release/mirakc /usr/local/bin/.
+sudo <span class="hljs-built_in">cp</span> ./target/release/mirakc-timeshift-fs /usr/local/bin/.
+</code></pre>
+<p>設定ファイル <code>/etc/mirakc/config.yml</code> を用意します。</p>
+<pre><code class="language-bash hljs">sudo <span class="hljs-built_in">mkdir</span> -p /etc/mirakc
+sudo <span class="hljs-built_in">mkdir</span> -p /var/lib/mirakc/epg
+sudo vim /etc/mirakc/config.yml
+</code></pre>
+<pre><code class="language-yaml:/etc/mirakc/config.yml hljs language-yaml"><span class="hljs-attr">server:</span>
+  <span class="hljs-attr">addrs:</span>
+    <span class="hljs-bullet">-</span> <span class="hljs-type">!http</span> <span class="hljs-string">'0.0.0.0:40772'</span>
+  <span class="hljs-attr">workers:</span> <span class="hljs-number">1</span>
+
+<span class="hljs-attr">mirakurun:</span>
+  <span class="hljs-attr">openapi-json:</span> <span class="hljs-string">/etc/mirakc/mirakurun.openapi.json</span>
+
+<span class="hljs-comment"># Ex: 東京のチャンネル設定</span>
+<span class="hljs-attr">channels:</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">ＮＨＫ総合</span>
+    <span class="hljs-attr">type:</span> <span class="hljs-string">GR</span>
+    <span class="hljs-attr">channel:</span> <span class="hljs-string">'27'</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">ＮＨＫＥテレ</span>
+    <span class="hljs-attr">type:</span> <span class="hljs-string">GR</span>
+    <span class="hljs-attr">channel:</span> <span class="hljs-string">'26'</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">日テレ</span>
+    <span class="hljs-attr">type:</span> <span class="hljs-string">GR</span>
+    <span class="hljs-attr">channel:</span> <span class="hljs-string">'25'</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">ＴＢＳ</span>
+    <span class="hljs-attr">type:</span> <span class="hljs-string">GR</span>
+    <span class="hljs-attr">channel:</span> <span class="hljs-string">'22'</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">フジテレビ</span>
+    <span class="hljs-attr">type:</span> <span class="hljs-string">GR</span>
+    <span class="hljs-attr">channel:</span> <span class="hljs-string">'21'</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">テレビ朝日</span>
+    <span class="hljs-attr">type:</span> <span class="hljs-string">GR</span>
+    <span class="hljs-attr">channel:</span> <span class="hljs-string">'24'</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">テレビ東京</span>
+    <span class="hljs-attr">type:</span> <span class="hljs-string">GR</span>
+    <span class="hljs-attr">channel:</span> <span class="hljs-string">'23'</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">ＴＯＫＹＯ</span>　<span class="hljs-string">ＭＸ</span>
+    <span class="hljs-attr">type:</span> <span class="hljs-string">GR</span>
+    <span class="hljs-attr">channel:</span> <span class="hljs-string">'16'</span>
+
+<span class="hljs-attr">tuners:</span>
+  <span class="hljs-comment"># PLEX PX-S1UD</span>
+  <span class="hljs-comment">#- name: PX-S1UD</span>
+  <span class="hljs-comment">#  types:</span>
+  <span class="hljs-comment">#    - GR</span>
+  <span class="hljs-comment">#  command: recdvb --b25 --strip --dev 0 {{{channel}}} - -</span>
+
+  <span class="hljs-comment"># PLEX PX-Q1UD</span>
+  <span class="hljs-comment">#- name: PX-Q1UD_0</span>
+  <span class="hljs-comment">#  types:</span>
+  <span class="hljs-comment">#    - GR</span>
+  <span class="hljs-comment">#  command: recdvb --b25 --strip --dev 0 {{{channel}}} - -</span>
+  <span class="hljs-comment">#- name: PX-Q1UD_1</span>
+  <span class="hljs-comment">#  types:</span>
+  <span class="hljs-comment">#    - GR</span>
+  <span class="hljs-comment">#  command: recdvb --b25 --strip --dev 1 {{{channel}}} - -</span>
+  <span class="hljs-comment">#- name: PX-Q1UD_2</span>
+  <span class="hljs-comment">#  types:</span>
+  <span class="hljs-comment">#    - GR</span>
+  <span class="hljs-comment">#  command: recdvb --b25 --strip --dev 2 {{{channel}}} - -</span>
+  <span class="hljs-comment">#- name: PX-Q1UD_1</span>
+  <span class="hljs-comment">#  types:</span>
+  <span class="hljs-comment">#    - GR</span>
+  <span class="hljs-comment">#  command: recdvb --b25 --strip --dev 3 {{{channel}}} - -</span>
+
+  <span class="hljs-comment"># PLEX PX-W3U4</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">PX-W3U4_0</span>
+    <span class="hljs-attr">types:</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-string">BS</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-string">CS</span>
+    <span class="hljs-attr">command:</span> <span class="hljs-string">recpt1</span> <span class="hljs-string">--b25</span> <span class="hljs-string">--device</span> <span class="hljs-string">/dev/px4video0</span> {{{<span class="hljs-string">channel</span>}}} <span class="hljs-bullet">-</span> <span class="hljs-bullet">-</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">PX-W3U4_1</span>
+    <span class="hljs-attr">types:</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-string">BS</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-string">CS</span>
+    <span class="hljs-attr">command:</span> <span class="hljs-string">recpt1</span> <span class="hljs-string">--b25</span> <span class="hljs-string">--device</span> <span class="hljs-string">/dev/px4video1</span> {{{<span class="hljs-string">channel</span>}}} <span class="hljs-bullet">-</span> <span class="hljs-bullet">-</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">PX-W3U4_2</span>
+    <span class="hljs-attr">types:</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-string">GR</span>
+    <span class="hljs-attr">command:</span> <span class="hljs-string">recpt1</span> <span class="hljs-string">--b25</span> <span class="hljs-string">--device</span> <span class="hljs-string">/dev/px4video2</span> {{{<span class="hljs-string">channel</span>}}} <span class="hljs-bullet">-</span> <span class="hljs-bullet">-</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">PX-W3U4_3</span>
+    <span class="hljs-attr">types:</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-string">GR</span>
+    <span class="hljs-attr">command:</span> <span class="hljs-string">recpt1</span> <span class="hljs-string">--b25</span> <span class="hljs-string">--device</span> <span class="hljs-string">/dev/px4video3</span> {{{<span class="hljs-string">channel</span>}}} <span class="hljs-bullet">-</span> <span class="hljs-bullet">-</span>
+
+<span class="hljs-attr">epg:</span>
+  <span class="hljs-attr">cache-dir:</span> <span class="hljs-string">/var/lib/mirakc/epg</span>
+</code></pre>
+<p>mirakc の起動に <code>strings.yml</code> および <code>mirakurun.openapi.json</code> が必要なので、これをオフィシャルの <a href="https://hub.docker.com/r/mirakc/mirakc">Docker image</a> より取得します。</p>
+<pre><code class="language-bash hljs">sudo apt install docker.io
+sudo docker create mirakc/mirakc
+sudo docker <span class="hljs-built_in">cp</span> [CONTAINER ID]:/etc/mirakc/strings.yml /etc/mirakc/strings.yml
+sudo docker <span class="hljs-built_in">cp</span> [CONTAINER ID]:/etc/mirakurun.openapi.json /etc/mirakc/mirakurun.openapi.json
+</code></pre>
+<p>起動してみます。</p>
+<pre><code class="language-bash hljs">sudo mirakc -c /etc/mirakc/config.yml
+</code></pre>
+<p>別途ターミナル上で API にアクセスできるか確認します。</p>
+<pre><code class="language-bash hljs">curl http://localhost:40772/api/version
+</code></pre>
+<p><code>{"current":"1.1.0-dev.0","latest":"1.1.0-dev.0"}</code> みたいな出力がされれば問題ないです。</p>
+<h3>mirakc をサービスに登録する</h3>
+<p>systemd の設定ファイル <code>/etc/systemd/system/mirakc.service</code> を用意します。</p>
+<pre><code class="language-bash hljs">sudo vim /etc/systemd/system/mirakc.service
+</code></pre>
+<pre><code class="language-ini:/etc/systemd/system/mirakc.service hljs language-ini"><span class="hljs-section">[Unit]</span>
+<span class="hljs-attr">Description</span> = mirakc
+
+<span class="hljs-section">[Service]</span>
+<span class="hljs-attr">ExecStart</span> = /usr/local/bin/mirakc -c /etc/mirakc/config.yml
+<span class="hljs-attr">Restart</span> = always
+<span class="hljs-attr">Type</span> = simple
+
+<span class="hljs-section">[Install]</span>
+<span class="hljs-attr">WantedBy</span> = multi-user.target
+</code></pre>
+<p>有効にし、起動してみます。</p>
+<pre><code class="language-bash hljs">sudo systemctl <span class="hljs-built_in">enable</span> mirakc
+sudo systemctl start mirakc
+</code></pre>
+<h3>EPGStation のインストール</h3>
+<p>PLEX PX-Q1UD や PX-W3U4 であれば複数チャンネル利用できるので、視聴しつつ別番組を録画するなんてこともできます。</p>
+<p>なので録画管理ソフトである EPGStation を導入します。</p>
+<h4>インストール</h4>
+<p><a href="https://github.com/l3tnun/EPGStation/blob/master/doc/linux-setup.md">公式のセットアップ手順</a>に則ってインストールしていきます。</p>
+<p>ちなみに今回は <code>/usr/local/src/EPGStation</code> にインストールしています。</p>
+<p>この手順では自動起動に pm2 を利用していますが、ここは systemd に変えます。</p>
+<p>systemd の設定ファイル <code>/etc/systemd/system/epg-station.service</code> を用意します。</p>
+<pre><code class="language-bash hljs">sudo vim /etc/systemd/system/epg-station.service
+</code></pre>
+<pre><code class="language-ini:/etc/systemd/system/epg-station.service hljs language-ini"><span class="hljs-section">[Unit]</span>
+<span class="hljs-attr">Description</span> = EPGStation
+
+<span class="hljs-section">[Service]</span>
+<span class="hljs-attr">ExecStart</span> = /usr/bin/npm start --prefix /usr/local/src/EPGStation
+<span class="hljs-attr">Restart</span> = always
+<span class="hljs-attr">Type</span> = simple
+
+<span class="hljs-section">[Install]</span>
+<span class="hljs-attr">WantedBy</span> = multi-user.target
+</code></pre>
+<p>有効にし、起動してみます。</p>
+<pre><code class="language-bash hljs">sudo systemctl <span class="hljs-built_in">enable</span> epg-station
+sudo systemctl start epg-station
+</code></pre>
+<h2>おわり</h2>
+<p>あとはホスト側に <a href="https://github.com/DBCTRADO/TVTest">TVTest</a> + <a href="https://github.com/epgdatacapbon/BonDriver_mirakc">BonDriver_mirakc</a> (Windows) や <a href="https://github.com/ci7lus/MirakTest">MirakTest</a> (Windows / macOS) 等のクライアントアプリを導入します。</p>
+<h2>参考にしたドキュメント</h2>
+<ul>
+<li><a href="https://mirakc.github.io/dekiru-mirakc/">https://mirakc.github.io/dekiru-mirakc/</a></li>
+<li><a href="https://hiroto-k.hatenablog.com/entry/2020/03/06/190000">https://hiroto-k.hatenablog.com/entry/2020/03/06/190000</a></li>
+<li><a href="https://nyanonon.hatenablog.com/entry/20191114/1573731890">https://nyanonon.hatenablog.com/entry/20191114/1573731890</a></li>
+<li><a href="https://diary.hatenablog.jp/entry/2018/03/15/215147">https://diary.hatenablog.jp/entry/2018/03/15/215147</a></li>
+</ul>
+</div></article></div><footer class="footer">(C) <a href="https://twitter.com/ansanloms">ansanloms</a></footer></body></html>

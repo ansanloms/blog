@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Raspberry Pi 上に RAID 1 構成を組みました</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.6.0/styles/obsidian.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ress@5.0.2/dist/ress.min.css"><link rel="stylesheet" href="/blog/styles/main.css"><link rel="stylesheet" href="/blog/styles/article.css"><meta property="og:type" content="website">
+<meta property="og:site_name" content="ansanloms blog">
+<meta property="og:locale" content="ja">
+<meta property="og:url" content="https://ansanloms.github.io/blog/articles/20221118-raspberry-pi-raid1/">
+<meta property="og:image" content="https://ansanloms.github.io/blog/assets/images/profile.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@ansanloms">
+<script type="module">
+          import mermaid from 'https://unpkg.com/mermaid@9/dist/mermaid.esm.min.mjs';
+          mermaid.initialize({ startOnLoad: true });
+        </script></head><body><header class="header"><h1><a href="/blog/">ansanloms blog</a></h1></header><div class="content"><ul class="tags"></ul><div class="meta"><p class="postDate"><span class="label">投稿</span><span class="date">2022.11.17</span></p></div><article class="article"><h1>Raspberry Pi 上に RAID 1 構成を組みました</h1><div><p><a href="/blog/articles/20210504-raspberry-pi-nas-hdd">このまえ</a>構築した NAS の HDD を RAID 1 構成のものに変えます。</p>
+<h2>用意したもの</h2>
+<ul>
+<li><a href="https://www.amazon.co.jp/gp/product/B084LFM8G7">Yottamaster HDD ケース FS2RU3</a></li>
+<li><a href="https://www.amazon.co.jp/dp/B09LH9XLB9">WD Blue 3.5インチ HDD 8TB WD80EAZZ</a></li>
+</ul>
+<p>購入した HDD ケースはハードウェア RAID をサポートしていますが、自前で Raspberry Pi (Ubuntu) 上にソフトウェア RAID を構成します。</p>
+<h2>実施内容</h2>
+<h3>Raspberry Pi に HDD を接続する</h3>
+<p>HDD ケースに HDD 入れて Raspberry Pi に繋ぎます。</p>
+<p><code>lsblk</code> で確認してみます。 <code>/dev/sdb</code> と <code>/dev/sdc</code> で 2 台認識しています。</p>
+<pre><code class="language-bash hljs">$ lsblk
+sdb      8:16   0   7.3T  0 disk
+└─sdb1   8:17   0   7.3T  0 part
+sdc      8:32   0   7.3T  0 disk
+└─sdc1   8:33   0   7.3T  0 part
+</code></pre>
+<h3>HDD を準備する</h3>
+<p><code>fdisk -l</code> で HDD の状況を確認します。</p>
+<pre><code class="language-bash hljs">$ sudo fdisk -l /dev/sdb
+The backup GPT table is not on the end of the device.
+Disk /dev/sdb: 7.28 TiB, 8001563222016 bytes, 15628053168 sectors
+Disk model: USB3.0
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 4096 bytes / 33553920 bytes
+Disklabel <span class="hljs-built_in">type</span>: gpt
+Disk identifier: 73CB51C4-3EFA-4B6C-8CE8-6DC57EBBA449
+
+Device     Start         End     Sectors  Size Type
+/dev/sdb1   2048 15627976670 15627974623  7.3T Linux filesystem
+</code></pre>
+<pre><code class="language-bash hljs">$ sudo fdisk -l /dev/sdc
+The backup GPT table is not on the end of the device.
+Disk /dev/sdc: 7.28 TiB, 8001563222016 bytes, 15628053168 sectors
+Disk model: USB3.0
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 4096 bytes / 33553920 bytes
+Disklabel <span class="hljs-built_in">type</span>: gpt
+Disk identifier: 73CB51C4-3EFA-4B6C-8CE8-6DC57EBBA449
+
+Device     Start         End     Sectors  Size Type
+/dev/sdc1   2048 15627976670 15627974623  7.3T Linux filesystem
+</code></pre>
+<p>両方とも既にパーティションが切られているので初期化します。</p>
+<pre><code class="language-bash hljs">$ sudo fdisk /dev/sdb
+
+Welcome to fdisk (util-linux 2.37.2).
+Changes will remain <span class="hljs-keyword">in</span> memory only, <span class="hljs-keyword">until</span> you decide to write them.
+Be careful before using the write <span class="hljs-built_in">command</span>.
+
+The backup GPT table is not on the end of the device. This problem will be corrected by write.
+
+Command (m <span class="hljs-keyword">for</span> <span class="hljs-built_in">help</span>): d
+
+Selected partition 1
+Partition 1 has been deleted.
+
+Command (m <span class="hljs-keyword">for</span> <span class="hljs-built_in">help</span>): w
+The partition table has been altered.
+Calling ioctl() to re-read partition table.
+Syncing disks.
+</code></pre>
+<pre><code class="language-bash hljs">$ sudo fdisk /dev/sdc
+
+Welcome to fdisk (util-linux 2.37.2).
+Changes will remain <span class="hljs-keyword">in</span> memory only, <span class="hljs-keyword">until</span> you decide to write them.
+Be careful before using the write <span class="hljs-built_in">command</span>.
+
+The backup GPT table is not on the end of the device. This problem will be corrected by write.
+
+Command (m <span class="hljs-keyword">for</span> <span class="hljs-built_in">help</span>): d
+
+Selected partition 1
+Partition 1 has been deleted.
+
+Command (m <span class="hljs-keyword">for</span> <span class="hljs-built_in">help</span>): w
+The partition table has been altered.
+Calling ioctl() to re-read partition table.
+Syncing disks.
+</code></pre>
+<p>確認してみます。</p>
+<pre><code class="language-bash hljs">$ sudo fdisk -l /dev/sdb
+Disk /dev/sdb: 7.28 TiB, 8001563222016 bytes, 15628053168 sectors
+Disk model: USB3.0
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 4096 bytes / 33553920 bytes
+Disklabel <span class="hljs-built_in">type</span>: gpt
+Disk identifier: A47EC0A5-B6B4-47D4-AB4D-CDD3A75BDEB1
+</code></pre>
+<pre><code class="language-bash hljs">$ sudo fdisk -l /dev/sdc
+Disk /dev/sdc: 7.28 TiB, 8001563222016 bytes, 15628053168 sectors
+Disk model: USB3.0
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 4096 bytes / 33553920 bytes
+Disklabel <span class="hljs-built_in">type</span>: gpt
+Disk identifier: 9A7054DA-C107-4FDA-B2A4-6247D4C540C1
+</code></pre>
+<p>既に GPT なんで、このままいきます。</p>
+<p><code>fdisk</code> をつかってパーティションを作成します。</p>
+<pre><code class="language-bash hljs">$ sudo fdisk /dev/sdb
+
+Welcome to fdisk (util-linux 2.37.2).
+Changes will remain <span class="hljs-keyword">in</span> memory only, <span class="hljs-keyword">until</span> you decide to write them.
+Be careful before using the write <span class="hljs-built_in">command</span>.
+
+
+Command (m <span class="hljs-keyword">for</span> <span class="hljs-built_in">help</span>): n
+Partition number (1-128, default 1):
+First sector (34-15628053134, default 2048):
+Last sector, +/-sectors or +/-size{K,M,G,T,P} (2048-15628053134, default 15628053134):
+
+Created a new partition 1 of <span class="hljs-built_in">type</span> <span class="hljs-string">'Linux filesystem'</span> and of size 7.3 TiB.
+
+Command (m <span class="hljs-keyword">for</span> <span class="hljs-built_in">help</span>): w
+The partition table has been altered.
+Calling ioctl() to re-read partition table.
+Syncing disks.
+
+$ sudo fdisk -l /dev/sdb
+Disk /dev/sdb: 7.28 TiB, 8001563222016 bytes, 15628053168 sectors
+Disk model: USB3.0
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 4096 bytes / 33553920 bytes
+Disklabel <span class="hljs-built_in">type</span>: gpt
+Disk identifier: A47EC0A5-B6B4-47D4-AB4D-CDD3A75BDEB1
+
+Device     Start         End     Sectors  Size Type
+/dev/sdb1   2048 15628053134 15628051087  7.3T Linux filesystem
+</code></pre>
+<pre><code class="language-bash hljs">$ sudo fdisk /dev/sdc
+
+Welcome to fdisk (util-linux 2.37.2).
+Changes will remain <span class="hljs-keyword">in</span> memory only, <span class="hljs-keyword">until</span> you decide to write them.
+Be careful before using the write <span class="hljs-built_in">command</span>.
+
+
+Command (m <span class="hljs-keyword">for</span> <span class="hljs-built_in">help</span>): n
+Partition number (1-128, default 1):
+First sector (34-15628053134, default 2048):
+Last sector, +/-sectors or +/-size{K,M,G,T,P} (2048-15628053134, default 15628053134):
+
+Created a new partition 1 of <span class="hljs-built_in">type</span> <span class="hljs-string">'Linux filesystem'</span> and of size 7.3 TiB.
+
+Command (m <span class="hljs-keyword">for</span> <span class="hljs-built_in">help</span>): w
+The partition table has been altered.
+Calling ioctl() to re-read partition table.
+Syncing disks.
+
+$ sudo fdisk -l /dev/sdc
+Disk /dev/sdc: 7.28 TiB, 8001563222016 bytes, 15628053168 sectors
+Disk model: USB3.0
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 4096 bytes / 33553920 bytes
+Disklabel <span class="hljs-built_in">type</span>: gpt
+Disk identifier: 9A7054DA-C107-4FDA-B2A4-6247D4C540C1
+
+Device     Start         End     Sectors  Size Type
+/dev/sdc1   2048 15628053134 15628051087  7.3T Linux filesystem
+</code></pre>
+<h3>mdadm で RAID 1 構成</h3>
+<p><code>/dev/sdb1</code> と <code>/dev/sdc1</code> にて RAID 1 として組みます。</p>
+<p>RAID アレイを <code>/dev/md0</code> に割り当てます。</p>
+<pre><code class="language-bash hljs">sudo mdadm --create /dev/md0 --level=raid1 --raid-devices=2 /dev/sdb1 /dev/sdc1
+</code></pre>
+<p>確認してみます。</p>
+<pre><code class="language-bash hljs">$ sudo mdadm --detail /dev/md0
+/dev/md0:
+           Version : 1.2
+     Creation Time : Sat Nov 19 07:21:18 2022
+        Raid Level : raid1
+        Array Size : 7813893440 (7.28 TiB 8.00 TB)
+     Used Dev Size : 7813893440 (7.28 TiB 8.00 TB)
+      Raid Devices : 2
+     Total Devices : 2
+       Persistence : Superblock is persistent
+
+     Intent Bitmap : Internal
+
+       Update Time : Sat Nov 19 07:26:26 2022
+             State : clean, resyncing
+    Active Devices : 2
+   Working Devices : 2
+    Failed Devices : 0
+     Spare Devices : 0
+
+Consistency Policy : bitmap
+
+     Resync Status : 0% complete
+
+              Name : raspberrypi:0  (<span class="hljs-built_in">local</span> to host raspberrypi)
+              UUID : 7726b25c:ae1b5573:5c8b07a6:b8cd3d97
+            Events : 61
+
+    Number   Major   Minor   RaidDevice State
+       0       8       17        0      active <span class="hljs-built_in">sync</span>   /dev/sdb1
+       1       8       33        1      active <span class="hljs-built_in">sync</span>   /dev/sdc1
+</code></pre>
+<pre><code class="language-bash hljs">$ sudo fdisk -l /dev/md0
+Disk /dev/md0: 7.28 TiB, 8001426882560 bytes, 15627786880 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 4096 bytes / 33553920 bytes
+</code></pre>
+<p>問題なさそうなので、 RAID 情報を保存しておきます。</p>
+<pre><code class="language-bash hljs">$ sudo su
+<span class="hljs-comment"># mdadm --detail --scan &gt;&gt; /etc/mdadm/mdadm.conf</span>
+</code></pre>
+<pre><code class="language-bash hljs">$ sudo <span class="hljs-built_in">cat</span> /etc/mdadm/mdadm.conf | grep md0
+ARRAY /dev/md0 metadata=1.2 name=raspberrypi:0 UUID=7726b25c:ae1b5573:5c8b07a6:b8cd3d97
+</code></pre>
+<h3>フォーマット</h3>
+<p>ext4 でフォーマットします。</p>
+<pre><code class="language-bash hljs">$ sudo mkfs -t ext4 /dev/md0
+mke2fs 1.46.5 (30-Dec-2021)
+Creating filesystem with 1953473360 4k blocks and 244187136 inodes
+Filesystem UUID: c4c32dec-facd-4ad7-bd43-527953a241d9
+Superblock backups stored on blocks:
+        32768, 98304, 163840, 229376, 294912, 819200, 884736, 1605632, 2654208,
+        4096000, 7962624, 11239424, 20480000, 23887872, 71663616, 78675968,
+        102400000, 214990848, 512000000, 550731776, 644972544, 1934917632
+
+Allocating group tables: <span class="hljs-keyword">done</span>
+Writing inode tables: <span class="hljs-keyword">done</span>
+Creating journal (262144 blocks): <span class="hljs-keyword">done</span>
+Writing superblocks and filesystem accounting information: <span class="hljs-keyword">done</span>
+</code></pre>
+<p>確認してみます。</p>
+<pre><code class="language-bash hljs">$ sudo parted -l
+
+<span class="hljs-comment">### 中略</span>
+
+Model: Linux Software RAID Array (md)
+Disk /dev/md0: 8001GB
+Sector size (logical/physical): 512B/512B
+Partition Table: loop
+Disk Flags:
+
+Number  Start  End     Size    File system  Flags
+ 1      0.00B  8001GB  8001GB  ext4
+</code></pre>
+<h3>再起動してみる</h3>
+<p>ここで再起動後も問題なく RAID 構成が認識するか確認してみます。</p>
+<pre><code class="language-bash hljs">$ sudo reboot
+</code></pre>
+<p>再起動後に確認してみます。</p>
+<pre><code class="language-bash hljs">$ sudo fdisk -l /dev/md0
+fdisk: cannot open /dev/md0: No such file or directory
+
+$ sudo mdadm --detail /dev/md0
+mdadm: cannot open /dev/md1: No such file or directory
+</code></pre>
+<p>あれ…。</p>
+<pre><code class="language-bash hljs">$ sudo parted -l
+
+<span class="hljs-comment">### 中略</span>
+
+Model: Linux Software RAID Array (md)
+Disk /dev/md127: 8001GB
+Sector size (logical/physical): 512B/512B
+Partition Table: loop
+Disk Flags:
+
+Number  Start  End     Size    File system  Flags
+ 1      0.00B  8001GB  8001GB  ext4
+</code></pre>
+<p>何故か <code>/dev/md127</code> があります。</p>
+<pre><code class="language-bash hljs">$ sudo fdisk -l /dev/md127
+Disk /dev/md127: 7.28 TiB, 8001426882560 bytes, 15627786880 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 4096 bytes / 33553920 bytes
+
+$ sudo mdadm --detail /dev/md127
+/dev/md127:
+           Version : 1.2
+     Creation Time : Sat Nov 19 07:21:18 2022
+        Raid Level : raid1
+        Array Size : 7813893440 (7.28 TiB 8.00 TB)
+     Used Dev Size : 7813893440 (7.28 TiB 8.00 TB)
+      Raid Devices : 2
+     Total Devices : 2
+       Persistence : Superblock is persistent
+
+     Intent Bitmap : Internal
+
+       Update Time : Sat Nov 19 07:40:36 2022
+             State : clean, resyncing (PENDING)
+    Active Devices : 2
+   Working Devices : 2
+    Failed Devices : 0
+     Spare Devices : 0
+
+Consistency Policy : bitmap
+
+              Name : raspberrypi:0  (<span class="hljs-built_in">local</span> to host raspberrypi)
+              UUID : 7726b25c:ae1b5573:5c8b07a6:b8cd3d97
+            Events : 226
+
+    Number   Major   Minor   RaidDevice State
+       0       8       17        0      active <span class="hljs-built_in">sync</span>   /dev/sdb1
+       1       8       33        1      active <span class="hljs-built_in">sync</span>   /dev/sdc1
+ansanloms@raspberrypi:~$
+</code></pre>
+<p><code>/dev/md127</code> を確認すると想定通りの RAID 構成になっています。</p>
+<p>念の為 <code>/etc/mdadm/mdadm.conf</code> を確認してみます。</p>
+<pre><code class="language-bash hljs">$ sudo <span class="hljs-built_in">cat</span> /etc/mdadm/mdadm.conf | grep md0
+ARRAY /dev/md0 metadata=1.2 name=raspberrypi:0 UUID=7726b25c:ae1b5573:5c8b07a6:b8cd3d97
+</code></pre>
+<p><code>/dev/md0</code> の構成になっています。</p>
+<p>どうも initramfs 上にあるディスク情報が実際のディスク情報と異なる場合、デバイス名は md127 から降順で自動的に振られるとのことです。</p>
+<p>なんで更新します。</p>
+<pre><code class="language-bash hljs">$ sudo update-initramfs -u
+</code></pre>
+<p>再起動します。</p>
+<pre><code class="language-bash hljs">$ sudo reboot
+</code></pre>
+<p>再起動後に確認してみます。</p>
+<pre><code class="language-bash hljs">$ sudo fdisk -l /dev/md0
+Disk /dev/md0: 7.28 TiB, 8001426882560 bytes, 15627786880 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 4096 bytes / 33553920 bytes
+
+$ sudo mdadm --detail /dev/md0
+/dev/md0:
+           Version : 1.2
+     Creation Time : Sat Nov 19 07:21:18 2022
+        Raid Level : raid1
+        Array Size : 7813893440 (7.28 TiB 8.00 TB)
+     Used Dev Size : 7813893440 (7.28 TiB 8.00 TB)
+      Raid Devices : 2
+     Total Devices : 2
+       Persistence : Superblock is persistent
+
+     Intent Bitmap : Internal
+
+       Update Time : Sat Nov 19 08:19:38 2022
+             State : clean, resyncing
+    Active Devices : 2
+   Working Devices : 2
+    Failed Devices : 0
+     Spare Devices : 0
+
+Consistency Policy : bitmap
+
+     Resync Status : 0% complete
+
+              Name : raspberrypi:0  (<span class="hljs-built_in">local</span> to host raspberrypi)
+              UUID : 7726b25c:ae1b5573:5c8b07a6:b8cd3d97
+            Events : 393
+
+    Number   Major   Minor   RaidDevice State
+       0       8       17        0      active <span class="hljs-built_in">sync</span>   /dev/sdb1
+       1       8       33        1      active <span class="hljs-built_in">sync</span>   /dev/sdc1
+</code></pre>
+<p>うまくいきました。</p>
+<h3>マウントする</h3>
+<p><code>/dev/md0</code> を <code>/mnt/media</code> にマウントします。</p>
+<pre><code class="language-bash hljs">$ sudo <span class="hljs-built_in">mkdir</span> -p /mnt/media
+
+$ sudo mount -t ext4 /dev/md0 /mnt/media
+
+$ <span class="hljs-built_in">df</span> -h | grep md0
+/dev/md0        7.3T   28K  6.9T   1% /mnt/media
+
+$ ll /mnt/media
+total 24
+drwxr-xr-x 3 root root  4096 Nov 19 13:28 ./
+drwxr-xr-x 3 root root  4096 Nov 19 13:36 ../
+drwx------ 2 root root 16384 Nov 19 13:28 lost+found/
+</code></pre>
+<p>所有者が root になっているので、自分のユーザに変えます。あわせて実際にファイルが設置できるか確認してみます。</p>
+<pre><code class="language-bash hljs">$ sudo <span class="hljs-built_in">chown</span> -R ansanloms:ansanloms /mnt/media
+
+$ <span class="hljs-built_in">touch</span> /mnt/media/test.txt
+
+$ ll /mnt/media
+total 24
+drwxr-xr-x 3 ansanloms ansanloms  4096 Nov 19 13:38 ./
+drwxr-xr-x 3 root      root       4096 Nov 19 13:36 ../
+drwx------ 2 ansanloms ansanloms 16384 Nov 19 13:28 lost+found/
+-rw-rw-r-- 1 ansanloms ansanloms     0 Nov 19 13:38 test.txt
+</code></pre>
+<p><code>fstab</code> に記述します。</p>
+<pre><code class="language-bash hljs">$ sudo vim /etc/fstab
+</code></pre>
+<pre><code class="language-conf"># media
+/dev/md0     /mnt/media    ext4    defaults    0   0
+</code></pre>
+<p><code>fstab</code> の設定をもってマウントされるか確認します。</p>
+<pre><code class="language-bash hljs">$ sudo umount /mnt/media
+
+$ <span class="hljs-built_in">df</span> -h | grep media
+
+$ sudo mount -a
+
+$ <span class="hljs-built_in">df</span> -h | grep media
+/dev/md0        7.3T   28K  6.9T   1% /mnt/media
+
+$ ll /mnt/media
+total 24
+drwxr-xr-x 3 ansanloms ansanloms  4096 Nov 19 13:38 ./
+drwxr-xr-x 3 root      root       4096 Nov 19 13:36 ../
+drwx------ 2 ansanloms ansanloms 16384 Nov 19 13:28 lost+found/
+-rw-rw-r-- 1 ansanloms ansanloms     0 Nov 19 13:38 test.txt
+</code></pre>
+<p>再起動後にも自動的にマウントされるか確認します。</p>
+<pre><code class="language-bash hljs">$ sudo reboot
+</code></pre>
+<pre><code class="language-bash hljs">$ ll /mnt/media
+total 24
+drwxr-xr-x 3 ansanloms ansanloms  4096 Nov 19 13:38 ./
+drwxr-xr-x 3 root      root       4096 Nov 19 13:36 ../
+drwx------ 2 ansanloms ansanloms 16384 Nov 19 13:28 lost+found/
+-rw-rw-r-- 1 ansanloms ansanloms     0 Nov 19 13:38 test.txt
+</code></pre>
+<h3>データ移行</h3>
+<p>移行元の HDD を繋ぎます。</p>
+<p><code>lsblk</code> で確認すると <code>/dev/sdd1</code> にありました。</p>
+<p>マウントします。</p>
+<pre><code class="language-bash hljs">$ sudo <span class="hljs-built_in">mkdir</span> -p /mnt/old_media
+$ sudo mount -t ext4 /dev/sdd1 /mnt/old_media
+</code></pre>
+<pre><code class="language-bash hljs">$ <span class="hljs-built_in">nohup</span> rsync -av /mnt/old_media/. /mnt/media/. &amp;
+</code></pre>
+</div></article></div><footer class="footer">(C) <a href="https://twitter.com/ansanloms">ansanloms</a></footer></body></html>
