@@ -15,11 +15,12 @@
     ]
   },
   "imports": {
-    "lume/": "https://deno.land/x/lume@v2.2.2/",
-    "std/": "https://deno.land/std@0.224.0/",
-    "lume-plugin-plantuml/": "https://raw.githubusercontent.com/ansanloms/lume-plugin-plantuml/v0.1.5/",
+    "@std/datetime": "jsr:@std/datetime@^0.225.2",
+    "@std/path": "jsr:@std/path@^1.0.6",
     "gray-matter": "npm:gray-matter@4.0.3",
-    "textlint": "npm:textlint@14.0.4"
+    "lume-plugin-plantuml/": "https://raw.githubusercontent.com/ansanloms/lume-plugin-plantuml/v0.1.5/",
+    "lume/": "https://deno.land/x/lume@v2.3.2/",
+    "textlint": "npm:textlint@14.2.0"
   },
   "tasks": {
     "lint": "deno lint && deno task lint:textlint",

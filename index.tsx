@@ -1,5 +1,5 @@
-import * as path from "std/path/mod.ts";
-import * as datetime from "std/datetime/mod.ts";
+import * as path from "@std/path";
+import * as datetime from "@std/datetime";
 import matter from "gray-matter";
 
 export const layout = "layouts/Top.tsx";

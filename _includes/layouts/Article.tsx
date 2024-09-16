@@ -1,4 +1,4 @@
-import * as datetime from "std/datetime/mod.ts";
+import * as datetime from "@std/datetime";
 import Base from "./Base.tsx";
 
 type Props = {
