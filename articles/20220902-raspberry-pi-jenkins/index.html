@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Raspberry Pi 4 (Ubuntu Server) に Jenkins をインストールしました</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.6.0/styles/obsidian.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ress@5.0.2/dist/ress.min.css"><link rel="stylesheet" href="/blog/styles/main.css"><link rel="stylesheet" href="/blog/styles/article.css"><meta property="og:type" content="website">
+<meta property="og:site_name" content="ansanloms blog">
+<meta property="og:locale" content="ja">
+<meta property="og:url" content="https://ansanloms.github.io/blog/articles/20220902-raspberry-pi-jenkins/">
+<meta property="og:image" content="https://ansanloms.github.io/blog/assets/images/profile.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@ansanloms">
+<script type="module">
+          import mermaid from 'https://unpkg.com/mermaid@9/dist/mermaid.esm.min.mjs';
+          mermaid.initialize({ startOnLoad: true });
+        </script></head><body><header class="header"><h1><a href="/blog/">ansanloms blog</a></h1></header><div class="content"><ul class="tags"></ul><div class="meta"><p class="postDate"><span class="label">投稿</span><span class="date">2022.09.01</span></p></div><article class="article"><h1>Raspberry Pi 4 (Ubuntu Server) に Jenkins をインストールしました</h1><div><h2>Java のインストール</h2>
+<pre><code class="language-bash hljs"><span class="hljs-built_in">sudo</span> apt install default-jdk
+</code></pre>
+<h2>Jenkins のインストール</h2>
+<p><a href="https://www.jenkins.io/doc/book/installing/linux/#debianubuntu">https://www.jenkins.io/doc/book/installing/linux/#debianubuntu</a></p>
+<p>毎週リリース版でやっていきます。</p>
+<pre><code class="language-bash hljs">curl -fsSL https://pkg.jenkins.io/debian/jenkins.io.key | <span class="hljs-built_in">sudo</span> <span class="hljs-built_in">tee</span> \
+  /usr/share/keyrings/jenkins-keyring.asc &gt; /dev/null
+<span class="hljs-built_in">echo</span> deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+  https://pkg.jenkins.io/debian binary/ | <span class="hljs-built_in">sudo</span> <span class="hljs-built_in">tee</span> \
+  /etc/apt/sources.list.d/jenkins.list &gt; /dev/null
+<span class="hljs-built_in">sudo</span> apt update
+<span class="hljs-built_in">sudo</span> apt install jenkins
+</code></pre>
+<h2>実行ユーザの変更</h2>
+<p>関連するファイルやディレクトリの権限を変更します。</p>
+<pre><code class="language-bash hljs"><span class="hljs-built_in">sudo</span> <span class="hljs-built_in">chown</span> -R ansanloms:ansanloms /var/lib/jenkins /var/log/jenkins /var/cache/jenkins
+</code></pre>
+<p>systemctl での実行ユーザを変更します。</p>
+<pre><code class="language-bash hljs"><span class="hljs-built_in">sudo</span> vim /lib/systemd/system/jenkins.service
+</code></pre>
+<p><code>User</code> / <code>Group</code> を変更します。</p>
+<pre><code class="language-ini:/lib/systemd/system/jenkins.service hljs language-ini"><span class="hljs-attr">User</span>=ansanloms
+<span class="hljs-attr">Group</span>=ansanloms
+</code></pre>
+<p>リロードし、起動します。</p>
+<pre><code class="language-bash hljs"><span class="hljs-built_in">sudo</span> systemctl daemon-reload
+<span class="hljs-built_in">sudo</span> systemctl start jenkins.service
+</code></pre>
+</div></article></div><footer class="footer">(C) <a href="https://twitter.com/ansanloms">ansanloms</a></footer></body></html>

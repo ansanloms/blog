@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>ブログをつくりました</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.6.0/styles/obsidian.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ress@5.0.2/dist/ress.min.css"><link rel="stylesheet" href="/blog/styles/main.css"><link rel="stylesheet" href="/blog/styles/article.css"><meta property="og:type" content="website">
+<meta property="og:site_name" content="ansanloms blog">
+<meta property="og:locale" content="ja">
+<meta property="og:url" content="https://ansanloms.github.io/blog/articles/20210501-blog/">
+<meta property="og:image" content="https://ansanloms.github.io/blog/assets/images/profile.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@ansanloms">
+<script type="module">
+          import mermaid from 'https://unpkg.com/mermaid@9/dist/mermaid.esm.min.mjs';
+          mermaid.initialize({ startOnLoad: true });
+        </script></head><body><header class="header"><h1><a href="/blog/">ansanloms blog</a></h1></header><div class="content"><ul class="tags"></ul><div class="meta"><p class="postDate"><span class="label">投稿</span><span class="date">2021.04.30</span></p></div><article class="article"><h1>ブログをつくりました</h1><div><p>このブログをつくったときの話です。</p>
+<h2>やりたかったこと</h2>
+<ul>
+<li>markdown でかいていきたい
+<ul>
+<li>他のシステムに移行するとき、簡単に剥がせるようにしたいです。</li>
+<li>第三のサービス上(マイクロ CMS 等)で記事は管理したくないです。</li>
+</ul>
+</li>
+<li>デプロイ先は GitHub Pages にしたい
+<ul>
+<li>SSG(Static Site Generator)をつかうことになります。</li>
+</ul>
+</li>
+</ul>
+<h2>環境構築</h2>
+<p><a href="/blog/articles/20210430-nextjs">この記事</a>を参照してください。</p>
+<h2>ブログ記事を表示するとこ</h2>
+<p>ブログ記事はリポジトリ内に markdown を配置してそこへ記述することにしました。</p>
+<p>markdown の読み込みは <a href="https://github.com/jonschlinkert/gray-matter">gray-matter</a>
+を使用しました。ビルド時に全部の記事をよみこむかんじになっちゃいましたが SSG なんでどうせ全記事を見るのは必至だしいいかなっておもったりしました。</p>
+<pre><code class="language-typescript hljs"><span class="hljs-keyword">import</span> util <span class="hljs-keyword">from</span> <span class="hljs-string">"util"</span>;
+<span class="hljs-keyword">import</span> fs <span class="hljs-keyword">from</span> <span class="hljs-string">"fs"</span>;
+<span class="hljs-keyword">import</span> path <span class="hljs-keyword">from</span> <span class="hljs-string">"path"</span>;
+<span class="hljs-keyword">import</span> matter <span class="hljs-keyword">from</span> <span class="hljs-string">"gray-matter"</span>;
+
+<span class="hljs-keyword">const</span> postsDirectory = <span class="hljs-string">"path/to/content/posts"</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> getPosts = <span class="hljs-title function_">async</span> (): <span class="hljs-title class_">Promise</span>&lt;
+  {
+    <span class="hljs-keyword">readonly</span> <span class="hljs-attr">title</span>: <span class="hljs-built_in">string</span>;
+    <span class="hljs-keyword">readonly</span> <span class="hljs-attr">slug</span>: <span class="hljs-built_in">string</span>;
+    <span class="hljs-keyword">readonly</span> <span class="hljs-attr">date</span>: <span class="hljs-built_in">string</span>;
+    <span class="hljs-keyword">readonly</span> <span class="hljs-attr">content</span>: <span class="hljs-built_in">string</span>;
+  }[]
+&gt; =&gt; {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">await</span> <span class="hljs-title class_">Promise</span>.<span class="hljs-title function_">all</span>(
+    (
+      <span class="hljs-keyword">await</span> util.<span class="hljs-title function_">promisify</span>(fs.<span class="hljs-property">readdir</span>)(postsDirectory)
+    )
+      .<span class="hljs-title function_">filter</span>(<span class="hljs-function">(<span class="hljs-params">it</span>) =&gt;</span> it.<span class="hljs-title function_">endsWith</span>(<span class="hljs-string">".md"</span>))
+      .<span class="hljs-title function_">map</span>(<span class="hljs-title function_">async</span> (file) =&gt; {
+        <span class="hljs-keyword">const</span> content = <span class="hljs-title function_">matter</span>(
+          <span class="hljs-keyword">await</span> util.<span class="hljs-title function_">promisify</span>(fs.<span class="hljs-property">readFile</span>)(
+            path.<span class="hljs-title function_">join</span>(postsDirectory, file),
+            <span class="hljs-string">"utf8"</span>,
+          ),
+        );
+
+        <span class="hljs-keyword">return</span> {
+          <span class="hljs-attr">title</span>: content.<span class="hljs-property">data</span>.<span class="hljs-property">title</span>,
+          <span class="hljs-attr">slug</span>: path.<span class="hljs-title function_">basename</span>(file, <span class="hljs-string">".md"</span>),
+          <span class="hljs-attr">date</span>: content.<span class="hljs-property">data</span>.<span class="hljs-property">date</span>,
+          <span class="hljs-attr">content</span>: content.<span class="hljs-property">content</span>,
+        };
+      }),
+  );
+};
+</code></pre>
+<p>markdown を HTML として出力する処理は
+<a href="https://github.com/remarkjs/react-markdown">react-markdown</a>
+を使用しました。タグ単位でをコンポーネントを操作できてべんりでした。</p>
+<pre><code class="language-typescript hljs"><span class="hljs-keyword">import</span> <span class="hljs-title class_">React</span> <span class="hljs-keyword">from</span> <span class="hljs-string">"react"</span>;
+
+<span class="hljs-keyword">import</span> <span class="hljs-title class_">ReactMarkdown</span> <span class="hljs-keyword">from</span> <span class="hljs-string">"react-markdown"</span>;
+<span class="hljs-keyword">import</span> gfm <span class="hljs-keyword">from</span> <span class="hljs-string">"remark-gfm"</span>;   <span class="hljs-comment">// GFM をつかえるようにする</span>
+<span class="hljs-keyword">import</span> raw <span class="hljs-keyword">from</span> <span class="hljs-string">"rehype-raw"</span>;   <span class="hljs-comment">// 生の HTML をかけるようにする</span>
+
+<span class="hljs-keyword">const</span> <span class="hljs-title class_">Markdown</span>: <span class="hljs-title class_">React</span>.<span class="hljs-property">FC</span>&lt;{
+  <span class="hljs-attr">markdown</span>: <span class="hljs-built_in">string</span>;
+}&gt; = <span class="hljs-function">(<span class="hljs-params">{ markdown }</span>) =&gt;</span> (
+  <span class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">ReactMarkdown</span>
+    <span class="hljs-attr">plugins</span>=<span class="hljs-string">{[gfm]}</span>
+    <span class="hljs-attr">rehypePlugins</span>=<span class="hljs-string">{[raw]}</span>
+    <span class="hljs-attr">components</span>=<span class="hljs-string">{{</span>
+      <span class="hljs-attr">code:</span> <span class="hljs-attr">props</span> =&gt;</span> (/* ... */),
+      img: props =&gt; (/* ... */),
+      // ...
+    }}
+  &gt;
+    {markdown}
+  <span class="hljs-tag">&lt;/<span class="hljs-name">ReactMarkdown</span>&gt;</span></span>
+);
+</code></pre>
+<h3>それいがい</h3>
+<p>webpack の <code>require.context</code> でうなったりしました。 webpack のきもちを理解しないといけないとおもいました。</p>
+<p>Atomic Desigin を基にしてコンポーネントをつくったりしましたがよくわかっていなかったりしました。</p>
+<h2>おわり</h2>
+<p>たのしかったです。</p>
+</div></article></div><footer class="footer">(C) <a href="https://twitter.com/ansanloms">ansanloms</a></footer></body></html>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Google Home から自前のスマートリモコンを操作しました - 03. インテントの実装</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.6.0/styles/obsidian.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ress@5.0.2/dist/ress.min.css"><link rel="stylesheet" href="/blog/styles/main.css"><link rel="stylesheet" href="/blog/styles/article.css"><meta property="og:type" content="website">
+<meta property="og:site_name" content="ansanloms blog">
+<meta property="og:locale" content="ja">
+<meta property="og:url" content="https://ansanloms.github.io/blog/articles/20221001-google-smart-home-03/">
+<meta property="og:image" content="https://ansanloms.github.io/blog/assets/images/profile.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@ansanloms">
+<script type="module">
+          import mermaid from 'https://unpkg.com/mermaid@9/dist/mermaid.esm.min.mjs';
+          mermaid.initialize({ startOnLoad: true });
+        </script></head><body><header class="header"><h1><a href="/blog/">ansanloms blog</a></h1></header><div class="content"><ul class="tags"></ul><div class="meta"><p class="postDate"><span class="label">投稿</span><span class="date">2022.09.30</span></p></div><article class="article"><h1>Google Home から自前のスマートリモコンを操作しました - 03. インテントの実装</h1><div><p><a href="/blog/articles/20221001-google-smart-home-02">このまえ</a>からの続きです。</p>
+<h2>デバイスとトレイト</h2>
+<p><a href="https://developers.google.com/assistant/smarthome/concepts/devices-traits">https://developers.google.com/assistant/smarthome/concepts/devices-traits</a></p>
+<p>Smart Home Action では予め操作できる家電の種別が決定しており、それがデバイスになります。</p>
+<p>各デバイスでは操作できる内容があります。それがトレイトです。</p>
+<h2>インテントとフルフィルメント</h2>
+<p><a href="https://developers.google.com/assistant/smarthome/concepts/intents">https://developers.google.com/assistant/smarthome/concepts/intents</a></p>
+<p>Smart Home Action と Google Assistant ないしは Home アプリとのやりとりをするインテント、要は API エンドポイントを構築します。</p>
+<p>インテント上にフルフィルメント、つまり各種の処理定義を記述していきます。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">フルフィルメント</th>
+<th style="text-align:left">概要</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><a href="https://developers.google.com/assistant/smarthome/concepts/intents#sync">action.devices.SYNC</a></td>
+<td style="text-align:left">操作可能なデバイス一覧の取得(スマートホームアプリセットアップ時の登録)。</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="https://developers.google.com/assistant/smarthome/concepts/intents#query">action.devices.QUERY</a></td>
+<td style="text-align:left">デバイスの状態を取得。</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="https://developers.google.com/assistant/smarthome/concepts/intents#execute">action.devices.EXECUTE</a></td>
+<td style="text-align:left">デバイスの操作。</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="https://developers.google.com/assistant/smarthome/concepts/intents#disconnect">action.devices.DISCONNECT</a></td>
+<td style="text-align:left">スマートホームアプリの解除。</td>
+</tr>
+</tbody>
+</table>
+<p>HTTP METHOD でいうなら、 SYNC: PUT / QUERY: GET / EXECUTE: POST / DISCONNECT: DELETE ってところでしょうか。知らんけど。</p>
+<h2>インテントの実装</h2>
+<p><a href="https://developers.google.com/assistant/smarthome/develop/process-intents">https://developers.google.com/assistant/smarthome/develop/process-intents</a></p>
+<p>実際に functions 上へ実装していきます。</p>
+<blockquote>
+<p>以降の実装はこうもうろもろと「とりあえず」的なアレです。</p>
+</blockquote>
+<h3>Actions on Google ライブラリのインストール</h3>
+<p>インテントとフルフィルメントは所謂 REST API ですが、これらの実装を簡素化できるライブラリがあるので導入します。</p>
+<pre><code class="language-bash hljs">npm i actions-on-google
+</code></pre>
+<p>どうもライブラリ内の型定義に問題があるようでビルドできないので、 <code>tsconfig.json</code> を以下の通り更新します。</p>
+<pre><code class="language-diff:functions/tsconfig.json hljs language-diff">     "outDir": "lib",
+     "sourceMap": true,
+     "strict": true,
+<span class="hljs-deletion">-    "target": "es2017"</span>
+<span class="hljs-addition">+    "target": "es2017",</span>
+<span class="hljs-addition">+    "skipLibCheck": true</span>
+   },
+   "compileOnSave": true,
+   "include": ["src"]
+</code></pre>
+<h3>インテントの定義</h3>
+<p>functions の <code>/fulfillment</code> をインテントとします。</p>
+<pre><code class="language-ts:functions/src/index.ts hljs language-typescript"><span class="hljs-keyword">import</span> { smarthome } <span class="hljs-keyword">from</span> <span class="hljs-string">"actions-on-google"</span>;
+
+<span class="hljs-keyword">const</span> app = <span class="hljs-title function_">smarthome</span>({ <span class="hljs-attr">debug</span>: <span class="hljs-literal">true</span> });
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> fulfillment = functions.<span class="hljs-title function_">region</span>(region).<span class="hljs-property">https</span>.<span class="hljs-title function_">onRequest</span>(app);
+</code></pre>
+<h3>操作するデバイスの定義</h3>
+<p>今回は天井照明を操作しようとおもいます。</p>
+<p>該当するデバイスは <a href="https://developers.google.com/assistant/smarthome/guides/light">LIGHT</a> になります。</p>
+<p>LIGHT には以下トレイトが定義されています。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">トレイト</th>
+<th style="text-align:center">実装必須</th>
+<th style="text-align:left">概要</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><a href="https://developers.google.com/assistant/smarthome/traits/onoff">action.devices.traits.OnOff</a></td>
+<td style="text-align:center">✅</td>
+<td style="text-align:left">ライトの ON および OFF を行う。</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="https://developers.google.com/assistant/smarthome/traits/colorsetting">action.devices.traits.ColorSetting</a></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">ライトの色見を調整する。</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="https://developers.google.com/assistant/smarthome/traits/brightness">action.devices.traits.Brightness</a></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">ライトの明るさを調整する。</td>
+</tr>
+</tbody>
+</table>
+<p><code>functions/src/configs/devices.ts</code> あたりに定義しておきます。</p>
+<pre><code class="language-typescript:functions/src/configs/devices.ts hljs language-typescript"><span class="hljs-keyword">import</span> <span class="hljs-keyword">type</span> { <span class="hljs-title class_">SmartHomeV1SyncDevices</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"actions-on-google"</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> <span class="hljs-title class_">CeilingLight</span>: <span class="hljs-title class_">SmartHomeV1SyncDevices</span> = {
+  <span class="hljs-attr">id</span>: <span class="hljs-string">"ceiling_light"</span>,
+  <span class="hljs-attr">type</span>: <span class="hljs-string">"action.devices.types.LIGHT"</span>,
+  <span class="hljs-attr">traits</span>: [<span class="hljs-string">"action.devices.traits.OnOff"</span>],
+  <span class="hljs-attr">name</span>: {
+    <span class="hljs-attr">defaultNames</span>: [<span class="hljs-string">"照明"</span>],
+    <span class="hljs-attr">name</span>: <span class="hljs-string">"照明"</span>,
+    <span class="hljs-attr">nicknames</span>: [<span class="hljs-string">"照明"</span>],
+  },
+  <span class="hljs-attr">willReportState</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">otherDeviceIds</span>: [
+    {
+      <span class="hljs-attr">deviceId</span>: <span class="hljs-string">"ceiling_light"</span>,
+    },
+  ],
+};
+</code></pre>
+<p>定義内容は <a href="https://developers.google.com/assistant/smarthome/reference/rest/v1/devices/sync#device">https://developers.google.com/assistant/smarthome/reference/rest/v1/devices/sync#device</a> を参照ください。</p>
+<p>今回は照明の ON / OFF のみできるようにします。</p>
+<p><code>willReportState</code> は後述する HomeGraph API 上からデバイスを操作する際に必要な設定です。 <code>true</code> にしておきます。</p>
+<p><code>otherDeviceIds</code> はかなり後述にあるローカルフルフィルメントで必要な値です。とりあえず <code>id</code> と同一値を設定しておきます。</p>
+<h3>ユーザの認証処理</h3>
+<p><a href="https://developers.google.com/assistant/smarthome/develop/process-intents#user-id">https://developers.google.com/assistant/smarthome/develop/process-intents#user-id</a></p>
+<p>インテントへのリクエストヘッダ <code>Authorization</code> に、予め用意した OAuth 2.0 サーバ(今回であれば Auth0)から提供される Bearer トークンがあるはずです。</p>
+<p>これを基に操作するユーザを判定します。 Auth0 の認証クライントを用意します。</p>
+<p>認証情報は <code>.env</code> に記述します。なので <a href="https://www.npmjs.com/package/dotenv">dotenv</a> も導入します。</p>
+<pre><code class="language-bash hljs">npm i auth0 dotenv
+npm i -D @types/auth0
+</code></pre>
+<p><code>.env</code> に認証関連の情報を定義しておきます。</p>
+<pre><code class="language-bash:functions/.env hljs language-bash">AUTH0_DOMAIN=<span class="hljs-string">"[AUTH0_DOMAIN]"</span>
+AUTH0_CLIENT_ID=<span class="hljs-string">"[AUTH0_CLIENT_ID]"</span>
+</code></pre>
+<p>リクエストヘッダの Authorization よりユーザ ID を特定します。今回は openid をユーザ ID とします。</p>
+<pre><code class="language-ts:functions/src/index.ts hljs language-typescript"><span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> dotenv <span class="hljs-keyword">from</span> <span class="hljs-string">"dotenv"</span>;
+dotenv.<span class="hljs-title function_">config</span>();
+
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">AuthenticationClient</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"auth0"</span>;
+
+<span class="hljs-keyword">const</span> auth0 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">AuthenticationClient</span>({
+  <span class="hljs-attr">domain</span>: process.<span class="hljs-property">env</span>.<span class="hljs-property">AUTH0_DOMAIN</span> || <span class="hljs-string">""</span>,
+  <span class="hljs-attr">clientId</span>: process.<span class="hljs-property">env</span>.<span class="hljs-property">AUTH0_CLIENT_ID</span> || <span class="hljs-string">""</span>,
+});
+
+<span class="hljs-keyword">const</span> getAgentUserId = <span class="hljs-title function_">async</span> (
+  <span class="hljs-attr">headers</span>: <span class="hljs-title class_">ActionOnGoogleHeaders</span>
+): <span class="hljs-title class_">Promise</span>&lt;<span class="hljs-built_in">string</span> | <span class="hljs-literal">undefined</span>&gt; =&gt; {
+  <span class="hljs-keyword">const</span> authorization = headers.<span class="hljs-property">authorization</span>;
+  functions.<span class="hljs-property">logger</span>.<span class="hljs-title function_">debug</span>(<span class="hljs-string">"getAgentUserId - authorization:"</span>, authorization);
+
+  <span class="hljs-keyword">const</span> token =
+    <span class="hljs-keyword">typeof</span> authorization === <span class="hljs-string">"string"</span> ? authorization.<span class="hljs-title function_">substr</span>(<span class="hljs-number">7</span>) : <span class="hljs-literal">undefined</span>;
+  functions.<span class="hljs-property">logger</span>.<span class="hljs-title function_">debug</span>(<span class="hljs-string">"getAgentUserId - token:"</span>, token);
+  <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> token === <span class="hljs-string">"undefined"</span>) {
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">undefined</span>;
+  }
+
+  <span class="hljs-keyword">const</span> profile = <span class="hljs-keyword">await</span> auth0.<span class="hljs-title function_">getProfile</span>(token);
+  functions.<span class="hljs-property">logger</span>.<span class="hljs-title function_">debug</span>(<span class="hljs-string">"getAgentUserId - profile:"</span>, profile);
+
+  <span class="hljs-keyword">const</span> id =
+    <span class="hljs-keyword">typeof</span> profile.<span class="hljs-property">sub</span> === <span class="hljs-string">"string"</span> ? (profile.<span class="hljs-property">sub</span> <span class="hljs-keyword">as</span> <span class="hljs-built_in">string</span>) : <span class="hljs-literal">undefined</span>;
+  functions.<span class="hljs-property">logger</span>.<span class="hljs-title function_">debug</span>(<span class="hljs-string">"getAgentUserId - id:"</span>, id);
+
+  <span class="hljs-keyword">return</span> id;
+};
+</code></pre>
+<h3>各種フルフィルメントの実装(とりあえず)</h3>
+<p>一旦スマートホームアプリと HOME アプリを連携するところまでみたいので、とりあえずフルフィルメントを実装します。</p>
+<p>認証するだけなら SYNC のみあればいいと思いますが、まぁ全部書いておきます。</p>
+<pre><code class="language-ts:functions/src/index.ts hljs language-typescript">app.<span class="hljs-title function_">onSync</span>(<span class="hljs-title function_">async</span> (body, headers) =&gt; {
+  <span class="hljs-keyword">const</span> id = <span class="hljs-keyword">await</span> <span class="hljs-title function_">getAgentUserId</span>(headers);
+
+  <span class="hljs-keyword">return</span> {
+    <span class="hljs-attr">requestId</span>: body.<span class="hljs-property">requestId</span>,
+    <span class="hljs-attr">payload</span>: {
+      <span class="hljs-attr">agentUserId</span>: id || <span class="hljs-string">""</span>,
+      <span class="hljs-attr">devices</span>: <span class="hljs-keyword">typeof</span> id === <span class="hljs-string">"undefined"</span> ? [] : [<span class="hljs-title class_">CeilingLight</span>],
+    },
+  };
+});
+
+app.<span class="hljs-title function_">onQuery</span>(<span class="hljs-title function_">async</span> (body, headers) =&gt; {
+  <span class="hljs-keyword">const</span> id = <span class="hljs-keyword">await</span> <span class="hljs-title function_">getAgentUserId</span>(headers);
+
+  <span class="hljs-keyword">return</span> {
+    <span class="hljs-attr">requestId</span>: body.<span class="hljs-property">requestId</span>,
+    <span class="hljs-attr">payload</span>: {
+      <span class="hljs-attr">devices</span>:
+        <span class="hljs-keyword">typeof</span> id === <span class="hljs-string">"undefined"</span>
+          ? {}
+          : {
+              [<span class="hljs-title class_">CeilingLight</span>.<span class="hljs-property">id</span>]: {
+                <span class="hljs-attr">status</span>: <span class="hljs-string">"SUCCESS"</span>,
+                <span class="hljs-attr">online</span>: <span class="hljs-literal">true</span>,
+                <span class="hljs-attr">on</span>: <span class="hljs-literal">true</span>,
+              },
+            },
+    },
+  };
+});
+
+app.<span class="hljs-title function_">onExecute</span>(<span class="hljs-title function_">async</span> (body, headers) =&gt; {
+  <span class="hljs-keyword">const</span> id = <span class="hljs-keyword">await</span> <span class="hljs-title function_">getAgentUserId</span>(headers);
+
+  <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> id === <span class="hljs-string">"undefined"</span>) {
+    <span class="hljs-keyword">return</span> {
+      <span class="hljs-attr">requestId</span>: body.<span class="hljs-property">requestId</span>,
+      <span class="hljs-attr">payload</span>: { <span class="hljs-attr">commands</span>: [] },
+    };
+  }
+
+  <span class="hljs-keyword">return</span> {
+    <span class="hljs-attr">requestId</span>: body.<span class="hljs-property">requestId</span>,
+    <span class="hljs-attr">payload</span>: {
+      <span class="hljs-attr">commands</span>: [
+        {
+          <span class="hljs-attr">ids</span>: [<span class="hljs-title class_">CeilingLight</span>.<span class="hljs-property">id</span>],
+          <span class="hljs-attr">status</span>: <span class="hljs-string">"SUCCESS"</span>,
+          <span class="hljs-attr">states</span>: { <span class="hljs-attr">on</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">online</span>: <span class="hljs-literal">true</span> },
+        },
+      ],
+    },
+  };
+});
+
+app.<span class="hljs-title function_">onDisconnect</span>(<span class="hljs-function">() =&gt;</span> {
+  functions.<span class="hljs-property">logger</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">"User account unlinked from Google Assistant"</span>);
+  <span class="hljs-keyword">return</span> {};
+});
+</code></pre>
+<h2>つづく</h2>
+<p>次回は作成したスマートホームアプリを自身の Home デバイスに追加します。</p>
+</div></article></div><footer class="footer">(C) <a href="https://twitter.com/ansanloms">ansanloms</a></footer></body></html>

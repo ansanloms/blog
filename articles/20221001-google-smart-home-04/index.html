@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Google Home から自前のスマートリモコンを操作しました - 04. スマートホームアプリの登録</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.6.0/styles/obsidian.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ress@5.0.2/dist/ress.min.css"><link rel="stylesheet" href="/blog/styles/main.css"><link rel="stylesheet" href="/blog/styles/article.css"><meta property="og:type" content="website">
+<meta property="og:site_name" content="ansanloms blog">
+<meta property="og:locale" content="ja">
+<meta property="og:url" content="https://ansanloms.github.io/blog/articles/20221001-google-smart-home-04/">
+<meta property="og:image" content="https://ansanloms.github.io/blog/assets/images/profile.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@ansanloms">
+<script type="module">
+          import mermaid from 'https://unpkg.com/mermaid@9/dist/mermaid.esm.min.mjs';
+          mermaid.initialize({ startOnLoad: true });
+        </script></head><body><header class="header"><h1><a href="/blog/">ansanloms blog</a></h1></header><div class="content"><ul class="tags"></ul><div class="meta"><p class="postDate"><span class="label">投稿</span><span class="date">2022.09.30</span></p></div><article class="article"><h1>Google Home から自前のスマートリモコンを操作しました - 04. スマートホームアプリの登録</h1><div><p><a href="/blog/articles/20221001-google-smart-home-03">このまえ</a>からの続きです。</p>
+<h2>アクション名の設定</h2>
+<p>任意のアクション名を設定します。</p>
+<p>Action Console の対象プロジェクトに遷移し、上記メニューの [Develop] -&gt; [Invocation] を選択します。</p>
+<p><img src="/blog/assets/images/20221001-google-smart-home-04/actions-console-invocation.png" alt="Actions"></p>
+<p>設定したら右上の [Save] を押下します。</p>
+<h2>アクションの登録</h2>
+<p>実装したインテントを Action Console 上で設定していきます。</p>
+<p>先ずは Firebase functions を徐にデプロイします。</p>
+<pre><code class="language-bash hljs">npm run fix
+firebase deploy
+</code></pre>
+<p><code>/fulfillment</code> が function 上にデプロイされた際の URL を確認しておきます。</p>
+<p>Action Console の対象プロジェクトに遷移し、上記メニューの [Develop] -&gt; [Actions] を選択します。</p>
+<p><img src="/blog/assets/images/20221001-google-smart-home-04/actions-console-actions.png" alt="Actions"></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left"></th>
+<th style="text-align:left">値</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Fulfillment URL</td>
+<td style="text-align:left"><code>/fulfillment</code> が function 上にデプロイされた際の URL</td>
+</tr>
+<tr>
+<td style="text-align:left">Log level control</td>
+<td style="text-align:left">とりあえず <code>All</code></td>
+</tr>
+</tbody>
+</table>
+<p>他はデフォルトのままにします。</p>
+<p>設定したら右上の [Save] を押下します。</p>
+<h2>アカウントのリンク</h2>
+<p>続いて OAuth 2.0 サーバ(今回は Auth0)の情報を Action Console 上で設定していきます。</p>
+<p>Action Console の対象プロジェクトに遷移し、上記メニューの [Develop] -&gt; [Account linking] を選択します。</p>
+<h3>OAuth Client Information</h3>
+<p><img src="/blog/assets/images/20221001-google-smart-home-04/actions-console-oauth-client-information.png" alt="OAuth Client Information"></p>
+<p>以下のように設定します。</p>
+<p><code>Authorization URL</code> と <code>Token URL</code> に関しては Auth0 コンソールの [Applications] -&gt; [対象 Application] -&gt; [Settings] 内の Advanced Settings からも確認できます。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left"></th>
+<th style="text-align:left">値</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Client ID issued by your Actions to Google</td>
+<td style="text-align:left"><code>[AUTH0_CLIENT_ID]</code></td>
+</tr>
+<tr>
+<td style="text-align:left">Client secret</td>
+<td style="text-align:left"><code>[AUTH0_CLIENT_SECRET]</code></td>
+</tr>
+<tr>
+<td style="text-align:left">Authorization URL</td>
+<td style="text-align:left"><code>https://[AUTH0_DOMAIN]/authorize</code></td>
+</tr>
+<tr>
+<td style="text-align:left">Token URL</td>
+<td style="text-align:left"><code>https://[AUTH0_DOMAIN]/oauth/token</code></td>
+</tr>
+</tbody>
+</table>
+<h3>Use your app for account linking (optional)</h3>
+<p>ここはなにも設定せずに次へ。</p>
+<h3>Configure your client (optional)</h3>
+<p><img src="/blog/assets/images/20221001-google-smart-home-04/actions-console-configure-your-client.png" alt="Configure your client"></p>
+<p>認証時に取得できるユーザ情報を指定します。とりあえず以下を設定しておきます。実際使うのは openid だけなはずです。</p>
+<ul>
+<li>openid</li>
+<li>email</li>
+</ul>
+<p>ここまで設定したら右上の [Save] を押下します。</p>
+<h2>スマートホームアプリを Google Assistant に登録する</h2>
+<p>作成したスマートホームアプリを自分のアカウントの Google Assistant に関連付けます。</p>
+<p>スマートフォンに <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.chromecast.app">Google Home アプリ</a>をインストールします。</p>
+<p>アプリ上の [Settings] を押下します。</p>
+<p><img src="/blog/assets/images/20221001-google-smart-home-04/home-settings.png" alt="Settings"></p>
+<p>ページ下部の [Works with Google] を押下します。</p>
+<p><img src="/blog/assets/images/20221001-google-smart-home-04/home-works-with-google.png" alt="Works with Google"></p>
+<p>設定したアクション名のアプリがあるはずなので選択します。</p>
+<p><img src="/blog/assets/images/20221001-google-smart-home-04/home-home-control.png" alt="Home Control"></p>
+<p>連携処理に進みます。 [Continue] を押下します。</p>
+<p><img src="/blog/assets/images/20221001-google-smart-home-04/home-link.png" alt="Link"></p>
+<p>認証します。 Auth0 上に登録したアカウントでログインします。</p>
+<p><img src="/blog/assets/images/20221001-google-smart-home-04/home-login.png" alt=""></p>
+<p>問題なければ設定したデバイスが登録されます。</p>
+<p><img src="/blog/assets/images/20221001-google-smart-home-04/home-add-devices.png" alt=""></p>
+<p>これで手元の Google Home から虚無にある照明を操作できるようになりました。フルフィルメントの設定がとりあえずなので正常には動作しません。</p>
+<blockquote class="twitter-tweet" data-theme="dark"><p lang="ja" dir="ltr">進捗です。 <a href="https://t.co/BVm2nxQSqt">pic.twitter.com/BVm2nxQSqt</a></p>— ansanloms (@ansanloms) <a href="https://twitter.com/ansanloms/status/1594382929429340160?ref_src=twsrc%5Etfw">November 20, 2022</a></blockquote> <script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<h2>つづく</h2>
+<p>次回はフルフィルメントを実装していきます。</p>
+</div></article></div><footer class="footer">(C) <a href="https://twitter.com/ansanloms">ansanloms</a></footer></body></html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Raspberry Pi 4 で USB に繋いだ SSD から起動するようにしました</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.6.0/styles/obsidian.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ress@5.0.2/dist/ress.min.css"><link rel="stylesheet" href="/blog/styles/main.css"><link rel="stylesheet" href="/blog/styles/article.css"><meta property="og:type" content="website">
+<meta property="og:site_name" content="ansanloms blog">
+<meta property="og:locale" content="ja">
+<meta property="og:url" content="https://ansanloms.github.io/blog/articles/20220922-raspberry-pi-usb-boot/">
+<meta property="og:image" content="https://ansanloms.github.io/blog/assets/images/profile.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@ansanloms">
+<script type="module">
+          import mermaid from 'https://unpkg.com/mermaid@9/dist/mermaid.esm.min.mjs';
+          mermaid.initialize({ startOnLoad: true });
+        </script></head><body><header class="header"><h1><a href="/blog/">ansanloms blog</a></h1></header><div class="content"><ul class="tags"></ul><div class="meta"><p class="postDate"><span class="label">投稿</span><span class="date">2022.09.21</span></p></div><article class="article"><h1>Raspberry Pi 4 で USB に繋いだ SSD から起動するようにしました</h1><div><p>M.2 拡張スロットが付いた Raspberry Pi 4 のケースを買ったので、SSD から起動するようにしました。</p>
+<h2>用意したもの</h2>
+<ul>
+<li><a href="https://www.argon40.com/products/argon-one-m-2-case-for-raspberry-pi-4">Argon ONE M.2 Case for Raspberry Pi 4</a></li>
+</ul>
+<p>別途電子工作をやろうと思い立ちまして購入しました。</p>
+<p><a href="https://flirc.tv/products/flirc-raspberrypi4-silver?variant=43085036454120">前回購入したケース</a>では GPIO ピンが見えないので新しくケースを買ったら M.2 の SSD スロットも付いていたので今回の SSD 起動をやってみようと思った次第です。</p>
+<ul>
+<li><a href="https://www.amazon.co.jp/gp/product/B09W2Q1BXH">MMOMENT 256GB M.2 2280 SSD</a></li>
+</ul>
+<p>なんかタイムセールで 3,000 円くらいだったので買えました。最悪ダメなやつだったとしてもこの値段なら諦められるかなってかんじです。</p>
+<h2>実施内容</h2>
+<p>SSD にも Ubuntu Server を導入しようと思います。</p>
+<h3>microSD から Raspberry Pi OS Lite (64-bit) を起動</h3>
+<p>ブートローダの更新や SSD への書き込みの為に、先ずは microSD から Raspberry Pi の起動をします。</p>
+<p>Raspberry Pi Imager で microSD に書き込みます。</p>
+<pre><code class="language-bash hljs">winget install RaspberryPiFoundation.RaspberryPiImager
+</code></pre>
+<p><code>Raspberry Pi OS Lite (64-bit)</code> をインストールします。</p>
+<p>書き込む際に右下の歯車から以下の通り詳細設定をします。</p>
+<ul>
+<li>「SSH を有効にする」にチェック。
+<ul>
+<li>「公開鍵認証のみを許可する」を選択し、 authorized_keys を入力。</li>
+</ul>
+</li>
+<li>「Wi-Fi を設定する」にチェック。
+<ul>
+<li>「SSID」「パスワード」「Wi-fi を使う国」をよしなに入力。</li>
+</ul>
+</li>
+</ul>
+<p>書き込んだら Raspberry Pi に microSD を差し込んで起動します。そのまま ssh 接続できるはずです。</p>
+<pre><code class="language-bash hljs">ssh pi@192.168.x.x
+</code></pre>
+<p>とりいそぎ各種ライブラリを更新します。</p>
+<pre><code class="language-bash hljs">$ <span class="hljs-built_in">sudo</span> apt update
+$ <span class="hljs-built_in">sudo</span> apt upgrade
+</code></pre>
+<h3>ブートローダの確認</h3>
+<p><a href="https://github.com/raspberrypi/rpi-eeprom">https://github.com/raspberrypi/rpi-eeprom</a></p>
+<p><a href="https://github.com/raspberrypi/rpi-eeprom/blob/master/firmware/release-notes.md#2020-09-14-promote-the-2020-09-03-release-to-be-the-default-eeprom-images">リリースノート</a>にある通り、
+2020-09-03 版以降のバージョンから USB boot をサポートしています。</p>
+<p>現時点のブートローダのバージョンを確認します。</p>
+<pre><code class="language-bash hljs">$ vcgencmd bootloader_version
+2022/08/02 16:55:05
+version 91b6280c53c0b6dff9e3d58810f439e577408845 (release)
+timestamp 1659455705
+update-time 1663866239
+capabilities 0x0000007f
+</code></pre>
+<p>結論から言うと今回はブートローダの更新をする必要がありませんでした。</p>
+<h3>ブートローダの更新</h3>
+<p>もし更新するなら以下を実施します。</p>
+<p><code>sudo apt upgrade</code> しておくと <code>/lib/firmware/raspberrypi/bootloader</code> 配下に eeprom
+のバイナリが降ってきているはずです。</p>
+<p>先ずは関連しているリリースチャネルを確認します。 <code>/etc/default/rpi-eeprom-update</code> を確認します。</p>
+<pre><code class="language-bash hljs">$ <span class="hljs-built_in">cat</span> /etc/default/rpi-eeprom-update
+FIRMWARE_RELEASE_STATUS=<span class="hljs-string">"default"</span>
+</code></pre>
+<p><code>FIRMWARE_RELEASE_STATUS</code> でリリースチャネルを指定します。今回は default でしたけど、 critical
+にシンボリックリンクが張られているんですけどそういうもんなんでしょうか。</p>
+<pre><code class="language-bash hljs">$ ll /lib/firmware/raspberrypi/bootloader
+total 56
+drwxr-xr-x 5 root root  4096  8月  9 20:59 ./
+drwxr-xr-x 3 root root  4096  8月  9 20:59 ../
+drwxr-xr-x 2 root root  4096  8月  9 20:59 beta/
+drwxr-xr-x 2 root root  4096  8月  9 20:59 critical/
+lrwxrwxrwx 1 root root     8  3月 18  2022 default -&gt; critical/
+lrwxrwxrwx 1 root root     6  3月 18  2022 latest -&gt; stable/
+-rw-r--r-- 1 root root 34767  3月 16  2022 release-notes.md
+drwxr-xr-x 2 root root  4096  8月  9 20:59 stable/
+</code></pre>
+<p>とりいそぎ <code>FIRMWARE_RELEASE_STATUS</code> の値を stable に変更します。</p>
+<pre><code class="language-bash hljs">$ <span class="hljs-built_in">sudo</span> <span class="hljs-built_in">cp</span> /etc/default/rpi-eeprom-update /etc/default/rpi-eeprom-update.20220922
+$ <span class="hljs-built_in">sudo</span> vim /etc/default/rpi-eeprom-update
+</code></pre>
+<pre><code class="language-diff:rpi-eeprom-update hljs language-diff"><span class="hljs-comment">--- /etc/default/rpi-eeprom-update      2022-09-24 15:40:08.955505408 +0900</span>
+<span class="hljs-comment">+++ /etc/default/rpi-eeprom-update.20220922     2022-09-24 15:39:52.643492273 +0900</span>
+<span class="hljs-meta">@@ -1,2 +1,2 @@</span>
+<span class="hljs-deletion">-FIRMWARE_RELEASE_STATUS="stable"</span>
+<span class="hljs-addition">+FIRMWARE_RELEASE_STATUS="default"</span>
+ BOOTFS=/boot/firmware
+</code></pre>
+<p><code>/lib/firmware/raspberrypi/bootloader/stable/</code>
+配下にある一番最新の(最後の日付の)バイナリを指定してアップデートします。</p>
+<p>その後に再起動します。再起動後にバージョンが更新されたことを確認します。</p>
+<pre><code class="language-bash hljs">$ <span class="hljs-built_in">sudo</span> rpi-eeprom-update -d -f /lib/firmware/raspberrypi/bootloader/stable/pieeprom-2022-03-10.bin
+$ <span class="hljs-built_in">sudo</span> reboot
+
+<span class="hljs-comment"># 再起動後</span>
+$ vcgencmd bootloader_version
+</code></pre>
+<h3>SSD に OS イメージを書き込む</h3>
+<p>一旦シャットダウンし、ケースに SSD を設定して起動します。</p>
+<p><code>lsblk</code> で SSD を確認します。今回は <code>/dev/sda</code> にありました。</p>
+<p><a href="https://ubuntu.com/download/raspberry-pi">https://ubuntu.com/download/raspberry-pi</a> から Raspberry Pi 用 Ubuntu Server の OS
+イメージをダウンロードしてきます。</p>
+<pre><code class="language-bash hljs">$ wget https://cdimage.ubuntu.com/releases/22.04.1/release/ubuntu-22.04.1-preinstalled-server-arm64+raspi.img.xz
+</code></pre>
+<p>OS イメージを SSD に書き込みます。</p>
+<pre><code class="language-bash hljs">$ xzcat ubuntu-22.04.1-preinstalled-server-arm64+raspi.img.xz | <span class="hljs-built_in">sudo</span> <span class="hljs-built_in">dd</span> bs=4M of=/dev/sda
+</code></pre>
+<p>書き込んだら、起動時の Wi-Fi 接続とかの為に cloud-init の設定を書き換える必要があります。</p>
+<p>適当なところに mount します。後は<a href="/blog/articles/20210503-raspberry-pi">このまえ</a>のように cloud-init
+の設定を書き換えます。</p>
+<pre><code class="language-bash hljs">$ <span class="hljs-built_in">sudo</span> <span class="hljs-built_in">mkdir</span> -p /mnt/ssd
+$ <span class="hljs-built_in">sudo</span> mount /dev/sda1 /mnt/ssd
+$ <span class="hljs-built_in">cd</span> /mnt/ssd
+</code></pre>
+<p>終わったら umount してシャットダウンします。</p>
+<pre><code class="language-bash hljs">$ <span class="hljs-built_in">sudo</span> umount /mnt/ssd
+$ <span class="hljs-built_in">sudo</span> shutdown now
+</code></pre>
+<h3>再起動</h3>
+<p>Raspberry Pi から microSD を外して電源を入れます。</p>
+<p>Ubuntu Server の場合<a href="https://ubuntu.com/tutorials/how-to-install-ubuntu-on-your-raspberry-pi#3-wifi-or-ethernet">初回起動時はネットワークに接続されない</a>ので、よきにはからって電源コードを引っこ抜いて再起動します。</p>
+<p>再起動後に SSH 接続できたら成功です。</p>
+<h2>おわり</h2>
+<p>よかったですね。</p>
+<h2>参考にしたドキュメント</h2>
+<ul>
+<li><a href="https://denor.jp/raspberry-pi-4%E3%81%A7usb%E6%8E%A5%E7%B6%9Ahdd%E3%81%8B%E3%82%8964%E3%83%93%E3%83%83%E3%83%88ubuntu-20-04-1%E3%82%92%E8%B5%B7%E5%8B%95%E3%81%97%E3%81%A6%E3%81%BF%E3%81%BE%E3%81%97%E3%81%9F">https://denor.jp/raspberry-pi-4でusb接続hddから64ビットubuntu-20-04-1を起動してみました</a></li>
+<li><a href="https://raspida.com/rpi4-ssd-usb-boot">https://raspida.com/rpi4-ssd-usb-boot</a></li>
+<li><a href="https://stackoverflow.com/questions/71804429/raspberry-pi-ssh-access-denied">https://stackoverflow.com/questions/71804429/raspberry-pi-ssh-access-denied</a></li>
+</ul>
+</div></article></div><footer class="footer">(C) <a href="https://twitter.com/ansanloms">ansanloms</a></footer></body></html>
