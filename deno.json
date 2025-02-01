@@ -1,39 +1,37 @@
 {
-  "lint": {
-    "exclude": [
-      "_site/",
-      "_bin/",
-      "_cache/"
-    ]
-  },
+  "$schema": "https://deno.land/x/deno/cli/schemas/config-file.v1.json",
   "fmt": {
-    "proseWrap": "preserve",
-    "exclude": [
-      "_site/",
-      "_bin/",
-      "_cache/"
-    ]
+    "proseWrap": "preserve"
   },
+  "exclude": [
+    "_site/",
+    "_cache/",
+    ".cache/",
+    "node_modules"
+  ],
+  "nodeModulesDir": "auto",
   "imports": {
-    "@std/datetime": "jsr:@std/datetime@^0.225.2",
-    "@std/path": "jsr:@std/path@^1.0.6",
-    "gray-matter": "npm:gray-matter@4.0.3",
-    "lume-plugin-plantuml/": "https://raw.githubusercontent.com/ansanloms/lume-plugin-plantuml/v0.1.5/",
-    "lume/": "https://deno.land/x/lume@v2.3.2/",
-    "textlint": "npm:textlint@14.2.0"
+    "@proofdict/textlint-rule-proofdict": "npm:@proofdict/textlint-rule-proofdict@^3.1.2",
+    "lume/": "https://deno.land/x/lume@v2.5.1/",
+    "lume-theme-blog/": "https://raw.githubusercontent.com/ansanloms/lume-theme-blog/v0.0.1/",
+    "textlint": "npm:textlint@^14.4.2",
+    "textlint-rule-preset-ja-spacing": "npm:textlint-rule-preset-ja-spacing@^2.4.3",
+    "textlint-rule-preset-ja-technical-writing": "npm:textlint-rule-preset-ja-technical-writing@^12.0.2"
   },
   "tasks": {
-    "lint": "deno lint && deno task lint:textlint",
-    "lint:textlint": "deno run --allow-env --allow-read --allow-sys textlint.ts .",
-    "fix": "deno fmt && deno task fix:textlint",
-    "fix:textlint": "deno run --allow-env --allow-read --allow-write --allow-sys textlint.ts . --fix",
     "lume": "echo \"import 'lume/cli.ts'\" | deno run -A -",
+    "textlint": "echo \"import 'textlint/bin/textlint.js'\" | deno run -A -",
     "build": "deno task lume",
-    "serve": "deno task lume -s"
+    "serve": "deno task lume -s",
+    "lint": "deno lint && deno task lint:textlint",
+    "lint:textlint": "deno task textlint ./",
+    "fix": "deno fmt && deno task fix:textlint; deno task lint",
+    "fix:textlint": "deno task textlint ./ --fix"
   },
   "compilerOptions": {
     "jsx": "react-jsx",
-    "jsxImportSource": "npm:preact@10.22.1",
+    "jsxImportSource": "npm:react",
+    "jsxImportSourceTypes": "npm:@types/react",
     "types": [
       "lume/types.ts"
     ]

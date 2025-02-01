@@ -1,3 +1,4 @@
 _site
-_bin
 _cache
+.cache
+node_modules
