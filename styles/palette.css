@@ -1,0 +1,370 @@
+@import url("https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@300;400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap");
+:root {
+  --font-family-default: "Kiwi Maru", system-ui, sans-serif;
+  --font-family-code: "Share Tech Mono", monospace;
+
+  /* base color */
+  --color-base-hue: 180;
+  --color-base-saturation: 10%;
+  --color-base-lightness: 50%;
+
+  /* admonition color */
+  --color-admonition-note-hue: 214;
+  --color-admonition-tip-hue: 128;
+  --color-admonition-important-hue: 262;
+  --color-admonition-warning-hue: 41;
+  --color-admonition-caution-hue: 3;
+
+  /* light mode */
+  --color-light-background: hsl(var(--color-base-hue), 100%, 98%);
+  --color-light-secondary-background: hsl(var(--color-base-hue), 100%, 94%);
+  --color-light-text: hsl(var(--color-base-hue), 100%, 20%);
+  --color-light-link: hsl(
+    var(--color-base-hue),
+    var(--color-base-saturation),
+    var(--color-base-lightness)
+  );
+  --color-light-hover: hsl(
+    var(--color-base-hue),
+    var(--color-base-saturation),
+    calc(var(--color-base-lightness) - 30%)
+  );
+  --color-light-border: hsl(var(--color-base-hue), 100%, 85%);
+  --color-light-heading: hsl(
+    var(--color-base-hue),
+    var(--color-base-saturation),
+    40%
+  );
+  --color-light-admonition-note-background: hsl(
+    var(--color-admonition-note-hue),
+    100%,
+    98%
+  );
+  --color-light-admonition-note-secondary-background: hsl(
+    var(--color-admonition-note-hue),
+    100%,
+    94%
+  );
+  --color-light-admonition-note-border: hsl(
+    var(--color-admonition-note-hue),
+    100%,
+    85%
+  );
+  --color-light-admonition-note-text: hsl(
+    var(--color-admonition-note-hue),
+    100%,
+    20%
+  );
+  --color-light-admonition-tip-background: hsl(
+    var(--color-admonition-tip-hue),
+    100%,
+    98%
+  );
+  --color-light-admonition-tip-secondary-background: hsl(
+    var(--color-admonition-tip-hue),
+    100%,
+    94%
+  );
+  --color-light-admonition-tip-border: hsl(
+    var(--color-admonition-tip-hue),
+    100%,
+    85%
+  );
+  --color-light-admonition-tip-text: hsl(
+    var(--color-admonition-tip-hue),
+    100%,
+    20%
+  );
+  --color-light-admonition-important-background: hsl(
+    var(--color-admonition-important-hue),
+    100%,
+    98%
+  );
+  --color-light-admonition-important-secondary-background: hsl(
+    var(--color-admonition-important-hue),
+    100%,
+    94%
+  );
+  --color-light-admonition-important-border: hsl(
+    var(--color-admonition-important-hue),
+    100%,
+    85%
+  );
+  --color-light-admonition-important-text: hsl(
+    var(--color-admonition-important-hue),
+    100%,
+    20%
+  );
+  --color-light-admonition-warning-background: hsl(
+    var(--color-admonition-warning-hue),
+    100%,
+    98%
+  );
+  --color-light-admonition-warning-secondary-background: hsl(
+    var(--color-admonition-warning-hue),
+    100%,
+    94%
+  );
+  --color-light-admonition-warning-border: hsl(
+    var(--color-admonition-warning-hue),
+    100%,
+    85%
+  );
+  --color-light-admonition-warning-text: hsl(
+    var(--color-admonition-warning-hue),
+    100%,
+    20%
+  );
+  --color-light-admonition-caution-background: hsl(
+    var(--color-admonition-caution-hue),
+    100%,
+    98%
+  );
+  --color-light-admonition-caution-secondary-background: hsl(
+    var(--color-admonition-caution-hue),
+    100%,
+    94%
+  );
+  --color-light-admonition-caution-border: hsl(
+    var(--color-admonition-caution-hue),
+    100%,
+    85%
+  );
+  --color-light-admonition-caution-text: hsl(
+    var(--color-admonition-caution-hue),
+    100%,
+    20%
+  );
+
+  /* dark mode */
+  --color-dark-background: hsl(var(--color-base-hue), 100%, 5%);
+  --color-dark-secondary-background: hsl(var(--color-base-hue), 100%, 10%);
+  --color-dark-text: hsl(var(--color-base-hue), 100%, 90%);
+  --color-dark-link: hsl(
+    var(--color-base-hue),
+    var(--color-base-saturation),
+    var(--color-base-lightness)
+  );
+  --color-dark-hover: hsl(
+    var(--color-base-hue),
+    var(--color-base-saturation),
+    calc(var(--color-base-lightness) + 30%)
+  );
+  --color-dark-border: hsl(var(--color-base-hue), 100%, 20%);
+  --color-dark-heading: hsl(
+    var(--color-base-hue),
+    var(--color-base-saturation),
+    80%
+  );
+  --color-dark-admonition-note-background: hsl(
+    var(--color-admonition-note-hue),
+    100%,
+    5%
+  );
+  --color-dark-admonition-note-secondary-background: hsl(
+    var(--color-admonition-note-hue),
+    100%,
+    10%
+  );
+  --color-dark-admonition-note-border: hsl(
+    var(--color-admonition-note-hue),
+    100%,
+    20%
+  );
+  --color-dark-admonition-note-text: hsl(
+    var(--color-admonition-note-hue),
+    100%,
+    90%
+  );
+  --color-dark-admonition-tip-background: hsl(
+    var(--color-admonition-tip-hue),
+    100%,
+    5%
+  );
+  --color-dark-admonition-tip-secondary-background: hsl(
+    var(--color-admonition-tip-hue),
+    100%,
+    10%
+  );
+  --color-dark-admonition-tip-border: hsl(
+    var(--color-admonition-tip-hue),
+    100%,
+    20%
+  );
+  --color-dark-admonition-tip-text: hsl(
+    var(--color-admonition-tip-hue),
+    100%,
+    90%
+  );
+  --color-dark-admonition-important-background: hsl(
+    var(--color-admonition-important-hue),
+    100%,
+    5%
+  );
+  --color-dark-admonition-important-secondary-background: hsl(
+    var(--color-admonition-important-hue),
+    100%,
+    10%
+  );
+  --color-dark-admonition-important-border: hsl(
+    var(--color-admonition-important-hue),
+    100%,
+    20%
+  );
+  --color-dark-admonition-important-text: hsl(
+    var(--color-admonition-important-hue),
+    100%,
+    90%
+  );
+  --color-dark-admonition-warning-background: hsl(
+    var(--color-admonition-warning-hue),
+    100%,
+    5%
+  );
+  --color-dark-admonition-warning-secondary-background: hsl(
+    var(--color-admonition-warning-hue),
+    100%,
+    10%
+  );
+  --color-dark-admonition-warning-border: hsl(
+    var(--color-admonition-warning-hue),
+    100%,
+    20%
+  );
+  --color-dark-admonition-warning-text: hsl(
+    var(--color-admonition-warning-hue),
+    100%,
+    90%
+  );
+  --color-dark-admonition-caution-background: hsl(
+    var(--color-admonition-caution-hue),
+    100%,
+    5%
+  );
+  --color-dark-admonition-caution-secondary-background: hsl(
+    var(--color-admonition-caution-hue),
+    100%,
+    10%
+  );
+  --color-dark-admonition-caution-border: hsl(
+    var(--color-admonition-caution-hue),
+    100%,
+    20%
+  );
+  --color-dark-admonition-caution-text: hsl(
+    var(--color-admonition-caution-hue),
+    100%,
+    90%
+  );
+
+  /* general */
+  --color-background: light-dark(
+    var(--color-light-background),
+    var(--color-dark-background)
+  );
+  --color-secondary-background: light-dark(
+    var(--color-light-secondary-background),
+    var(--color-dark-secondary-background)
+  );
+  --color-text: light-dark(
+    var(--color-light-text),
+    var(--color-dark-text)
+  );
+  --color-link: light-dark(
+    var(--color-light-link),
+    var(--color-dark-link)
+  );
+  --color-hover: light-dark(
+    var(--color-light-hover),
+    var(--color-light-hover)
+  );
+  --color-border: light-dark(
+    var(--color-light-border),
+    var(--color-dark-border)
+  );
+  --color-heading: light-dark(
+    var(--color-light-heading),
+    var(--color-dark-heading)
+  );
+  --color-admonition-note-background: light-dark(
+    var(--color-light-admonition-note-background),
+    var(--color-dark-admonition-note-background)
+  );
+  --color-admonition-note-secondary-background: light-dark(
+    var(--color-light-admonition-note-secondary-background),
+    var(--color-dark-admonition-note-secondary-background)
+  );
+  --color-admonition-note-border: light-dark(
+    var(--color-light-admonition-note-border),
+    var(--color-dark-admonition-note-border)
+  );
+  --color-admonition-note-text: light-dark(
+    var(--color-light-admonition-note-text),
+    var(--color-dark-admonition-note-text)
+  );
+  --color-admonition-tip-background: light-dark(
+    var(--color-light-admonition-tip-background),
+    var(--color-dark-admonition-tip-background)
+  );
+  --color-admonition-tip-secondary-background: light-dark(
+    var(--color-light-admonition-tip-secondary-background),
+    var(--color-dark-admonition-tip-secondary-background)
+  );
+  --color-admonition-tip-border: light-dark(
+    var(--color-light-admonition-tip-border),
+    var(--color-dark-admonition-tip-border)
+  );
+  --color-admonition-tip-text: light-dark(
+    var(--color-light-admonition-tip-text),
+    var(--color-dark-admonition-tip-text)
+  );
+  --color-admonition-important-background: light-dark(
+    var(--color-light-admonition-important-background),
+    var(--color-dark-admonition-important-background)
+  );
+  --color-admonition-important-secondary-background: light-dark(
+    var(--color-light-admonition-important-secondary-background),
+    var(--color-dark-admonition-important-secondary-background)
+  );
+  --color-admonition-important-border: light-dark(
+    var(--color-light-admonition-important-border),
+    var(--color-dark-admonition-important-border)
+  );
+  --color-admonition-important-text: light-dark(
+    var(--color-light-admonition-important-text),
+    var(--color-dark-admonition-important-text)
+  );
+  --color-admonition-warning-background: light-dark(
+    var(--color-light-admonition-warning-background),
+    var(--color-dark-admonition-warning-background)
+  );
+  --color-admonition-warning-secondary-background: light-dark(
+    var(--color-light-admonition-warning-secondary-background),
+    var(--color-dark-admonition-warning-secondary-background)
+  );
+  --color-admonition-warning-border: light-dark(
+    var(--color-light-admonition-warning-border),
+    var(--color-dark-admonition-warning-border)
+  );
+  --color-admonition-warning-text: light-dark(
+    var(--color-light-admonition-warning-text),
+    var(--color-dark-admonition-warning-text)
+  );
+  --color-admonition-caution-background: light-dark(
+    var(--color-light-admonition-caution-background),
+    var(--color-dark-admonition-caution-background)
+  );
+  --color-admonition-caution-secondary-background: light-dark(
+    var(--color-light-admonition-caution-secondary-background),
+    var(--color-dark-admonition-caution-secondary-background)
+  );
+  --color-admonition-caution-border: light-dark(
+    var(--color-light-admonition-caution-border),
+    var(--color-dark-admonition-caution-border)
+  );
+  --color-admonition-caution-text: light-dark(
+    var(--color-light-admonition-caution-text),
+    var(--color-dark-admonition-caution-text)
+  );
+}

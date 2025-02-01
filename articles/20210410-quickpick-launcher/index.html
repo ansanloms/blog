@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>ctrlp-launcher をもとに quickpick-launcher.vim をつくりました</title><link rel="stylesheet" href="/blog/styles/palette.css"><link rel="stylesheet" href="/blog/styles/general.css"><link rel="stylesheet" href="/blog/styles/layout.css"><link rel="stylesheet" href="/blog/styles/top.css"><link rel="stylesheet" href="/blog/styles/article.css"></head><body><div class="container"><div class="content"><ul class="meta"><li class="item"><span class="label">Created at</span><span class="value">2021-04-09</span></li></ul><article class="article"><div><h1 id="ctrlp-launcher-をもとに-quickpick-launchervim-をつくりました"><a href="#ctrlp-launcher-をもとに-quickpick-launchervim-をつくりました">ctrlp-launcher をもとに quickpick-launcher.vim をつくりました</a></h1>
+<p><a href="https://github.com/ctrlpvim/ctrlp.vim">CtrlP</a> という便利な<a href="https://zenn.dev/yutakatay/articles/vim-fuzzy-finder#2.-ctrlp.vim">ファジーファインダー系プラグイン</a>があります。</p>
+<p>この CtrlP を用いた <a href="https://github.com/mattn/ctrlp-launcher">ctrlp-launcher</a> という激烈便利なランチャがあります。ずっとおせわになっております。</p>
+<ul>
+<li><a href="https://mattn.kaoriya.net/software/vim/20120427205409.htm">CtrlP にランチャ拡張書いたら捗りすぎて生きているのが辛い</a></li>
+</ul>
+<p>最近 CtrlP から <a href="https://github.com/prabirshrestha/quickpick.vim">quickpick.vim</a> という便利な FF プラグインに移行したりしています。</p>
+<p>なので quickpick.vim 上で ctrlp-launcher と同じようなことができるプラグインをつくろうとおもいました。</p>
+<h2 id="quickpick-launchervim"><a href="#quickpick-launchervim">quickpick-launcher.vim</a></h2>
+<p>できたのが <a href="https://github.com/ansanloms/quickpick-launcher.vim">quickpick-launcher.vim</a> になります。</p>
+<p><code>~/.quickpick-launcher</code> に ctrlp-launcher と同じようにコマンドを定義し <code>:PLauncher</code> を実行して当該コマンドを実行できます。</p>
+<p>ctrlp-launcher と同様にファイル分割もできます。 <code>~/.quickpick-launcher-hoge</code> みたいなファイルを用意した場合 <code>:PLauncher hoge</code> で対象ファイル上のコマンドを選択できます。</p>
+<h2 id="quickpick-launcher-selectorvim"><a href="#quickpick-launcher-selectorvim">quickpick-launcher-selector.vim</a></h2>
+<p>分割したコマンド定義ファイルを quickpick.vim で選択できるプラグイン <a href="https://github.com/ansanloms/quickpick-launcher-selector.vim">quickpick-launcher-selector.vim</a> もつくりました。</p>
+<p>例えば <code>~/.quickpick-launcher</code> / <code>~/.quickpick-launcher-fuga</code> / <code>~/.quickpick-launcher-hoge</code> とファイルを用意して <code>:PLauncherSelector</code> を実行すると quickpick.vim 上で <code>(none)</code> / <code>fuga</code> / <code>hoge</code> と表示されます。</p>
+<p>じぶんはよくおしごとのプロジェクト毎にコマンド定義ファイルを用意してそこに開発および本番サーバへの ssh のコマンドとか書いたりしています。</p>
+<h2 id="おわり"><a href="#おわり">おわり</a></h2>
+<p>quickpick.vim の拡張の開発はとっても簡単でした。ほかにもいろいろつくれればいいなとかおもったりしました。</p></div></article></div></div></body></html>

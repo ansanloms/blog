@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Google Home から自前のスマートリモコンを操作しました - 05. フルフィルメントの実装</title><link rel="stylesheet" href="/blog/styles/palette.css"><link rel="stylesheet" href="/blog/styles/general.css"><link rel="stylesheet" href="/blog/styles/layout.css"><link rel="stylesheet" href="/blog/styles/top.css"><link rel="stylesheet" href="/blog/styles/article.css"></head><body><div class="container"><div class="content"><ul class="meta"><li class="item"><span class="label">Created at</span><span class="value">2022-09-30</span></li></ul><article class="article"><div><h1 id="google-home-から自前のスマートリモコンを操作しました---05-フルフィルメントの実装"><a href="#google-home-から自前のスマートリモコンを操作しました---05-フルフィルメントの実装">Google Home から自前のスマートリモコンを操作しました - 05. フルフィルメントの実装</a></h1>
+<p><a href="/blog/articles/20221001-google-smart-home-04/">このまえ</a>からの続きです。</p>
+<h2 id="homegraph-の有効化"><a href="#homegraph-の有効化">HomeGraph の有効化</a></h2>
+<p>例えば現状照明が点いているか等、デバイスの状態を管理する必要があります。</p>
+<p>これには <a href="https://developers.google.com/assistant/smarthome/concepts/homegraph">HomeGraph</a> を利用します。</p>
+<p>HomeGraph とは、デバイスの状態を管理する所謂データベースになります。</p>
+<h3 id="homegraph-api-の有効化"><a href="#homegraph-api-の有効化">HomeGraph API の有効化</a></h3>
+<p><a href="https://developers.google.com/assistant/smarthome/develop/report-state?hl=ja#homegraph-api">https://developers.google.com/assistant/smarthome/develop/report-state?hl=ja#homegraph-api</a></p>
+<p>まずはプロジェクト上で HomeGraph API を利用できるようにします。</p>
+<ol>
+<li><a href="https://console.cloud.google.com/">Google Cloud Console</a> 上から対象のプロジェクトを選択します。</li>
+<li><a href="https://console.cloud.google.com/apis/library">API ライブラリ</a> 上にて <a href="https://console.cloud.google.com/apis/library/browse?q=homegraph"><code>HomeGraph</code> 等で検索</a>します。</li>
+<li><code>HomeGraph API</code> を有効にします。</li>
+</ol>
+<h3 id="サービス-アカウント-キーの作成"><a href="#サービス-アカウント-キーの作成">サービス アカウント キーの作成</a></h3>
+<p><a href="https://developers.google.com/assistant/smarthome/develop/report-state?hl=ja#service-account-key">https://developers.google.com/assistant/smarthome/develop/report-state?hl=ja#service-account-key</a></p>
+<p>API を実行する為の認証情報を用意します。</p>
+<ol>
+<li><a href="https://console.cloud.google.com/">Google Cloud Console</a> 上から対象のプロジェクトを選択します。</li>
+<li><a href="https://console.cloud.google.com/apis/credentials/serviceaccountkey">サービス アカウント キーの作成</a>に移動します。</li>
+<li>[サービス アカウント キーの作成]ページに移動</li>
+<li>[サービス アカウント]リストから[新しいサービス アカウント]を選択します。</li>
+<li>[サービス アカウント名]フィールドに名前を入力します。</li>
+<li>[サービス アカウント ID]フィールドに ID を入力します。</li>
+<li>[ロール]リストから、[サービス アカウント]&gt;[サービス アカウント トークン作成者]を選択します。</li>
+<li>[キーのタイプ]として[JSON]を選択します。</li>
+<li>[作成]をクリックするとキーが含まれている JSON ファイルがパソコンにダウンロードされます。</li>
+</ol>
+<p>JSON ファイルは <code>functions/service-account.json</code> に置いておきます。認証情報なので <code>.gitignore</code> 等で除外しておく必要があります。</p>
+<h3 id="functions-上で-homegraph-api-を利用する"><a href="#functions-上で-homegraph-api-を利用する">functions 上で HomeGraph API を利用する</a></h3>
+<p>API クライアントのライブラリを導入します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-txt"><span class="line"><span>npm i googleapis</span></span></code></pre>
+<p>こんなかんじでクライアントを定義します。</p>
+<pre><code class="language-typescript:funcitons/src/index.ts">import { google } from "googleapis";
+
+const homegraph = google.homegraph({
+  version: "v1",
+  auth: new google.auth.GoogleAuth({
+    credentials: require("../service-account.json"),
+    scopes: ["https://www.googleapis.com/auth/homegraph"],
+  }),
+});
+</code></pre>
+<h2 id="フルフィルメントの実装"><a href="#フルフィルメントの実装">フルフィルメントの実装</a></h2>
+<p>前回適当に実装したフルフィルメントをそれなりに実装していきます。</p>
+<h3 id="sync"><a href="#sync">SYNC</a></h3>
+<p><a href="https://developers.google.com/assistant/smarthome/develop/process-intents#list-devices">https://developers.google.com/assistant/smarthome/develop/process-intents#list-devices</a></p>
+<p>特にスマートホームアプリセットアップ時に実行されます。操作可能なデバイス一覧を返します。</p>
+<p>前回のとりあえず処理から特に変更ないです。</p>
+<pre><code class="language-ts:functions/src/index.ts">app.onSync(async (body, headers) =&gt; {
+  const id = await getAgentUserId(headers);
+
+  return {
+    requestId: body.requestId,
+    payload: {
+      agentUserId: id || "",
+      devices: typeof id === "undefined" ? [] : [CeilingLight],
+    },
+  };
+});
+</code></pre>
+<h3 id="query"><a href="#query">QUERY</a></h3>
+<p><a href="https://developers.google.com/assistant/smarthome/develop/process-intents#handle_query_intents">https://developers.google.com/assistant/smarthome/develop/process-intents#handle_query_intents</a></p>
+<p>現在のデバイスの状態、例えば照明がついているかを取得します。</p>
+<p>HomeGraph 上にあるデバイスの状態を取得し、レスポンスボディに含めます。</p>
+<pre><code class="language-ts:functions/src/index.ts">app.onQuery(async (body, headers) =&gt; {
+  const id = await getAgentUserId(headers);
+
+  if (typeof id === "undefined") {
+    return {
+      requestId: body.requestId,
+      payload: {
+        devices: {},
+      },
+    };
+  }
+
+  // 本当は CeilingLight であることを確認するべき。
+  const device = body.inputs[0].payload.devices[0];
+
+  const res = await homegraph.devices.query({
+    requestBody: {
+      requestId: body.requestId,
+      agentUserId: id,
+      inputs: [
+        {
+          payload: {
+            devices: [
+              {
+                id: device.id,
+              },
+            ],
+          },
+        },
+      ],
+    },
+  });
+
+  return {
+    requestId: body.requestId,
+    payload: {
+      devices: {
+        [CeilingLight.id]: {
+          status: "SUCCESS",
+          online: true,
+          // とりあえず照明の ON / OFF だけ。
+          on:
+            typeof res.data.payload?.devices?.[CeilingLight.id]?.on ===
+            "boolean"
+              ? res.data.payload.devices[CeilingLight.id].on
+              : false,
+        },
+      },
+    },
+  };
+});
+</code></pre>
+<h3 id="execute"><a href="#execute">EXECUTE</a></h3>
+<p><a href="https://developers.google.com/assistant/smarthome/develop/process-intents#handle_query_intents">https://developers.google.com/assistant/smarthome/develop/process-intents#handle_query_intents</a></p>
+<p>デバイスの状態を更新します。</p>
+<p>HomeGraph 上にあるデバイスの状態を更新するには <a href="https://developers.google.com/assistant/smarthome/develop/report-state">Report State</a> を利用します。</p>
+<pre><code class="language-ts:functions/src/index.ts">app.onExecute(async (body, headers) =&gt; {
+  const id = await getAgentUserId(headers);
+
+  if (typeof id === "undefined") {
+    return {
+      requestId: body.requestId,
+      payload: { commands: [] },
+    };
+  }
+
+  // とりあえず照明の ON / OFF だけみる。
+  const device = body.inputs[0].payload.commands[0].devices[0];
+  const execution = body.inputs[0].payload.commands[0].execution[0];
+  const states = {
+    on: execution.params?.on === true,
+  };
+
+  await homegraph.devices.reportStateAndNotification({
+    requestBody: {
+      requestId: body.requestId,
+      agentUserId: id,
+      payload: {
+        devices: {
+          states: {
+            [device.id]: states,
+          },
+        },
+      },
+    },
+  });
+
+  return {
+    requestId: body.requestId,
+    payload: {
+      commands: [
+        {
+          ids: [device.id],
+          status: "SUCCESS",
+          states: { ...states, online: true },
+        },
+      ],
+    },
+  };
+});
+</code></pre>
+<h3 id="disconnect"><a href="#disconnect">DISCONNECT</a></h3>
+<p><a href="https://developers.google.com/assistant/smarthome/develop/process-intents#unlink">https://developers.google.com/assistant/smarthome/develop/process-intents#unlink</a></p>
+<p>アプリを Google Assistant 上から解除する際に実行されます。</p>
+<p>前回のとりあえず処理から特に変更ないです。</p>
+<pre><code class="language-ts:functions/src/index.ts">app.onDisconnect(() =&gt; {
+  functions.logger.log("User account unlinked from Google Assistant");
+  return {};
+});
+</code></pre>
+<h2 id="実際に動かしてみる"><a href="#実際に動かしてみる">実際に動かしてみる</a></h2>
+<p>ここで deploy して…でもいいですが、デバッグ等で頻繁にデバッグすることになるので、 local 上で functions を起動し、 <a href="https://ngrok.com/">ngrok</a> で公開して検証します。</p>
+<p>先ずは ngrok をインストールします。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">scoop</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> install</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ngrok</span></span></code></pre>
+<p>別途エミュレータも起動しておきます。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">npm</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> run</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> build</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">firebase</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> emulators:start</span></span></code></pre>
+<p>エミュレータ上では functions が 5001 ポートで起動しているはずです。なので ngrok で 5001 ポートを公開します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">ngrok</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> http</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 5001</span></span></code></pre>
+<p>これで ngrok 上から local の <code>/fulfillment</code> にアクセスできるはずです。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">https://example.ngrok.io/[PROJECT_ID]/asia-northeast1/fulfillment</span></span></code></pre>
+<p>この URL を(前回)[/articles/20221001-google-smart-home-04]実施したアクションの登録と同様に登録します。既存通りこれで動作するはずです。</p>
+<h2 id="デバッグ"><a href="#デバッグ">デバッグ</a></h2>
+<p>local 上のログは <a href="http://127.0.0.1:4000/logs">http://127.0.0.1:4000/logs</a> より確認できるはずです。</p>
+<p>HomeGraph の状況は <a href="https://smarthome-test-suite.withgoogle.com/devices">Home Graph Viewer</a> より確認できます。</p>
+<h2 id="つづく"><a href="#つづく">つづく</a></h2>
+<p>次は自宅にある実際の家電と連携させます。</p></div></article></div></div></body></html>

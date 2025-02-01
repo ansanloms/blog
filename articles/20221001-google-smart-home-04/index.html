@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Google Home から自前のスマートリモコンを操作しました - 04. スマートホームアプリの登録</title><link rel="stylesheet" href="/blog/styles/palette.css"><link rel="stylesheet" href="/blog/styles/general.css"><link rel="stylesheet" href="/blog/styles/layout.css"><link rel="stylesheet" href="/blog/styles/top.css"><link rel="stylesheet" href="/blog/styles/article.css"></head><body><div class="container"><div class="content"><ul class="meta"><li class="item"><span class="label">Created at</span><span class="value">2022-09-30</span></li></ul><article class="article"><div><h1 id="google-home-から自前のスマートリモコンを操作しました---04-スマートホームアプリの登録"><a href="#google-home-から自前のスマートリモコンを操作しました---04-スマートホームアプリの登録">Google Home から自前のスマートリモコンを操作しました - 04. スマートホームアプリの登録</a></h1>
+<p><a href="/blog/articles/20221001-google-smart-home-03/">このまえ</a>からの続きです。</p>
+<h2 id="アクション名の設定"><a href="#アクション名の設定">アクション名の設定</a></h2>
+<p>任意のアクション名を設定します。</p>
+<p>Action Console の対象プロジェクトに遷移し、上記メニューの[Develop]-&gt;[Invocation]を選択します。</p>
+<p><img src="/blog/assets/images/20221001-google-smart-home-04/actions-console-invocation.png" alt="Actions"></p>
+<p>設定したら右上の[Save]を押下します。</p>
+<h2 id="アクションの登録"><a href="#アクションの登録">アクションの登録</a></h2>
+<p>実装したインテントを Action Console 上で設定していきます。</p>
+<p>先ずは Firebase functions を徐にデプロイします。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">npm</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> run</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> fix</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">firebase</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> deploy</span></span></code></pre>
+<p><code>/fulfillment</code> が function 上にデプロイされた際の URL を確認しておきます。</p>
+<p>Action Console の対象プロジェクトに遷移し、上記メニューの[Develop]-&gt;[Actions]を選択します。</p>
+<p><img src="/blog/assets/images/20221001-google-smart-home-04/actions-console-actions.png" alt="Actions"></p>
+<table>
+<thead>
+<tr>
+<th align="left"></th>
+<th align="left">値</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Fulfillment URL</td>
+<td align="left"><code>/fulfillment</code> が function 上にデプロイされた際の URL</td>
+</tr>
+<tr>
+<td align="left">Log level control</td>
+<td align="left">とりあえず <code>All</code></td>
+</tr>
+</tbody>
+</table>
+<p>他はデフォルトのままにします。</p>
+<p>設定したら右上の[Save]を押下します。</p>
+<h2 id="アカウントのリンク"><a href="#アカウントのリンク">アカウントのリンク</a></h2>
+<p>続いて OAuth 2.0 サーバ(今回は Auth0)の情報を Action Console 上で設定していきます。</p>
+<p>Action Console の対象プロジェクトに遷移し、上記メニューの[Develop]-&gt;[Account linking]を選択します。</p>
+<h3 id="oauth-client-information"><a href="#oauth-client-information">OAuth Client Information</a></h3>
+<p><img src="/blog/assets/images/20221001-google-smart-home-04/actions-console-oauth-client-information.png" alt="OAuth Client Information"></p>
+<p>次のように設定します。</p>
+<p><code>Authorization URL</code> と <code>Token URL</code> に関しては Auth0 コンソールの[Applications]-&gt;[対象 Application]-&gt;[Settings]内の Advanced Settings からも確認できます。</p>
+<table>
+<thead>
+<tr>
+<th align="left"></th>
+<th align="left">値</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Client ID issued by your Actions to Google</td>
+<td align="left"><code>[AUTH0_CLIENT_ID]</code></td>
+</tr>
+<tr>
+<td align="left">Client secret</td>
+<td align="left"><code>[AUTH0_CLIENT_SECRET]</code></td>
+</tr>
+<tr>
+<td align="left">Authorization URL</td>
+<td align="left"><code>https://[AUTH0_DOMAIN]/authorize</code></td>
+</tr>
+<tr>
+<td align="left">Token URL</td>
+<td align="left"><code>https://[AUTH0_DOMAIN]/oauth/token</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="use-your-app-for-account-linking-optional"><a href="#use-your-app-for-account-linking-optional">Use your app for account linking (optional)</a></h3>
+<p>ここはなにも設定せずに次へ。</p>
+<h3 id="configure-your-client-optional"><a href="#configure-your-client-optional">Configure your client (optional)</a></h3>
+<p><img src="/blog/assets/images/20221001-google-smart-home-04/actions-console-configure-your-client.png" alt="Configure your client"></p>
+<p>認証時に取得できるユーザ情報を指定します。とりあえず以下を設定しておきます。実際使うのは openid だけなはずです。</p>
+<ul>
+<li>openid</li>
+<li>email</li>
+</ul>
+<p>ここまで設定したら右上の[Save]を押下します。</p>
+<h2 id="スマートホームアプリを-google-assistant-に登録する"><a href="#スマートホームアプリを-google-assistant-に登録する">スマートホームアプリを Google Assistant に登録する</a></h2>
+<p>作成したスマートホームアプリを自分のアカウントの Google Assistant に関連付けます。</p>
+<p>スマートフォンに <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.chromecast.app">Google Home アプリ</a>をインストールします。</p>
+<p>アプリ上の[Settings]を押下します。</p>
+<p><img src="/blog/assets/images/20221001-google-smart-home-04/home-settings.png" alt="Settings"></p>
+<p>ページ下部の[Works with Google]を押下します。</p>
+<p><img src="/blog/assets/images/20221001-google-smart-home-04/home-works-with-google.png" alt="Works with Google"></p>
+<p>設定したアクション名のアプリがあるはずなので選択します。</p>
+<p><img src="/blog/assets/images/20221001-google-smart-home-04/home-home-control.png" alt="Home Control"></p>
+<p>連携処理に進みます。[Continue]を押下します。</p>
+<p><img src="/blog/assets/images/20221001-google-smart-home-04/home-link.png" alt="Link"></p>
+<p>認証します。 Auth0 上に登録したアカウントでログインします。</p>
+<p><img src="/blog/assets/images/20221001-google-smart-home-04/home-login.png" alt=""></p>
+<p>問題なければ設定したデバイスが登録されます。</p>
+<p><img src="/blog/assets/images/20221001-google-smart-home-04/home-add-devices.png" alt=""></p>
+<p>これで手元の Google Home から虚無にある照明を操作できるようになりました。フルフィルメントの設定がとりあえずなので正常には動作しません。</p>
+<blockquote class="twitter-tweet" data-theme="dark"><p lang="ja" dir="ltr">進捗です。 <a href="https://t.co/BVm2nxQSqt">pic.twitter.com/BVm2nxQSqt</a></p>— ansanloms (@ansanloms) <a href="https://twitter.com/ansanloms/status/1594382929429340160?ref_src=twsrc%5Etfw">November 20, 2022</a></blockquote> <script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<h2 id="つづく"><a href="#つづく">つづく</a></h2>
+<p>次回はフルフィルメントを実装していきます。</p></div></article></div></div></body></html>

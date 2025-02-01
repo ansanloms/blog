@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Google Home から自前のスマートリモコンを操作しました - 02. 認証処理</title><link rel="stylesheet" href="/blog/styles/palette.css"><link rel="stylesheet" href="/blog/styles/general.css"><link rel="stylesheet" href="/blog/styles/layout.css"><link rel="stylesheet" href="/blog/styles/top.css"><link rel="stylesheet" href="/blog/styles/article.css"></head><body><div class="container"><div class="content"><ul class="meta"><li class="item"><span class="label">Created at</span><span class="value">2022-09-30</span></li></ul><article class="article"><div><h1 id="google-home-から自前のスマートリモコンを操作しました---02-認証処理"><a href="#google-home-から自前のスマートリモコンを操作しました---02-認証処理">Google Home から自前のスマートリモコンを操作しました - 02. 認証処理</a></h1>
+<p><a href="/blog/articles/20221001-google-smart-home-01/">このまえ</a>からの続きです。</p>
+<h2 id="ユーザ認証サーバ構築"><a href="#ユーザ認証サーバ構築">ユーザ認証サーバ構築</a></h2>
+<p><a href="https://developers.google.com/assistant/smarthome/develop/implement-oauth">https://developers.google.com/assistant/smarthome/develop/implement-oauth</a></p>
+<p>スマートホームアクションではユーザ認証機能必要です。その為には OAuth 2.0 サーバ構築が必要です。</p>
+<p><del>OAuth 知識がゆるふわな為</del>かなり面倒なので、認証処理はぜんぶ <a href="https://auth0.com">Auth0</a> にて用意します。</p>
+<p>Auth0 アカウントを作成しておきます。</p>
+<h3 id="tenant-の作成"><a href="#tenant-の作成">Tenant の作成</a></h3>
+<p>まずは Tenant を作成します。プロジェクトのドメインみたいなやつです。コンソール左上のメニューから[Create tenant]を選択します。</p>
+<p>アカウント作成時にデフォルトで Tenant をつくっているはずですなので、それを利用してもいいとおもいます。</p>
+<p><img src="/blog/assets/images/20221001-google-smart-home-02/auth0-create-tenant.png" alt="Create Tenant"></p>
+<ul>
+<li>Tenant Domain: これがそのまま認証 URL や token URL 等のドメインになります。</li>
+<li>Region: ホスト先を選択します。</li>
+<li>Environment Tag: 環境を選択します。個人利用ですし無料枠内で利用しますし、 Development でいいはずです。</li>
+</ul>
+<h3 id="application-の作成"><a href="#application-の作成">Application の作成</a></h3>
+<p>実際にユーザ認証する OAuth 2.0 アプリケーションを用意します。メニューから[Application]を選択します。</p>
+<p>既に規定の Application がありますが、[+ Create Application]を押下して別途新たに作成します。もちろん規定の Application を流用してもいいと思います。</p>
+<p><img src="/blog/assets/images/20221001-google-smart-home-02/auth0-create-application.png" alt="Create Application"></p>
+<ul>
+<li>Name: なにかわかりやすい名前。今回は <code>Smart home Action</code> にしました。</li>
+<li>Choose an application type: <code>Regular Web Applications</code> を選択します。</li>
+</ul>
+<p>Create を押下で Application が作成されます。 Quick Start が表示されますが無視して Setting に移動します。</p>
+<h4 id="basic-information"><a href="#basic-information">Basic Information</a></h4>
+<p>以下を控えておきます。</p>
+<ul>
+<li><code>Domain</code></li>
+<li><code>Client ID</code></li>
+<li><code>Client Secret</code></li>
+</ul>
+<p>以下[AUTH0_DOMAIN]/[AUTH0_CLIENT_ID]/[AUTH0_CLIENT_SECRET]で提示します。</p>
+<h4 id="application-properties"><a href="#application-properties">Application Properties</a></h4>
+<p><code>Application Type</code> を <code>Regular Web Applications</code> にしておきます。作成時に選択しているはずなので既に選択されているはずです。</p>
+<h4 id="application-uris"><a href="#application-uris">Application URIs</a></h4>
+<p><code>Allowded Callback URLs</code> には以下を設定します。カンマ区切り 1 行で指定します。</p>
+<p>[PROJECT_ID]には Actions Console 上(ないしは Firebase の) Project ID を指定します。</p>
+<ul>
+<li>[A]<code>https://[AUTH0_DOMAIN]/userinfo</code></li>
+<li>[B]<code>https://oauth-redirect.googleusercontent.com/r/[PROJECT_ID]</code></li>
+<li>[C]<code>https://oauth-redirect-sandbox.googleusercontent.com/r/[PROJECT_ID]</code></li>
+</ul>
+<p>[A]は認証したユーザ情報を取得する際に利用します。詳しくは <a href="https://auth0.com/docs/api/authentication#get-user-info">https://auth0.com/docs/api/authentication#get-user-info</a> を参照ください。</p>
+<p>[B]/[C]は承認リクエストを処理する際に利用します。詳しくは <a href="https://developers.google.com/assistant/smarthome/develop/implement-oauth#implement_your_oauth_20_server">https://developers.google.com/assistant/smarthome/develop/implement-oauth#implement_your_oauth_20_server</a> を参照ください。</p>
+<p><code>Allowed Web Origins</code> には以下を設定します。カンマ区切り 1 行で指定します。</p>
+<ul>
+<li><code>https://oauth-redirect.googleusercontent.com</code></li>
+<li><code>https://oauth-redirect-sandbox.googleusercontent.com</code></li>
+</ul>
+<p>ここまでやったら保存します。</p>
+<h3 id="接続設定"><a href="#接続設定">接続設定</a></h3>
+<p>続いて Connecitons タブに移動します。ここでは認証方法を指定します。</p>
+<p>デフォルトだと以下が有効になっているはずです。</p>
+<ul>
+<li><code>Username-Password-Authentication</code> : 自前の username / password で認証する。</li>
+<li><code>google-oauth2</code> : Google アカウントを用いて認証する。</li>
+</ul>
+<p>今回はじぶんちの家電を操作するので、自分以外のアカウントは必要ないです。</p>
+<p>なので <code>google-oauth2</code> は無効にし、 <code>Username-Password-Authentication</code> のみでやっていきます。</p>
+<h3 id="アカウントの追加"><a href="#アカウントの追加">アカウントの追加</a></h3>
+<p>アカウントも Auth0 のコンソール上から予め作っておきます。外部から追加することはないです。</p>
+<p>メニューから[User Management]-&gt;[Users]を選択し、[+ Create user]から任意のユーザを作っておきます。</p>
+<p>アカウントが作成されたら、対象アカウントの[Details]内にある[Email]を edit し、 <code>Set email as Verified</code> を押下してメールアドレスを承認しておきます。</p>
+<h2 id="つづく"><a href="#つづく">つづく</a></h2>
+<p>ここまでで認証処理を用意しました。</p>
+<p>次は実際に Home アプリへ Smart Home Action を追加してきます。</p></div></article></div></div></body></html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Raspberry Pi 4 に Ubuntu Server を導入しました</title><link rel="stylesheet" href="/blog/styles/palette.css"><link rel="stylesheet" href="/blog/styles/general.css"><link rel="stylesheet" href="/blog/styles/layout.css"><link rel="stylesheet" href="/blog/styles/top.css"><link rel="stylesheet" href="/blog/styles/article.css"></head><body><div class="container"><div class="content"><ul class="meta"><li class="item"><span class="label">Created at</span><span class="value">2021-05-02</span></li></ul><article class="article"><div><h1 id="raspberry-pi-4-に-ubuntu-server-を導入しました"><a href="#raspberry-pi-4-に-ubuntu-server-を導入しました">Raspberry Pi 4 に Ubuntu Server を導入しました</a></h1>
+<p>Raspberry Pi 4 を買いました。うまれてはじめての Raspberry Pi です。</p>
+<p>Ubuntu Server 20.04.2 LTS を導入してやっていこうとおもいます。</p>
+<h2 id="用意したもの"><a href="#用意したもの">用意したもの</a></h2>
+<h3 id="買ったもの"><a href="#買ったもの">買ったもの</a></h3>
+<ul>
+<li><a href="https://raspberry-pi.ksyic.com/main/index/pdp.id/549,552,550,551/pdp.open/549">Raspberry Pi 4 Model B/8GB OKdo(RS)</a></li>
+</ul>
+<p>本体です。 RAM 4 GB でも十分やっていきできる気がしましたが、 8 GB との値段差が 2000 円程度だったので 8 GB にしました。</p>
+<ul>
+<li><a href="https://flirc.tv/more/raspberry-pi-4-case">Flirc Raspberry Pi 4 Case</a></li>
+</ul>
+<p>ケースです。アルミのボディがかっこいいです。つめたいです。</p>
+<ul>
+<li><a href="https://www.ankerjapan.com/item/A2013.html">Anker PowerPort+ 1 Quick Charge 3.0 &amp; PowerIQ</a></li>
+</ul>
+<p>電源です。 Raspberry Pi 4 Model B の電源要件は 5 V / 3 A なのでそれにみあうものです。</p>
+<ul>
+<li><a href="https://www.amazon.co.jp/dp/B07PXRC27L">Amazon ベーシック USB ケーブル 0.9m (タイプ C - USB-A オス 3.1 Gen2)</a></li>
+</ul>
+<p>電源ケーブルです。なんでもよかった。</p>
+<h3 id="買っていないもの"><a href="#買っていないもの">買っていないもの</a></h3>
+<ul>
+<li>microSD カード</li>
+</ul>
+<p>おうちに SanDisk 製の 64 GB のものがころがっていたのでそれをつかうことにしました。</p>
+<ul>
+<li>SD カードリーダ</li>
+</ul>
+<p>PC に SD カードスロットがあるので用意していないです。</p>
+<h2 id="用意していないもの"><a href="#用意していないもの">用意していないもの</a></h2>
+<ul>
+<li>マイクロ HDMI ケーブル</li>
+</ul>
+<p>買うのをわすれました。</p>
+<ul>
+<li>LAN ケーブル</li>
+</ul>
+<p>買うのをわすれました。</p>
+<h2 id="作業環境"><a href="#作業環境">作業環境</a></h2>
+<ul>
+<li>Windows 10 Pro</li>
+</ul>
+<h2 id="実施内容"><a href="#実施内容">実施内容</a></h2>
+<p><a href="https://ubuntu.com/download/raspberry-pi">https://ubuntu.com/download/raspberry-pi</a></p>
+<p>Ubuntu のサイト上に<a href="https://ubuntu.com/tutorials/how-to-install-ubuntu-on-your-raspberry-pi">チュートリアル</a>が載っていました。これにそってやっていきます。</p>
+<p>今回はマイクロ HDMI ケーブルがないので、所謂ヘッドレス状態でのセットアップとなります。あと LAN ケーブルもないので LAN には wi-fi でつなぐことになります。</p>
+<h3 id="microsd-に-ubuntu-server-のイメージを書きこむ"><a href="#microsd-に-ubuntu-server-のイメージを書きこむ">microSD に Ubuntu Server のイメージを書きこむ</a></h3>
+<p><a href="https://www.raspberrypi.org/software/">Raspberry Pi Imager</a> ってやつをつかいます。これでイメージのダウンロードから microSD への書き込みまでやってくれるすごいやつです。</p>
+<p><a href="https://scoop.sh/">scoop</a> の extas bucket にあったのでここからインストールします。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-txt"><span class="line"><span>scoop install raspberry-pi-imager</span></span></code></pre>
+<p>起動したら <code>Operating System</code> から書き込む OS を選択します。</p>
+<p>今回は <code>Other general purpose OS</code> &gt; <code>Ubuntu</code> &gt; <code>Ubuntu Server 20.04.2 LTS (RPi 3/4/400) 64-bit</code> を選択しました。</p>
+<p>続いて <code>Storage</code> で書き込む microSD カードを選択します。</p>
+<p><code>WRITE</code> を押下します。 microSD カードの中身が全部消える旨の Confirm がでるので、問題なければ <code>YES</code> を押下します。</p>
+<p>問題なければ書き込みがはじまります。<a href="https://ubuntu.com/tutorials/how-to-install-ubuntu-on-your-raspberry-pi#2-prepare-the-sd-card">チュートリアル</a>によると魔法がかかっちゃうらしいです。</p>
+<p>魔法は 10 分くらいでかかりました。自動的に microSD がアンマウントされるので、再度 PC にマウントさせます。 <code>system-boot</code> ってパーティションのみになっているはずです。</p>
+<h3 id="cloud-init-の設定を書き換える"><a href="#cloud-init-の設定を書き換える">cloud-init の設定を書き換える</a></h3>
+<p>初回起動時には <a href="https://cloudinit.readthedocs.io/en/latest/">cloud-init</a> ってやつで OS の初期設定がされます。その初期設定時に必要な各種設定が system-boot パーティション内に存在するので、これを書き換えていきます。</p>
+<h4 id="user-data"><a href="#user-data">user-data</a></h4>
+<p>cloud-init におけるユーザ情報を設定します。こんなかんじで書き換えました。</p>
+<pre><code class="language-diff:user-data"> chpasswd:
+   expire: true
+   list:
+-  - ubuntu:ubuntu
++  - ansanloms:ubuntu
++
++system_info:
++  default_user:
++    name: ansanloms
+
+ # Enable password authentication with the SSH daemon
+-ssh_pwauth: true
++ssh_pwauth: false
++ssh_authorized_keys:
++- ssh-ed25519 AAAA略
++
++# timezone
++timezone: Asia/Tokyo
+
+ ## On first boot, use ssh-import-id to give the specific users SSH access to
+ ## the default user
+</code></pre>
+<p><code>system_info</code> で作成されるユーザのユーザ名を設定します。デフォルトのユーザ名ではコメントの通り <code>ubuntu</code> になります。</p>
+<blockquote>
+<p>By default this sets up an initial user called "ubuntu" with password
+"ubuntu",</p>
+</blockquote>
+<p><code>chpasswd</code> はユーザのパスワードを設定します。デフォルトのユーザ名を変更したので、ここも書き換えます。尚、デフォルトユーザのパスワードは
+<code>ubuntu</code> になります。パスワードは初回ログイン時に変更を促されます。ちなみに <code>expire</code> を false
+にすると、初回ログイン時にパスワード変更を実施しなくなります。</p>
+<p><code>ssh_pwauth</code> は ssh でのパスワード認証を有効にするかどうかの設定です。 ssh でパスワード認証をしたくないので、これを false
+にします。</p>
+<p><code>ssh_authorized_keys</code> は ssh での公開鍵認証で使用する公開鍵を設定します。</p>
+<p><code>timezone</code> でタイムゾーンの設定をします。</p>
+<h4 id="network-config"><a href="#network-config">network-config</a></h4>
+<p>cloud-init におけるネットワーク設定です。こんなかんじで書き換えました。</p>
+<pre><code class="language-diff:network-config">@@ -12,13 +12,13 @@
+   eth0:
+     dhcp4: true
+     optional: true
+-#wifis:
+-#  wlan0:
+-#    dhcp4: true
+-#    optional: true
+-#    access-points:
+-#      myhomewifi:
+-#        password: "S3kr1t"
++wifis:
++  wlan0:
++    dhcp4: true
++    optional: true
++    access-points:
++      "totemo sugoi ssid":
++        password: "totemosugoipassword"
+ #      myworkwifi:
+ #        password: "correct battery horse staple"
+ #      workssid:
+</code></pre>
+<p><code>access-points</code> 下に接続する wi-fi の SSID とパスワードを設定します。</p>
+<h3 id="起動する"><a href="#起動する">起動する</a></h3>
+<p>microSD を Raspberry-pi に差し込んだ後 USB Type-C ケーブルを電源につなぎます。</p>
+<p>これで cloud-init の処理とかがうごいている…はずです。いかんせんなにもみえないので。</p>
+<h3 id="再起動する"><a href="#再起動する">再起動する</a></h3>
+<p><a href="https://ubuntu.com/tutorials/how-to-install-ubuntu-on-your-raspberry-pi#3-wifi-or-ethernet">チュートリアル</a>にもある通り、初回起動時はネットワークに接続されません。再起動後、はじめてネットワークに接続されるようです。</p>
+<blockquote>
+<p>Note: During the first boot, your Raspberry Pi will try to connect to this
+network. It will fail the first time around. Simply reboot sudo reboot and it
+will work.</p>
+</blockquote>
+<p>とりあえず緑色の ACT ランプが点かなくなるまでまちました。 10 分くらいまったとおもいます。</p>
+<p>そして、おもむろに給電の USB ケーブルを抜き、再度差し込んで再起動します。この手順あってるのかな…。</p>
+<h3 id="ssh-接続する"><a href="#ssh-接続する">SSH 接続する</a></h3>
+<p>再起動後わりとすぐに SSH 接続できるはずです。</p>
+<p>接続先の IP アドレスを確認します。 arp コマンドで <a href="https://udger.com/resources/mac-address-vendor-detail?name=raspberry_pi_foundation">Raspberry Pi の MAC アドレスの範囲</a>と関連する IP アドレスを調べます。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">arp</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> -a</span><span style="color:#81A1C1;--shiki-light:#81A1C1"> |</span><span style="color:#88C0D0;--shiki-light:#88C0D0"> findstr</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> dc-a6-32</span></span></code></pre>
+<p>IP アドレスがわかったら SSH 接続を試みます。今回はデフォルトのユーザ名を変えているので、そのユーザ名で SSH 接続してみます。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">ssh</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ansanloms@192.168.xx.xx</span></span></code></pre>
+<p>SSH ログイン成功後、 <code>user-data</code> の <code>chpasswd.expire</code> を true にしているのならばパスワードの再設定を求められるはずなので任意設定します。</p>
+<h3 id="パッケージの更新"><a href="#パッケージの更新">パッケージの更新</a></h3>
+<p>SSH ログインできたら、とりあえずパッケージの更新をしておきます。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> apt</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> update</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> apt</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> upgrade</span></span></code></pre>
+<h3 id="完了"><a href="#完了">完了</a></h3>
+<p>よかったですね。</p>
+<h2 id="おわり"><a href="#おわり">おわり</a></h2>
+<p>これからこれでいろいろやっていきたいとおもいます。</p>
+<p><img src="/blog/assets/images/20210503-raspberry-pi/raspberry-pi.png" alt="Raspberry Pi 4"></p></div></article></div></div></body></html>

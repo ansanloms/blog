@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Next.js + TypeScript でやっていきをはじめる手順をまとめました</title><link rel="stylesheet" href="/blog/styles/palette.css"><link rel="stylesheet" href="/blog/styles/general.css"><link rel="stylesheet" href="/blog/styles/layout.css"><link rel="stylesheet" href="/blog/styles/top.css"><link rel="stylesheet" href="/blog/styles/article.css"></head><body><div class="container"><div class="content"><ul class="meta"><li class="item"><span class="label">Created at</span><span class="value">2021-04-29</span></li></ul><article class="article"><div><h1 id="nextjs--typescript-でやっていきをはじめる手順をまとめました"><a href="#nextjs--typescript-でやっていきをはじめる手順をまとめました">Next.js + TypeScript でやっていきをはじめる手順をまとめました</a></h1>
+<p>このブログとかつくりはじめるときの手順とかをまとめようとおもいました。</p>
+<p>2020 年 4 月時点の手順です。</p>
+<h2 id="使用する技術"><a href="#使用する技術">使用する技術</a></h2>
+<ul>
+<li><a href="https://reactjs.org/">React</a> / <a href="https://nextjs.org/">Next.js</a></li>
+<li><a href="https://www.typescriptlang.org/">TypeScript</a></li>
+<li><a href="https://sass-lang.com/">Sass / SCSS</a></li>
+</ul>
+<h2 id="環境構築"><a href="#環境構築">環境構築</a></h2>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">mkdir</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> blog</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">cd</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> blog</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">npm</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> init</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> -y</span></span></code></pre>
+<h3 id="typescript--nextjs"><a href="#typescript--nextjs">TypeScript + Next.js</a></h3>
+<p>TypeScript + Next.js でやっていきます。</p>
+<p><a href="https://nextjs.org/docs/basic-features/typescript">https://nextjs.org/docs/basic-features/typescript</a></p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">npm</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> i</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> next</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> react</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> react-dom</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">npm</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> i</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> -D</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> typescript</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> @types/react</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> @types/react-dom</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> @types/node</span></span></code></pre>
+<p>取り急ぎ開発サーバを起動できる為、 <code>./src/pages</code> に <code>index.tsx</code> を用意します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">mkdir</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ./src/pages</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">vim</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ./src/pages/index.tsx</span></span></code></pre>
+<pre><code class="language-typescript:index.tsx">import React from "react";
+import { NextPage } from "next";
+
+const Index: NextPage = () =&gt; &lt;div&gt;Hello! Next.js&lt;/div&gt;;
+
+export default Index;
+</code></pre>
+<p>開発サーバを起動してみます。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">npx</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> next</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> dev</span></span></code></pre>
+<p><a href="http://localhost:3000/">http://localhost:3000/</a> にて開発サーバを起動していることを確認します。</p>
+<h4 id="tsconfigjson"><a href="#tsconfigjson">tsconfig.json</a></h4>
+<p><code>next dev</code> 時に TypeScript を使用していることを検知すると、自動的に next-env.d.ts および tsconfig.json を生成します。 tsconfig.json のデフォルトでは <code>"strict": false</code> となっています。今回は <code>"strict": true</code> に書き換えてやっていきます。</p>
+<h4 id="scripts"><a href="#scripts">scripts</a></h4>
+<p><code>next build</code> / <code>next start</code> / <code>next export</code> も実行できることを試し、問題なくば package.json の scripts に記述しときます。</p>
+<pre><code class="language-json:package.json">{
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "export": "next export"
+  }
+}
+</code></pre>
+<h4 id="gitigonre"><a href="#gitigonre">.gitigonre</a></h4>
+<p>ついでに <code>.gitigonre</code> も用意しておきます。</p>
+<pre><code class="language-.gitignore">node_modules
+.next
+out
+</code></pre>
+<h3 id="eslint-と-prettier-の導入"><a href="#eslint-と-prettier-の導入">ESLint と Prettier の導入</a></h3>
+<p>ソースコードをきれいにしてく為に <a href="https://eslint.org/">ESLint</a> と <a href="https://prettier.io/">Prettier</a> を導入していきます。</p>
+<p>ESLint では <strong>書式ルール(Formatting rules)</strong> に対応し、 Prettier では <strong>品質ルール(Code-quality rules)</strong> に対応します。</p>
+<blockquote>
+<p><a href="https://prettier.io/docs/en/comparison.html">https://prettier.io/docs/en/comparison.html</a></p>
+</blockquote>
+<h4 id="eslint"><a href="#eslint">ESLint</a></h4>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">npm</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> i</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> -D</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> eslint</span></span></code></pre>
+<p><code>eslint --init</code> で ESLint の初期設定をします。今回はこんなかんじにしました。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">$</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> npx</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> eslint</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --init</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">√</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> How</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> would</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> you</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> like</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> to</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> use</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ESLint?</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ·</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> style</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">√</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> What</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> type</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> of</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> modules</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> does</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> your</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> project</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> use?</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ·</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> esm</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">√</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> Which</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> framework</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> does</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> your</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> project</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> use?</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ·</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> react</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">√</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> Does</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> your</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> project</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> use</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> TypeScript?</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ·</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> Yes</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">√</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> Where</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> does</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> your</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> code</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> run?</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ·</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> browser,</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> node</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">√</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> How</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> would</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> you</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> like</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> to</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> define</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> a</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> style</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> for</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> your</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> project?</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ·</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> guide</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">√</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> Which</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> style</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> guide</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> do</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> you</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> want</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> to</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> follow?</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ·</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> google</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">√</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> What</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> format</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> do</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> you</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> want</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> your</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> config</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> file</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> to</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> be</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> in?</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ·</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> JavaScript</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">√</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> Would</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> you</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> like</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> to</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> install</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> them</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> now</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> with</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> npm?</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ·</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> Yes</span></span></code></pre>
+<p>直下に .eslintrc.js が生成されます。</p>
+<p>実行直後に <code>Warning: React version not specified in eslint-plugin-react settings. See https://github.com/yannickcr/eslint-plugin-react#configuration .</code> と怒られました。</p>
+<p><a href="https://github.com/yannickcr/eslint-plugin-react#configuration">eslint-plugin-react の README.md</a> を参考に .eslintrc.js を次の通り修正します。</p>
+<pre><code class="language-diff:.eslintrc.js">@@ -20,6 +20,11 @@
+     'react',
+     '@typescript-eslint',
+   ],
++  'settings': {
++    'react': {
++      'version': 'detect',
++    },
++  },
+   'rules': {
+   },
+ };
+</code></pre>
+<p>取り急ぎ <code>eslint --ignore-path .gitignore .</code> を実行し、問題なく Lint 処理ができることを確認します。ソースコードに何も問題なければなにも出力されないはずです。</p>
+<h4 id="prettier"><a href="#prettier">Prettier</a></h4>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">npm</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> i</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> -D</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> prettier</span></span></code></pre>
+<p>取り急ぎ <code>prettier --check --ignore-path .gitignore .</code> を実行し、問題なく Lint 処理ができることを確認します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">$</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> npx</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> prettier</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --check</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --ignore-path</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> .gitignore</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> .</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">Checking</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> formatting...</span></span>
+<span class="line"><span style="color:#ECEFF4;--shiki-light:#ECEFF4">[</span><span style="color:#D8DEE9FF;--shiki-light:#D8DEE9FF">warn</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">]</span><span style="color:#D8DEE9FF;--shiki-light:#D8DEE9FF"> .eslintrc.js</span></span>
+<span class="line"><span style="color:#ECEFF4;--shiki-light:#ECEFF4">[</span><span style="color:#D8DEE9FF;--shiki-light:#D8DEE9FF">warn</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">]</span><span style="color:#D8DEE9FF;--shiki-light:#D8DEE9FF"> next-env.d.ts</span></span>
+<span class="line"><span style="color:#ECEFF4;--shiki-light:#ECEFF4">[</span><span style="color:#D8DEE9FF;--shiki-light:#D8DEE9FF">warn</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">]</span><span style="color:#D8DEE9FF;--shiki-light:#D8DEE9FF"> tsconfig.json</span></span>
+<span class="line"><span style="color:#ECEFF4;--shiki-light:#ECEFF4">[</span><span style="color:#D8DEE9FF;--shiki-light:#D8DEE9FF">warn</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">]</span><span style="color:#D8DEE9FF;--shiki-light:#D8DEE9FF"> Code style issues found in the above file(</span><span style="color:#88C0D0;--shiki-light:#88C0D0">s</span><span style="color:#D8DEE9FF;--shiki-light:#D8DEE9FF">). Forgot to run Prettier</span><span style="color:#81A1C1;--shiki-light:#81A1C1">?</span></span></code></pre>
+<p>そうすると現時点でフォーマット対象のファイルがあるようです。このうち next-env.d.ts 内の <a href="https://www.typescriptlang.org/docs/handbook/triple-slash-directives.html">Triple-slash directives</a> がフォーマット対象になってしまうので、とりあえず .prettierignore を用意して next-env.d.ts を Prettier
+対象から除外します。</p>
+<pre><code class="language-txt.prettierignore">next-env.d.ts
+</code></pre>
+<h4 id="eslint-と-prettier-の併用に伴う設定"><a href="#eslint-と-prettier-の併用に伴う設定">ESLint と Prettier の併用に伴う設定</a></h4>
+<p>ちょっと前まではよく <a href="https://www.npmjs.com/package/eslint-plugin-prettier">eslint-plugin-prettier</a> を導入して ESLint 側から Prettier を実行するようにしていましたが、 2021 年 4 月時点で<a href="https://prettier.io/docs/en/integrating-with-linters.html">公式</a>で推奨していない方式のようです。</p>
+<p>現行は ESLint 上で Prettier と競合するルールを OFF にし、 ESLint と Prettier を別々に実行する方式が推奨されているようです。</p>
+<p>Prettier と競合するルールをすべて OFF にする <a href="https://www.npmjs.com/package/eslint-config-prettier">eslint-config-prettier</a> を導入し .eslintrc.js に旨追記します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-txt"><span class="line"><span>npm i -D eslint-config-prettier</span></span></code></pre>
+<pre><code class="language-diff:.eslintrc.js">@@ -7,6 +7,7 @@
+   'extends': [
+     'plugin:react/recommended',
+     'google',
++    'prettier',
+   ],
+   'parser': '@typescript-eslint/parser',
+   'parserOptions': {
+</code></pre>
+<h4 id="scripts-1"><a href="#scripts-1">scripts</a></h4>
+<p>package.json に lint およびそれを fix させる script を追記します。</p>
+<pre><code class="language-json:package.json">"scripts": {
+  "lint:eslint": "eslint --ignore-path .gitignore .",
+  "lint:prettier": "prettier --check --ignore-path .gitignore .",
+  "fix:eslint": "eslint --ignore-path .gitignore --fix .",
+  "fix:prettier": "prettier --write --ignore-path .gitignore ."
+},
+</code></pre>
+<p><a href="https://www.npmjs.com/package/npm-run-all">npm-run-all</a> を導入し lint および fix を一括でできるようにします。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">npm</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> i</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> -D</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> npm-run-all</span></span></code></pre>
+<pre><code class="language-json:package.json">"scripts": {
+  "lint": "run-s lint:*",
+  "fix": "run-s fix:*"
+},
+</code></pre>
+<h3 id="sass--scss"><a href="#sass--scss">Sass / SCSS</a></h3>
+<p><a href="https://nextjs.org/docs/basic-features/built-in-css-support#sass-support">https://nextjs.org/docs/basic-features/built-in-css-support#sass-support</a></p>
+<p>SCSS をかいていけるようにします。 Next.js では <a href="https://www.npmjs.com/package/sass">sass</a> を導入するだけでつかえます。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">npm</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> install</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> sass</span></span></code></pre>
+<p>尚 <a href="https://github.com/css-modules/css-modules">Css Modules</a> でやっていくつもりです。 Next.js では何も設定せずに CSS Modules がつかえます。</p>
+<h2 id="おわり"><a href="#おわり">おわり</a></h2>
+<p>ボイラープレートてきなそれとして用意しておけばいいとは思いましたが、すぐに手順とかかわりそうだなとおもってやめたりしました。</p></div></article></div></div></body></html>

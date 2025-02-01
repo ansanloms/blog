@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Raspberry Pi を mDNS に対応させました</title><link rel="stylesheet" href="/blog/styles/palette.css"><link rel="stylesheet" href="/blog/styles/general.css"><link rel="stylesheet" href="/blog/styles/layout.css"><link rel="stylesheet" href="/blog/styles/top.css"><link rel="stylesheet" href="/blog/styles/article.css"></head><body><div class="container"><div class="content"><ul class="meta"><li class="item"><span class="label">Created at</span><span class="value">2022-09-24</span></li></ul><article class="article"><div><h1 id="raspberry-pi-を-mdns-に対応させました"><a href="#raspberry-pi-を-mdns-に対応させました">Raspberry Pi を mDNS に対応させました</a></h1>
+<p>Raspberry Pi の名前解決には Bonjour を利用していましたが、 Raspberry Pi 上に mDNS を設定するようにしました。</p>
+<h2 id="avahi-のインストール"><a href="#avahi-のインストール">Avahi のインストール</a></h2>
+<p><a href="http://avahi.org/">http://avahi.org/</a></p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> apt</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> install</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> avahi-daemon</span></span></code></pre>
+<h2 id="ホスト名の解決"><a href="#ホスト名の解決">ホスト名の解決</a></h2>
+<p>Avahi には <code>hostname.local</code> という名前を使ってローカルでホスト名を解決する機能があります。</p>
+<p>とりあえずホスト名を設定します。 <code>/etc/hostname</code> にホスト名を記述して再起動します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">$</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> cat</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /etc/hostname</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">raspberrypi</span></span></code></pre>
+<p>続いて <code>/etc/nsswitch.conf</code> の host 行を修正します。 <code>resolve</code> と <code>dns</code> の前に <code>mdns4_minimal</code> を追記します。が、おそらくデフォルトでそのようになっているはずです。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">$</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> cat</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /etc/nsswitch.conf</span><span style="color:#81A1C1;--shiki-light:#81A1C1"> |</span><span style="color:#88C0D0;--shiki-light:#88C0D0"> grep</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> hosts</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">hosts:</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">          files</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> mdns4_minimal</span><span style="color:#D8DEE9FF;--shiki-light:#D8DEE9FF"> [NOTFOUND=return] dns</span></span></code></pre>
+<h2 id="サービスの設定"><a href="#サービスの設定">サービスの設定</a></h2>
+<p>SSH サービスの設定します。サンプルがあるのでそのままそれを利用します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> cp</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /usr/share/doc/avahi-daemon/examples/ssh.service</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /etc/avahi/services/ssh.service</span></span></code></pre>
+<p>デーモンを再起動します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> systemctl</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> daemon-reload</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> systemctl</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> restart</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> avahi-daemon</span></span></code></pre>
+<p>起動しているか確認します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> systemctl</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> status</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> avahi-daemon</span></span></code></pre>
+<h2 id="おわり"><a href="#おわり">おわり</a></h2>
+<p>これで <code>raspberrypi.local</code> で SSH できるはずです。 Samba 等もこのホスト名でいけるはずです。</p>
+<h2 id="参考にしたドキュメント"><a href="#参考にしたドキュメント">参考にしたドキュメント</a></h2>
+<ul>
+<li><a href="https://wiki.archlinux.jp/index.php/Avahi">https://wiki.archlinux.jp/index.php/Avahi</a></li>
+</ul></div></article></div></div></body></html>

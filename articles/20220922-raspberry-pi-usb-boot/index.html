@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Raspberry Pi 4 で USB に繋いだ SSD から起動するようにしました</title><link rel="stylesheet" href="/blog/styles/palette.css"><link rel="stylesheet" href="/blog/styles/general.css"><link rel="stylesheet" href="/blog/styles/layout.css"><link rel="stylesheet" href="/blog/styles/top.css"><link rel="stylesheet" href="/blog/styles/article.css"></head><body><div class="container"><div class="content"><ul class="meta"><li class="item"><span class="label">Created at</span><span class="value">2022-09-21</span></li></ul><article class="article"><div><h1 id="raspberry-pi-4-で-usb-に繋いだ-ssd-から起動するようにしました"><a href="#raspberry-pi-4-で-usb-に繋いだ-ssd-から起動するようにしました">Raspberry Pi 4 で USB に繋いだ SSD から起動するようにしました</a></h1>
+<p>M.2 拡張スロットが付いた Raspberry Pi 4 のケースを買ったので、SSD から起動するようにしました。</p>
+<h2 id="用意したもの"><a href="#用意したもの">用意したもの</a></h2>
+<ul>
+<li><a href="https://www.argon40.com/products/argon-one-m-2-case-for-raspberry-pi-4">Argon ONE M.2 Case for Raspberry Pi 4</a></li>
+</ul>
+<p>別途電子工作をやろうと思い立ちまして購入しました。</p>
+<p><a href="https://flirc.tv/products/flirc-raspberrypi4-silver?variant=43085036454120">前回購入したケース</a>では GPIO ピンが見えないので新しくケースを買ったら M.2 の SSD スロットも付いていたので今回の SSD 起動をやってみようと思った次第です。</p>
+<ul>
+<li><a href="https://www.amazon.co.jp/gp/product/B09W2Q1BXH">MMOMENT 256GB M.2 2280 SSD</a></li>
+</ul>
+<p>なんかタイムセールで 3,000 円くらいだったので買えました。最悪ダメなやつだったとしてもこの値段なら諦められるかなってかんじです。</p>
+<h2 id="実施内容"><a href="#実施内容">実施内容</a></h2>
+<p>SSD にも Ubuntu Server を導入しようと思います。</p>
+<h3 id="microsd-から-raspberry-pi-os-lite-64-bit-を起動"><a href="#microsd-から-raspberry-pi-os-lite-64-bit-を起動">microSD から Raspberry Pi OS Lite (64-bit) を起動</a></h3>
+<p>ブートローダの更新や SSD への書き込みの為に、先ずは microSD から Raspberry Pi の起動をします。</p>
+<p>Raspberry Pi Imager で microSD に書き込みます。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">winget</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> install</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> RaspberryPiFoundation.RaspberryPiImager</span></span></code></pre>
+<p><code>Raspberry Pi OS Lite (64-bit)</code> をインストールします。</p>
+<p>書き込む際に右下の歯車から次の通り詳細設定をします。</p>
+<ul>
+<li>「SSH を有効にする」にチェック。
+<ul>
+<li>「公開鍵認証のみを許可する」を選択し、 authorized_keys を入力。</li>
+</ul>
+</li>
+<li>「Wi-Fi を設定する」にチェック。
+<ul>
+<li>「SSID」「パスワード」「Wi-fi を使う国」をよしなに入力。</li>
+</ul>
+</li>
+</ul>
+<p>書き込んだら Raspberry Pi に microSD を差し込んで起動します。そのまま ssh 接続できるはずです。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">ssh</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> pi@192.168.x.x</span></span></code></pre>
+<p>とりいそぎ各種ライブラリを更新します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">$</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> apt</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> update</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">$</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> apt</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> upgrade</span></span></code></pre>
+<h3 id="ブートローダの確認"><a href="#ブートローダの確認">ブートローダの確認</a></h3>
+<p><a href="https://github.com/raspberrypi/rpi-eeprom">https://github.com/raspberrypi/rpi-eeprom</a></p>
+<p><a href="https://github.com/raspberrypi/rpi-eeprom/blob/master/firmware/release-notes.md#2020-09-14-promote-the-2020-09-03-release-to-be-the-default-eeprom-images">リリースノート</a>にある通り、
+2020-09-03 版以降のバージョンから USB boot をサポートしています。</p>
+<p>現時点のブートローダのバージョンを確認します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">$</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> vcgencmd</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> bootloader_version</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">2022/08/02</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> 16:55:05</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">version</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> 91b6280c53c0b6dff9e3d58810f439e577408845</span><span style="color:#D8DEE9FF;--shiki-light:#D8DEE9FF"> (release)</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">timestamp</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 1659455705</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">update-time</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 1663866239</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">capabilities</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 0x0000007f</span></span></code></pre>
+<p>結論から言うと今回はブートローダの更新をする必要がありませんでした。</p>
+<h3 id="ブートローダの更新"><a href="#ブートローダの更新">ブートローダの更新</a></h3>
+<p>もし更新するなら以下を実施します。</p>
+<p><code>sudo apt upgrade</code> しておくと <code>/lib/firmware/raspberrypi/bootloader</code> 配下に eeprom
+のバイナリが降ってきているはずです。</p>
+<p>先ずは関連しているリリースチャネルを確認します。 <code>/etc/default/rpi-eeprom-update</code> を確認します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">$</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> cat</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /etc/default/rpi-eeprom-update</span></span>
+<span class="line"><span style="color:#D8DEE9;--shiki-light:#D8DEE9">FIRMWARE_RELEASE_STATUS</span><span style="color:#81A1C1;--shiki-light:#81A1C1">=</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">"</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">default</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">"</span></span></code></pre>
+<p><code>FIRMWARE_RELEASE_STATUS</code> でリリースチャネルを指定します。今回は default でしたけど、 critical
+にシンボリックリンクが張られているんですけどそういうもんなんでしょうか。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">$</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ll</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /lib/firmware/raspberrypi/bootloader</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">total</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 56</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">drwxr-xr-x</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 5</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> root</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> root</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  4096</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">  8月</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  9</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> 20:59</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ./</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">drwxr-xr-x</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 3</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> root</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> root</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  4096</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">  8月</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  9</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> 20:59</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ../</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">drwxr-xr-x</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 2</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> root</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> root</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  4096</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">  8月</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  9</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> 20:59</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> beta/</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">drwxr-xr-x</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 2</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> root</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> root</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  4096</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">  8月</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  9</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> 20:59</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> critical/</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">lrwxrwxrwx</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 1</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> root</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> root</span><span style="color:#B48EAD;--shiki-light:#B48EAD">     8</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">  3月</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 18</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  2022</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> default</span><span style="color:#D8DEE9FF;--shiki-light:#D8DEE9FF"> -</span><span style="color:#81A1C1;--shiki-light:#81A1C1">&gt;</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> critical/</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">lrwxrwxrwx</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 1</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> root</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> root</span><span style="color:#B48EAD;--shiki-light:#B48EAD">     6</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">  3月</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 18</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  2022</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> latest</span><span style="color:#D8DEE9FF;--shiki-light:#D8DEE9FF"> -</span><span style="color:#81A1C1;--shiki-light:#81A1C1">&gt;</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> stable/</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">-rw-r--r--</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 1</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> root</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> root</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 34767</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">  3月</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 16</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  2022</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> release-notes.md</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">drwxr-xr-x</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 2</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> root</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> root</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  4096</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">  8月</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  9</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> 20:59</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> stable/</span></span></code></pre>
+<p>とりいそぎ <code>FIRMWARE_RELEASE_STATUS</code> の値を stable に変更します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">$</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> cp</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /etc/default/rpi-eeprom-update</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /etc/default/rpi-eeprom-update.20220922</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">$</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> vim</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /etc/default/rpi-eeprom-update</span></span></code></pre>
+<pre><code class="language-diff:rpi-eeprom-update">--- /etc/default/rpi-eeprom-update      2022-09-24 15:40:08.955505408 +0900
++++ /etc/default/rpi-eeprom-update.20220922     2022-09-24 15:39:52.643492273 +0900
+@@ -1,2 +1,2 @@
+-FIRMWARE_RELEASE_STATUS="stable"
++FIRMWARE_RELEASE_STATUS="default"
+ BOOTFS=/boot/firmware
+</code></pre>
+<p><code>/lib/firmware/raspberrypi/bootloader/stable/</code>
+配下にある一番最新の(最後の日付の)バイナリを指定してアップデートします。</p>
+<p>その後に再起動します。再起動後にバージョンが更新されたことを確認します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">$</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> rpi-eeprom-update</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> -d</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> -f</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /lib/firmware/raspberrypi/bootloader/stable/pieeprom-2022-03-10.bin</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">$</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> reboot</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88"># 再起動後</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">$</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> vcgencmd</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> bootloader_version</span></span></code></pre>
+<h3 id="ssd-に-os-イメージを書き込む"><a href="#ssd-に-os-イメージを書き込む">SSD に OS イメージを書き込む</a></h3>
+<p>一旦シャットダウンし、ケースに SSD を設定して起動します。</p>
+<p><code>lsblk</code> で SSD を確認します。今回は <code>/dev/sda</code> にありました。</p>
+<p><a href="https://ubuntu.com/download/raspberry-pi">https://ubuntu.com/download/raspberry-pi</a> から Raspberry Pi 用 Ubuntu Server の OS
+イメージをダウンロードしてきます。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">$</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> wget</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> https://cdimage.ubuntu.com/releases/22.04.1/release/ubuntu-22.04.1-preinstalled-server-arm64+raspi.img.xz</span></span></code></pre>
+<p>OS イメージを SSD に書き込みます。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">$</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> xzcat</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ubuntu-22.04.1-preinstalled-server-arm64+raspi.img.xz</span><span style="color:#81A1C1;--shiki-light:#81A1C1"> |</span><span style="color:#88C0D0;--shiki-light:#88C0D0"> sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> dd</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> bs=4M</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> of=/dev/sda</span></span></code></pre>
+<p>書き込んだら、起動時の Wi-Fi 接続とかの為に cloud-init の設定を書き換える必要があります。</p>
+<p>適当なところに mount します。後は<a href="/blog/articles/20210503-raspberry-pi">このまえ</a>のように cloud-init
+の設定を書き換えます。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">$</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> mkdir</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> -p</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /mnt/ssd</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">$</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> mount</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /dev/sda1</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /mnt/ssd</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">$</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> cd</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /mnt/ssd</span></span></code></pre>
+<p>終わったら umount してシャットダウンします。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">$</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> umount</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /mnt/ssd</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">$</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> shutdown</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> now</span></span></code></pre>
+<h3 id="再起動"><a href="#再起動">再起動</a></h3>
+<p>Raspberry Pi から microSD を外して電源を入れます。</p>
+<p>Ubuntu Server の場合<a href="https://ubuntu.com/tutorials/how-to-install-ubuntu-on-your-raspberry-pi#3-wifi-or-ethernet">初回起動時はネットワークに接続されない</a>ので、よきにはからって電源コードを引っこ抜いて再起動します。</p>
+<p>再起動後に SSH 接続できたら成功です。</p>
+<h2 id="おわり"><a href="#おわり">おわり</a></h2>
+<p>よかったですね。</p>
+<h2 id="参考にしたドキュメント"><a href="#参考にしたドキュメント">参考にしたドキュメント</a></h2>
+<ul>
+<li><a href="https://denor.jp/raspberry-pi-4%E3%81%A7usb%E6%8E%A5%E7%B6%9Ahdd%E3%81%8B%E3%82%8964%E3%83%93%E3%83%83%E3%83%88ubuntu-20-04-1%E3%82%92%E8%B5%B7%E5%8B%95%E3%81%97%E3%81%A6%E3%81%BF%E3%81%BE%E3%81%97%E3%81%9F">https://denor.jp/raspberry-pi-4%E3%81%A7usb%E6%8E%A5%E7%B6%9Ahdd%E3%81%8B%E3%82%8964%E3%83%93%E3%83%83%E3%83%88ubuntu-20-04-1%E3%82%92%E8%B5%B7%E5%8B%95%E3%81%97%E3%81%A6%E3%81%BF%E3%81%BE%E3%81%97%E3%81%9F</a></li>
+<li><a href="https://raspida.com/rpi4-ssd-usb-boot">https://raspida.com/rpi4-ssd-usb-boot</a></li>
+<li><a href="https://stackoverflow.com/questions/71804429/raspberry-pi-ssh-access-denied">https://stackoverflow.com/questions/71804429/raspberry-pi-ssh-access-denied</a></li>
+</ul></div></article></div></div></body></html>

@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Raspberry Pi 4 に mirakc を導入しました</title><link rel="stylesheet" href="/blog/styles/palette.css"><link rel="stylesheet" href="/blog/styles/general.css"><link rel="stylesheet" href="/blog/styles/layout.css"><link rel="stylesheet" href="/blog/styles/top.css"><link rel="stylesheet" href="/blog/styles/article.css"></head><body><div class="container"><div class="content"><ul class="meta"><li class="item"><span class="label">Created at</span><span class="value">2021-06-17</span></li><li class="item"><span class="label">Updated at</span><span class="value">2023-12-26</span></li></ul><article class="article"><div><h1 id="raspberry-pi-4-に-mirakc-を導入しました"><a href="#raspberry-pi-4-に-mirakc-を導入しました">Raspberry Pi 4 に mirakc を導入しました</a></h1>
+<p>Raspberry Pi 4 (Ubuntu Server 21.04) でテレビを見られるようにしました。</p>
+<h2 id="更新履歴"><a href="#更新履歴">更新履歴</a></h2>
+<ul>
+<li>2022-09-19: mirakc の最新バージョン <code>1.1.0-dev.0</code> に追従しました。</li>
+<li>2022-11-03: PLEX PX-W3U4 向けの手順を追記しました。あわせて EPGStation の導入についても追加しました。</li>
+<li>2023-12-27: docker を用いた導入方法を追記しました。</li>
+<li>2024-07-02: PLEX PX-W3U4 のドライバは <a href="https://github.com/tsukumijima/px4_drv">https://github.com/tsukumijima/px4_drv</a> を用いるように更新しました。</li>
+</ul>
+<h2 id="用意したもの"><a href="#用意したもの">用意したもの</a></h2>
+<ul>
+<li><a href="/blog/articles/20210503-raspberry-pi/">先日セットアップした Raspberry Pi 4</a></li>
+<li>TV チューナー:
+<ul>
+<li><a href="https://www.amazon.co.jp/dp/B0141NFWSG">PLEX PX-S1UD</a></li>
+<li><a href="https://www.amazon.co.jp/dp/B079YD3QT3">PLEX PX-Q1UD</a></li>
+<li><a href="https://www.amazon.co.jp/dp/B01MR4SLB6">PLEX PX-W3U4</a></li>
+</ul>
+</li>
+<li>IC カードリーダー: <a href="https://www.amazon.co.jp/dp/B003XF2JJY">Gemalto IDBridge CT30</a></li>
+</ul>
+<p>B-CAS カードは古いテレビから拝借しました。</p>
+<h2 id="チューナーの設定"><a href="#チューナーの設定">チューナーの設定</a></h2>
+<p>TV チューナーのドライバをインストールします。</p>
+<h3 id="plex-px-s1ud"><a href="#plex-px-s1ud">PLEX PX-S1UD</a></h3>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">cd</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /usr/local/src</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> wget</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> http://plex-net.co.jp/plex/px-s1ud/PX-S1UD_driver_Ver.1.0.1.zip</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> unzip</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> PX-S1UD_driver_Ver.1.0.1.zip</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> cp</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ./PX-S1UD_driver_Ver.1.0.1/x64/amd64/isdbt_rio.inp</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /lib/firmware/.</span></span></code></pre>
+<p>再起動後の Raspberry Pi に PX-Q1UD を接続し、確認します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">dmesg</span><span style="color:#81A1C1;--shiki-light:#81A1C1"> |</span><span style="color:#88C0D0;--shiki-light:#88C0D0"> grep</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> PX-S1UD</span></span></code></pre>
+<p><code>PX-S1UD Digital TV Tuner</code> が見えれば OK です。</p>
+<p>もしも <code>dmesg: read kernel buffer failed: Operation not permitted</code> みたいな表示がされた場合、これは通常ユーザにてアクセスできない設定になっています。</p>
+<p><code>kernel.dmesg_restrict</code> を OFF にして <code>dmesg</code> を実行できるか確認します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> sysctl</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> kernel.dmesg_restrict=</span><span style="color:#B48EAD;--shiki-light:#B48EAD">0</span></span></code></pre>
+<p>問題なく実行できたならば sysctl の設定に追記しておきます。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> echo</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4"> "</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">kernel.dmesg_restrict=0</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">"</span><span style="color:#81A1C1;--shiki-light:#81A1C1"> &gt;</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /etc/sysctl.d/10-local.conf</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /sbin/sysctl</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --system</span></span></code></pre>
+<h3 id="plex-px-q1ud"><a href="#plex-px-q1ud">PLEX PX-Q1UD</a></h3>
+<p>基本的には PLEX PX-S1UD と同様です。</p>
+<h3 id="plex-px-w3u4"><a href="#plex-px-w3u4">PLEX PX-W3U4</a></h3>
+<p>公式より品質が良いと言われる、非公式のドライバ <a href="https://github.com/tsukumijima/px4_drv">https://github.com/tsukumijima/px4_drv</a> を導入します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> apt</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> install</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> linux-headers-6.8.0-1008-raspi</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">wget</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> https://github.com/tsukumijima/px4_drv/releases/download/v0.4.5/px4-drv-dkms_0.4.5_all.deb</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> apt</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> install</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> -y</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ./px4-drv-dkms_0.4.5_all.deb</span></span></code></pre>
+<p>カーネルモジュールがロードされていることを確認します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> modprobe</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> px4_drv</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">lsmod</span><span style="color:#81A1C1;--shiki-light:#81A1C1"> |</span><span style="color:#88C0D0;--shiki-light:#88C0D0"> grep</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> -e</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ^px4_drv</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88"># modprobe not found エラーになる場合は以下を実行。</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> apt</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> install</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> build-essential</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> module-assistant</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> m-a</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> prepare</span></span></code></pre>
+<p>ここで PLEX PX-W3U4 を接続し、デバイスファイルを確認します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">ls</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /dev/px4video</span><span style="color:#81A1C1;--shiki-light:#81A1C1">*</span></span></code></pre>
+<p><code>/dev/px4video0</code> / <code>/dev/px4video1</code> / <code>/dev/px4video2</code> / <code>/dev/px4video3</code> を確認できるはずです。</p>
+<h2 id="カードリーダーの設定"><a href="#カードリーダーの設定">カードリーダーの設定</a></h2>
+<p>カードリーダーのスキャンを行う為に <code>pcsc-tools</code> をインストールします。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> apt</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> install</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> pcscd</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> pcsc-tools</span></span></code></pre>
+<p>Raspberry Pi に B-CAS カードを挿入したカードリーダーを接続し、確認します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> pcsc_scan</span></span></code></pre>
+<p><code>Japanese Chijou Digital B-CAS Card (pay TV)</code> の表記が確認できれば切って大丈夫です。</p>
+<p><code>SCardEstablishContext: Service not available.</code> と表示された場合は pcscd が起動していないので起動します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> systemctl</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> enable</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> pcscd</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> systemctl</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> start</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> pcscd</span></span></code></pre>
+<p><code>Unresponsive card</code> とか表示された場合はカードが認識されていません。カードを抜き差しして再度確認してみてください。</p>
+<h2 id="各種アプリケーションの導入docker-を用いた方法"><a href="#各種アプリケーションの導入docker-を用いた方法">各種アプリケーションの導入(docker を用いた方法)</a></h2>
+<p><a href="https://github.com/ansanloms/docker-tv-recorder">docker-tv-recorder</a> に mirakc をはじめとした必要なアプリケーションを纏めました。</p>
+<p>あとは <a href="https://docs.docker.com/engine/install/ubuntu/">docker を 導入</a>して、<code>docker compose up</code> するだけです。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">cd</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /usr/local/src</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> git</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> clone</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> https://github.com/ansanloms/docker-tv-recorder.git</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">cd</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ./docker-tv-recorder</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">cp</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> .env.sample</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> .env</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">vim</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> .env</span><span style="color:#616E88;--shiki-light:#616E88">    # 録画保存先を設定</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> docker</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> compose</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> up</span></span></code></pre>
+<p>別途ターミナル上で API にアクセスできるか確認します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">curl</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> http://localhost:40772/api/version</span></span></code></pre>
+<h3 id="docker-tv-recorder-をサービスに登録する"><a href="#docker-tv-recorder-をサービスに登録する">docker-tv-recorder をサービスに登録する</a></h3>
+<p>systemd の設定ファイル <code>/etc/systemd/system/tv-recorder.service</code> を用意します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> vim</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /etc/systemd/system/tv-recorder.service</span></span></code></pre>
+<pre><code class="language-ini:/etc/systemd/system/tv-recorder.service">[Unit]
+Description = tv-recorder
+Requires = tv-recorder.service
+
+[Service]
+Type = simple
+ExecStartPre = /usr/bin/docker compose --file /usr/local/src/docker-tv-recorder/compose.yaml down --volumes
+ExecStart = /usr/bin/docker compose --file /usr/local/src/docker-tv-recorder/compose.yaml up
+ExecStop = /usr/bin/docker compose --file /usr/local/src/docker-tv-recorder/compose.yaml down --volumes
+
+[Install]
+WantedBy = multi-user.target
+</code></pre>
+<p>有効にし、起動してみます。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> systemctl</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> enable</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> tv-recorder</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> systemctl</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> start</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> tv-recorder</span></span></code></pre>
+<h2 id="各種アプリケーションの導入旧版-docker-を用いない方法"><a href="#各種アプリケーションの導入旧版-docker-を用いない方法">各種アプリケーションの導入(旧版: docker を用いない方法)</a></h2>
+<h3 id="libarib25-のインストール"><a href="#libarib25-のインストール">libarib25 のインストール</a></h3>
+<p>B25 デコード用のライブラリをインストールします。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> apt</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> install</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> cmake</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> g++</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> libpcsclite-dev</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">cd</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /usr/local/src</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> git</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> clone</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> https://github.com/stz2012/libarib25</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">cd</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> libarib25</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> cmake</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> .</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> make</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> make</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> install</span></span></code></pre>
+<h3 id="recdvb-のインストール"><a href="#recdvb-のインストール">recdvb のインストール</a></h3>
+<p>PLEX PX-S1UD / PX-Q1UD にて利用する録画プログラムです。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> apt</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> install</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> automake</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">cd</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /usr/local/src</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> git</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> clone</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> https://github.com/ansanloms/recdvb.git</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">cd</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> recdvb</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> chmod</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> +x</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ./autogen.sh</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ./autogen.sh</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ./configure</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --enable-b25</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> EXTRA_SID=</span><span style="color:#B48EAD;--shiki-light:#B48EAD">1</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> make</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> make</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> install</span></span></code></pre>
+<p>録画できることを確認します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">recdvbchksig</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --dev</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 0</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 27</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88"># 27 物理チャンネルを 3 秒録画し /mnt/media/test.m2ts に出力。</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">recdvb</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --b25</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --strip</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --dev</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 0</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 27</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 3</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /mnt/media/test.m2ts</span></span></code></pre>
+<h3 id="recpt1"><a href="#recpt1">recpt1</a></h3>
+<p>PLEX PX-W3U4 にて利用する録画プログラムです。</p>
+<p>recdvb はデバイスファイルの名称で指定できない為利用できません。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">cd</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /usr/local/src/</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> git</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> clone</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> https://github.com/stz2012/recpt1.git</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">cd</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> recpt1/recpt1</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ./autogen.sh</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ./configure</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --enable-b25</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> make</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> make</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> install</span></span></code></pre>
+<p>録画できることを確認します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#616E88;--shiki-light:#616E88"># 27 物理チャンネルを 3 秒録画し /mnt/media/test.ts に出力。</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">recpt1</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --b25</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --strip</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 27</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 3</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /mnt/media/test.ts</span></span></code></pre>
+<h3 id="mirakc-のインストール"><a href="#mirakc-のインストール">mirakc のインストール</a></h3>
+<p><a href="https://mirakc.github.io/dekiru-mirakc/">mirakc</a> をインストールします。公式には docker でのインストールを推奨していますがいろいろあって自前でビルドします。</p>
+<p>先に <a href="https://github.com/mirakc/mirakc-arib">mirakc-arib</a> をインストールします。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> apt</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> install</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> autoconf</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ninja-build</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> pkg-config</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> libtool</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">cd</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /usr/local/src</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> git</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> clone</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --recursive</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> https://github.com/mirakc/mirakc-arib.git</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">cd</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> mirakc-arib</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> cmake</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> -S</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> .</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> -B</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> build</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> -G</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> Ninja</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> -D</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> CMAKE_BUILD_TYPE=Release</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ninja</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> -C</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> build</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> vendor</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ninja</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> -C</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> build</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> cp</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ./build/bin/mirakc-arib</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /usr/local/bin/.</span></span></code></pre>
+<p>mirakc をインストールする為に先ずは <a href="https://www.rust-lang.org/">Rust</a> をインストールします。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">curl</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --proto</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4"> '</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">=https</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">'</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --tlsv1.2</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> -sSf</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> https://sh.rustup.rs</span><span style="color:#81A1C1;--shiki-light:#81A1C1"> |</span><span style="color:#88C0D0;--shiki-light:#88C0D0"> sh</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">source</span><span style="color:#D8DEE9;--shiki-light:#D8DEE9"> $HOME</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">/.cargo/env</span></span></code></pre>
+<p>続いて mirakc をインストールします。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> apt</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> install</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> libfuse-dev</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">cd</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /usr/local/src</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> git</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> clone</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> https://github.com/mirakc/mirakc.git</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> chown</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> -R</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4"> $(</span><span style="color:#88C0D0;--shiki-light:#88C0D0">whoami</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">)</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> mirakc</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">cd</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> mirakc</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">cargo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> build</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --release</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> cp</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ./target/release/mirakc</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /usr/local/bin/.</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> cp</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ./target/release/mirakc-timeshift-fs</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /usr/local/bin/.</span></span></code></pre>
+<p>設定ファイル <code>/etc/mirakc/config.yml</code> を用意します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> mkdir</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> -p</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /etc/mirakc</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> mkdir</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> -p</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /var/lib/mirakc/epg</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> vim</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /etc/mirakc/config.yml</span></span></code></pre>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-yaml"><span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">server</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">  addrs</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span></span>
+<span class="line"><span style="color:#ECEFF4;--shiki-light:#ECEFF4">    -</span><span style="color:#81A1C1;--shiki-light:#81A1C1"> !http</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4"> "</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">0.0.0.0:40772</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">"</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">  workers</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 1</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">mirakurun</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">  openapi-json</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /etc/mirakc/mirakurun.openapi.json</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88"># Ex: 東京のチャンネル設定</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">channels</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span></span>
+<span class="line"><span style="color:#ECEFF4;--shiki-light:#ECEFF4">  -</span><span style="color:#8FBCBB;--shiki-light:#8FBCBB"> name</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ＮＨＫ総合</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">    type</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> GR</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">    channel</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4"> "</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">27</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">"</span></span>
+<span class="line"><span style="color:#ECEFF4;--shiki-light:#ECEFF4">  -</span><span style="color:#8FBCBB;--shiki-light:#8FBCBB"> name</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ＮＨＫＥテレ</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">    type</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> GR</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">    channel</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4"> "</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">26</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">"</span></span>
+<span class="line"><span style="color:#ECEFF4;--shiki-light:#ECEFF4">  -</span><span style="color:#8FBCBB;--shiki-light:#8FBCBB"> name</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> 日テレ</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">    type</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> GR</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">    channel</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4"> "</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">25</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">"</span></span>
+<span class="line"><span style="color:#ECEFF4;--shiki-light:#ECEFF4">  -</span><span style="color:#8FBCBB;--shiki-light:#8FBCBB"> name</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ＴＢＳ</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">    type</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> GR</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">    channel</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4"> "</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">22</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">"</span></span>
+<span class="line"><span style="color:#ECEFF4;--shiki-light:#ECEFF4">  -</span><span style="color:#8FBCBB;--shiki-light:#8FBCBB"> name</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> フジテレビ</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">    type</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> GR</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">    channel</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4"> "</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">21</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">"</span></span>
+<span class="line"><span style="color:#ECEFF4;--shiki-light:#ECEFF4">  -</span><span style="color:#8FBCBB;--shiki-light:#8FBCBB"> name</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> テレビ朝日</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">    type</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> GR</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">    channel</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4"> "</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">24</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">"</span></span>
+<span class="line"><span style="color:#ECEFF4;--shiki-light:#ECEFF4">  -</span><span style="color:#8FBCBB;--shiki-light:#8FBCBB"> name</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> テレビ東京</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">    type</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> GR</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">    channel</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4"> "</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">23</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">"</span></span>
+<span class="line"><span style="color:#ECEFF4;--shiki-light:#ECEFF4">  -</span><span style="color:#8FBCBB;--shiki-light:#8FBCBB"> name</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ＴＯＫＹＯ　ＭＸ</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">    type</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> GR</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">    channel</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4"> "</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">16</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">tuners</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88">  # PLEX PX-S1UD</span></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88">  #- name: PX-S1UD</span></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88">  #  types:</span></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88">  #    - GR</span></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88">  #  command: recdvb --b25 --strip --dev 0 {{{channel}}} - -</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88">  # PLEX PX-Q1UD</span></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88">  #- name: PX-Q1UD_0</span></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88">  #  types:</span></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88">  #    - GR</span></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88">  #  command: recdvb --b25 --strip --dev 0 {{{channel}}} - -</span></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88">  #- name: PX-Q1UD_1</span></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88">  #  types:</span></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88">  #    - GR</span></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88">  #  command: recdvb --b25 --strip --dev 1 {{{channel}}} - -</span></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88">  #- name: PX-Q1UD_2</span></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88">  #  types:</span></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88">  #    - GR</span></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88">  #  command: recdvb --b25 --strip --dev 2 {{{channel}}} - -</span></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88">  #- name: PX-Q1UD_1</span></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88">  #  types:</span></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88">  #    - GR</span></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88">  #  command: recdvb --b25 --strip --dev 3 {{{channel}}} - -</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88">  # PLEX PX-W3U4</span></span>
+<span class="line"><span style="color:#ECEFF4;--shiki-light:#ECEFF4">  -</span><span style="color:#8FBCBB;--shiki-light:#8FBCBB"> name</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> PX-W3U4_0</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">    types</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span></span>
+<span class="line"><span style="color:#ECEFF4;--shiki-light:#ECEFF4">      -</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> BS</span></span>
+<span class="line"><span style="color:#ECEFF4;--shiki-light:#ECEFF4">      -</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> CS</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">    command</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> recpt1 --b25 --device /dev/px4video0 {{{channel}}} - -</span></span>
+<span class="line"><span style="color:#ECEFF4;--shiki-light:#ECEFF4">  -</span><span style="color:#8FBCBB;--shiki-light:#8FBCBB"> name</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> PX-W3U4_1</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">    types</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span></span>
+<span class="line"><span style="color:#ECEFF4;--shiki-light:#ECEFF4">      -</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> BS</span></span>
+<span class="line"><span style="color:#ECEFF4;--shiki-light:#ECEFF4">      -</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> CS</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">    command</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> recpt1 --b25 --device /dev/px4video1 {{{channel}}} - -</span></span>
+<span class="line"><span style="color:#ECEFF4;--shiki-light:#ECEFF4">  -</span><span style="color:#8FBCBB;--shiki-light:#8FBCBB"> name</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> PX-W3U4_2</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">    types</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span></span>
+<span class="line"><span style="color:#ECEFF4;--shiki-light:#ECEFF4">      -</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> GR</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">    command</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> recpt1 --b25 --device /dev/px4video2 {{{channel}}} - -</span></span>
+<span class="line"><span style="color:#ECEFF4;--shiki-light:#ECEFF4">  -</span><span style="color:#8FBCBB;--shiki-light:#8FBCBB"> name</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> PX-W3U4_3</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">    types</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span></span>
+<span class="line"><span style="color:#ECEFF4;--shiki-light:#ECEFF4">      -</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> GR</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">    command</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> recpt1 --b25 --device /dev/px4video3 {{{channel}}} - -</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">epg</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span></span>
+<span class="line"><span style="color:#8FBCBB;--shiki-light:#8FBCBB">  cache-dir</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">:</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /var/lib/mirakc/epg</span></span></code></pre>
+<p>mirakc の起動に <code>strings.yml</code> および <code>mirakurun.openapi.json</code> が必要なので、これをオフィシャルの <a href="https://hub.docker.com/r/mirakc/mirakc">Docker image</a> より取得します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> apt</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> install</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> docker.io</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> docker</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> create</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> mirakc/mirakc</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> docker</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> cp</span><span style="color:#D8DEE9FF;--shiki-light:#D8DEE9FF"> [CONTAINER </span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">ID]:/etc/mirakc/strings.yml</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /etc/mirakc/strings.yml</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> docker</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> cp</span><span style="color:#D8DEE9FF;--shiki-light:#D8DEE9FF"> [CONTAINER </span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">ID]:/etc/mirakurun.openapi.json</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /etc/mirakc/mirakurun.openapi.json</span></span></code></pre>
+<p>起動してみます。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> mirakc</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> -c</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /etc/mirakc/config.yml</span></span></code></pre>
+<p>別途ターミナル上で API にアクセスできるか確認します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">curl</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> http://localhost:40772/api/version</span></span></code></pre>
+<p><code>{"current":"1.1.0-dev.0","latest":"1.1.0-dev.0"}</code> みたいな出力がされれば問題ないです。</p>
+<h3 id="mirakc-をサービスに登録する"><a href="#mirakc-をサービスに登録する">mirakc をサービスに登録する</a></h3>
+<p>systemd の設定ファイル <code>/etc/systemd/system/mirakc.service</code> を用意します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> vim</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /etc/systemd/system/mirakc.service</span></span></code></pre>
+<pre><code class="language-ini:/etc/systemd/system/mirakc.service">[Unit]
+Description = mirakc
+
+[Service]
+ExecStart = /usr/local/bin/mirakc -c /etc/mirakc/config.yml
+Restart = always
+Type = simple
+
+[Install]
+WantedBy = multi-user.target
+</code></pre>
+<p>有効にし、起動してみます。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> systemctl</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> enable</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> mirakc</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> systemctl</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> start</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> mirakc</span></span></code></pre>
+<h3 id="epgstation-のインストール"><a href="#epgstation-のインストール">EPGStation のインストール</a></h3>
+<p>PLEX PX-Q1UD や PX-W3U4 なら複数チャンネル利用できるので、視聴しつつ別番組を録画するなんてこともできます。</p>
+<p>なので録画管理ソフトの EPGStation を導入します。</p>
+<h4 id="インストール"><a href="#インストール">インストール</a></h4>
+<p><a href="https://github.com/l3tnun/EPGStation/blob/master/doc/linux-setup.md">公式のセットアップ手順</a>に則ってインストールしていきます。</p>
+<p>ちなみに今回は <code>/usr/local/src/EPGStation</code> にインストールしています。</p>
+<p>この手順では自動起動に pm2 を利用していますが、ここは systemd に変えます。</p>
+<p>systemd の設定ファイル <code>/etc/systemd/system/epg-station.service</code> を用意します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> vim</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /etc/systemd/system/epg-station.service</span></span></code></pre>
+<pre><code class="language-ini:/etc/systemd/system/epg-station.service">[Unit]
+Description = EPGStation
+
+[Service]
+ExecStart = /usr/bin/npm start --prefix /usr/local/src/EPGStation
+Restart = always
+Type = simple
+
+[Install]
+WantedBy = multi-user.target
+</code></pre>
+<p>有効にし、起動してみます。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> systemctl</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> enable</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> epg-station</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> systemctl</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> start</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> epg-station</span></span></code></pre>
+<h2 id="おわり"><a href="#おわり">おわり</a></h2>
+<p>あとはホスト側に <a href="https://github.com/DBCTRADO/TVTest">TVTest</a> + <a href="https://github.com/epgdatacapbon/BonDriver_mirakc">BonDriver_mirakc</a> (Windows) や <a href="https://github.com/ci7lus/MirakTest">MirakTest</a> (Windows / macOS) 等のクライアントアプリを導入します。</p>
+<h2 id="参考にしたドキュメント"><a href="#参考にしたドキュメント">参考にしたドキュメント</a></h2>
+<ul>
+<li><a href="https://mirakc.github.io/dekiru-mirakc/">https://mirakc.github.io/dekiru-mirakc/</a></li>
+<li><a href="https://hiroto-k.hatenablog.com/entry/2020/03/06/190000">https://hiroto-k.hatenablog.com/entry/2020/03/06/190000</a></li>
+<li><a href="https://nyanonon.hatenablog.com/entry/20191114/1573731890">https://nyanonon.hatenablog.com/entry/20191114/1573731890</a></li>
+<li><a href="https://diary.hatenablog.jp/entry/2018/03/15/215147">https://diary.hatenablog.jp/entry/2018/03/15/215147</a></li>
+</ul></div></article></div></div></body></html>

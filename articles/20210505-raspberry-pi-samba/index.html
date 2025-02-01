@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Raspberry Pi 4 に NAS を構築しました(Samba の設定)</title><link rel="stylesheet" href="/blog/styles/palette.css"><link rel="stylesheet" href="/blog/styles/general.css"><link rel="stylesheet" href="/blog/styles/layout.css"><link rel="stylesheet" href="/blog/styles/top.css"><link rel="stylesheet" href="/blog/styles/article.css"></head><body><div class="container"><div class="content"><ul class="meta"><li class="item"><span class="label">Created at</span><span class="value">2021-05-04</span></li></ul><article class="article"><div><h1 id="raspberry-pi-4-に-nas-を構築しましたsamba-の設定"><a href="#raspberry-pi-4-に-nas-を構築しましたsamba-の設定">Raspberry Pi 4 に NAS を構築しました(Samba の設定)</a></h1>
+<p><a href="/blog/articles/20210504-raspberry-pi-nas-hdd/">このまえ</a>のつづきです。</p>
+<h2 id="実施内容"><a href="#実施内容">実施内容</a></h2>
+<h3 id="hdd-のマウントまで"><a href="#hdd-のマウントまで">HDD のマウントまで</a></h3>
+<p><a href="/blog/articles/20210504-raspberry-pi-nas-hdd/">このまえの記事</a>を見てください。</p>
+<h3 id="samba-のインストール"><a href="#samba-のインストール">Samba のインストール</a></h3>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> apt</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> install</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> samba</span></span></code></pre>
+<h3 id="samba-の設定ファイルを更新する"><a href="#samba-の設定ファイルを更新する">Samba の設定ファイルを更新する</a></h3>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> cp</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> -p</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /etc/samba/smb.conf</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /etc/samba/smb.conf.20210504</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> vim</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /etc/samba/smb.conf</span></span></code></pre>
+<p>ファイル末尾にこのように追記しました。</p>
+<pre><code class="language-ini:smb.conf">[media]
+comment = nas
+path = /mnt/media
+public = no
+read only = no
+browsable = no
+force user = ansanloms
+</code></pre>
+<ul>
+<li><code>path</code> : Samba の対象パスを記述します。</li>
+<li><code>public</code> : ゲストアカウントでのログイン可不可を指定します。今回は不可にします。</li>
+<li><code>read only</code> : 読み取り専用にするかです。今回は no にします。</li>
+<li><code>browseable</code> : ネットワーク上で他の端末から検索できるかを指定します。今回は no にします。</li>
+<li><code>force user</code> : アクセス可能な Samba ユーザを指定します。</li>
+</ul>
+<h3 id="samba-のユーザを作成する"><a href="#samba-のユーザを作成する">Samba のユーザを作成する。</a></h3>
+<p><code>force user</code> で指定した通りに Samba のユーザを作成します。 これは Linux のユーザではないですが、関連するので先に Linux ユーザが必要です。</p>
+<p><code>pdbedit --create</code> でやっていきます。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">$</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> pdbedit</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --create</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ansanloms</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">new</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> password:</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">retype</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> new</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> password:</span></span></code></pre>
+<p>作成されたか確認します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">$</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> pdbedit</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --list</span><span style="color:#81A1C1;--shiki-light:#81A1C1"> |</span><span style="color:#88C0D0;--shiki-light:#88C0D0"> grep</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ansanloms</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">ansanloms:1000:Ubuntu</span></span></code></pre>
+<p>できました。</p>
+<h3 id="samba-を起動する"><a href="#samba-を起動する">Samba を起動する</a></h3>
+<p>起動します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> systemctl</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> start</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> smbd</span></span></code></pre>
+<p>確認してみます。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">$</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ps</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> aux</span><span style="color:#81A1C1;--shiki-light:#81A1C1"> |</span><span style="color:#88C0D0;--shiki-light:#88C0D0"> grep</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> smbd</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">root</span><span style="color:#B48EAD;--shiki-light:#B48EAD">        3421</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  0.5</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  0.2</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  58264</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 20848</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ?</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">        Ss</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">   22:18</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">   0:00</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /usr/sbin/smbd</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --foreground</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --no-process-group</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">root</span><span style="color:#B48EAD;--shiki-light:#B48EAD">        3423</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  0.0</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  0.0</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  55848</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  6160</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ?</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">        S</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">    22:18</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">   0:00</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /usr/sbin/smbd</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --foreground</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --no-process-group</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">root</span><span style="color:#B48EAD;--shiki-light:#B48EAD">        3424</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  0.0</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  0.0</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  55848</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  4700</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ?</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">        S</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">    22:18</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">   0:00</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /usr/sbin/smbd</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --foreground</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --no-process-group</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">root</span><span style="color:#B48EAD;--shiki-light:#B48EAD">        3425</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  0.0</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  0.1</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  58264</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 11872</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ?</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">        S</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">    22:18</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">   0:00</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /usr/sbin/smbd</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --foreground</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --no-process-group</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">ansanlo+</span><span style="color:#B48EAD;--shiki-light:#B48EAD">    3428</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  0.0</span><span style="color:#B48EAD;--shiki-light:#B48EAD">  0.0</span><span style="color:#B48EAD;--shiki-light:#B48EAD">   8724</span><span style="color:#B48EAD;--shiki-light:#B48EAD">   640</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> pts/0</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">    S+</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">   22:18</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">   0:00</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> grep</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --color=auto</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> smbd</span></span></code></pre>
+<p>起動しているようです。</p>
+<h3 id="windows-からアクセスしてみる"><a href="#windows-からアクセスしてみる">Windows からアクセスしてみる</a></h3>
+<p>エクスプローラから <code>\\192.168.xx.xx\media</code> にアクセスします。</p>
+<p>資格情報の入力を求められるので Samba で作成したユーザ情報を入力します。</p>
+<p>問題なく閲覧、更新できたら成功です。よかったですね。</p>
+<h2 id="おわり"><a href="#おわり">おわり</a></h2>
+<p>たのしかったです。</p></div></article></div></div></body></html>

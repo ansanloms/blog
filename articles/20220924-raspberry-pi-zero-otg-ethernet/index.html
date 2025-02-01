@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Raspberry Pi Zero WH を OTG でセットアップしました</title><link rel="stylesheet" href="/blog/styles/palette.css"><link rel="stylesheet" href="/blog/styles/general.css"><link rel="stylesheet" href="/blog/styles/layout.css"><link rel="stylesheet" href="/blog/styles/top.css"><link rel="stylesheet" href="/blog/styles/article.css"></head><body><div class="container"><div class="content"><ul class="meta"><li class="item"><span class="label">Created at</span><span class="value">2022-09-23</span></li></ul><article class="article"><div><h1 id="raspberry-pi-zero-wh-を-otg-でセットアップしました"><a href="#raspberry-pi-zero-wh-を-otg-でセットアップしました">Raspberry Pi Zero WH を OTG でセットアップしました</a></h1>
+<p>Raspberry Pi Zero WH を買いました。</p>
+<h2 id="作業環境"><a href="#作業環境">作業環境</a></h2>
+<ul>
+<li>Windows 10 Pro</li>
+</ul>
+<h2 id="実施内容"><a href="#実施内容">実施内容</a></h2>
+<h3 id="microsd-に-os-を書き込む"><a href="#microsd-に-os-を書き込む">microSD に OS を書き込む</a></h3>
+<p>いつもどおり Raspberry Pi Imager で microSD に書き込みます。 OS は Raspberry Pi OS Lite (32 bit) にしました。</p>
+<p>SSH を使いたいので、書き込む際に右下の歯車から次の通り詳細設定をします。</p>
+<ul>
+<li>「SSH を有効にする」にチェック。
+<ul>
+<li>「公開鍵認証のみを許可する」を選択し、 authorized_keys を入力。</li>
+</ul>
+</li>
+<li>「ユーザ名とパスワードを設定する」にチェック。
+<ul>
+<li>任意のユーザ名およびパスワードを入力。</li>
+</ul>
+</li>
+</ul>
+<h3 id="usb-on-the-go-および-usb-ethernet--rndis-gadget-の有効化"><a href="#usb-on-the-go-および-usb-ethernet--rndis-gadget-の有効化">USB On-The-Go および USB Ethernet / RNDIS Gadget の有効化</a></h3>
+<p>書き込んだ microSD を再度マウントさせ、 <code>config.txt</code> を開き以下を追記し、 USB OTG (USB On-The-Go) を有効にします。</p>
+<p><a href="https://usb.org/usb-on-the-go">USB On-The-Go</a> とは、 USB 機器どうしを直接接続する規格です。</p>
+<pre><code class="language-txt:config.txt">dtoverlay=dwc2
+</code></pre>
+<p>続いて <code>cmdline.txt</code> 内の <code>rootwait</code> 後に以下を追記し、 USB Ethernet / RNDIS Gadget を有効にします。</p>
+<p>USB Ethernet / RNDIS Gadget とは、 <a href="http://www.linux-usb.org/gadget/">Linux-USB Gadget</a> という Linux 上の USB 機器になんらかの機能を追加する仕組みを用いて、 USB でイーサネット的なことができるようにするモノです。</p>
+<pre><code class="language-txt:cmdline.txt">modules-load=dwc2,g_ether
+</code></pre>
+<h3 id="bonjour-のインストール"><a href="#bonjour-のインストール">Bonjour のインストール</a></h3>
+<p>Windows 側に Bonjour をインストールします。 Bonjour とは DNS とかそういう設定とかをせず、 IP アドレスへいいかんじにホスト名を割り当てるモノです。</p>
+<p>正直入れなくていいなら入れたくないんですけど、この後 Windows に繋げた Raspberry Pi (の USB Ethernet)の IP が分からなかったので、これで名前解決てきなことをします。</p>
+<p><a href="https://support.apple.com/kb/dl999">https://support.apple.com/kb/dl999</a></p>
+<p>なお Raspberry Pi OS でのデフォルトのホスト名は <code>raspberrypi</code> になります。</p>
+<h3 id="raspberry-pi-を-windows-に-usb-で接続する"><a href="#raspberry-pi-を-windows-に-usb-で接続する">Raspberry Pi を Windows に USB で接続する</a></h3>
+<p>Raspberry Pi Zero の USB ポート(内側)と Windows の USB を接続します。初回起動でもろもろ動くはずなので 5 分程待ちます。</p>
+<p>初回起動後、 Windows のデバイスマネージャに <code>ポート(COM と LPT)</code> &gt; <code>USB シリアルデバイス(COM n)</code> があるはずです。</p>
+<h3 id="otp-のドライバをインストール"><a href="#otp-のドライバをインストール">OTP のドライバをインストール</a></h3>
+<p><a href="https://caron.ws/wp-content/uploads/telechargement/RPI%20Driver%20OTG.zip">RPI Driver OTG</a>をダウンロードし、任意の場所に展開しておきます。</p>
+<p><code>USB シリアルデバイス(COM n)</code> の右クリックし「ドライバーの更新(P)」を選択し、 RPI Driver OTG をインストールします。</p>
+<p>そうすると Windows にはイーサネットアダプタとして認識されるはずです。デバイスマネージャに <code>ネットワーク アダプター</code> &gt; <code>USB Ethernet/RNDIS Gadget</code> があるはずです。</p>
+<p>また <code>コントロール パネル\ネットワークとインターネット\ネットワーク接続</code> にもイーサネットアダプタが確認できるはずです。</p>
+<h3 id="ssh-接続してみる"><a href="#ssh-接続してみる">SSH 接続してみる</a></h3>
+<p><code>ssh ユーザ名@raspberrypi.local</code> で接続できるはずです。あとはよしなに。</p>
+<h2 id="おわり"><a href="#おわり">おわり</a></h2>
+<p>よかったですね。</p>
+<h2 id="参考にしたドキュメント"><a href="#参考にしたドキュメント">参考にしたドキュメント</a></h2>
+<ul>
+<li><a href="https://qiita.com/msquare33/items/dc6fc9098f50d9b9dbf2">https://qiita.com/msquare33/items/dc6fc9098f50d9b9dbf2</a></li>
+<li><a href="https://caron.ws/diy-cartes-microcontroleurs/raspberrypi/pi-zero-otg-ethernet/">https://caron.ws/diy-cartes-microcontroleurs/raspberrypi/pi-zero-otg-ethernet/</a></li>
+</ul></div></article></div></div></body></html>

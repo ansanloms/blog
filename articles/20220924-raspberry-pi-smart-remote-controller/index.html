@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Raspberry Pi Zero WH でスマートリモコン的なものをつくりました</title><link rel="stylesheet" href="/blog/styles/palette.css"><link rel="stylesheet" href="/blog/styles/general.css"><link rel="stylesheet" href="/blog/styles/layout.css"><link rel="stylesheet" href="/blog/styles/top.css"><link rel="stylesheet" href="/blog/styles/article.css"></head><body><div class="container"><div class="content"><ul class="meta"><li class="item"><span class="label">Created at</span><span class="value">2022-09-23</span></li></ul><article class="article"><div><h1 id="raspberry-pi-zero-wh-でスマートリモコン的なものをつくりました"><a href="#raspberry-pi-zero-wh-でスマートリモコン的なものをつくりました">Raspberry Pi Zero WH でスマートリモコン的なものをつくりました</a></h1>
+<p>Raspberry Pi Zero WH を手に入れました。ちょっと前に Google Home も買ったのでスマートリモコン的なことをしようとおもいました。</p>
+<p>電子工作なんて工業高校でやった PIC マイコン以来です。なにもかもわすれています。</p>
+<h2 id="raspberry-pi-zero-wh-の準備"><a href="#raspberry-pi-zero-wh-の準備">Raspberry Pi Zero WH の準備</a></h2>
+<p>いつもどおり Raspberry Pi Imager で microSD に書き込みます。 OS は Raspberry Pi OS Lite (32 bit) にしました。</p>
+<p>Wi-Fi と SSH を使いたいので、書き込む際に右下の歯車から次の通り詳細設定をします。</p>
+<ul>
+<li>「SSH を有効にする」にチェック。
+<ul>
+<li>「公開鍵認証のみを許可する」を選択し、 authorized_keys を入力。</li>
+</ul>
+</li>
+<li>「ユーザ名とパスワードを設定する」にチェック。
+<ul>
+<li>任意のユーザ名およびパスワードを入力。</li>
+</ul>
+</li>
+<li>「Wi-Fi を設定する」にチェック。
+<ul>
+<li>SSID やパスワード等をよしなに入力。</li>
+</ul>
+</li>
+</ul>
+<p>尚 Raspberry Pi Zero WH についている無線 LAN は 2.4 GHz 帯のみ対応しています。これを忘れて 5 GHz 帯の SSID を登録して数時間溶かしました。</p>
+<p>準備できたらとりあえず諸々最新にしておきます。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> apt</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> update</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> apt</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> upgrade</span></span></code></pre>
+<h2 id="pigpio-のインストール"><a href="#pigpio-のインストール">pigpio のインストール</a></h2>
+<p><a href="https://abyz.me.uk/rpi/pigpio/">https://abyz.me.uk/rpi/pigpio/</a></p>
+<p>pigpio は Raspberry Pi の GPIO (汎用入出力)にアクセスする為のライブラリです。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> apt</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> install</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> pigpio</span></span></code></pre>
+<p>pigpio デーモンも起動しておく必要があるので systemctl で登録しておきます。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> systemctl</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> enable</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> pigpiod</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> systemctl</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> start</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> pigpiod</span></span></code></pre>
+<p>起動しているか確認します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> systemctl</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> status</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> pigpiod</span></span></code></pre>
+<p>併せて、 pigpio の作者による赤外線送受信の為のプログラム <a href="http://abyz.me.uk/rpi/pigpio/examples.html#Python_irrp_py">IR Record and Playback</a> も入手しておきます。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">sudo</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> apt</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> install</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> python3-pigpio</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">curl</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> http://abyz.me.uk/rpi/pigpio/code/irrp_py.zip</span><span style="color:#81A1C1;--shiki-light:#81A1C1"> |</span><span style="color:#88C0D0;--shiki-light:#88C0D0"> zcat</span><span style="color:#81A1C1;--shiki-light:#81A1C1"> &gt;</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> irrp.py</span></span></code></pre>
+<h2 id="リモコンの赤外線を送受信してみる"><a href="#リモコンの赤外線を送受信してみる">リモコンの赤外線を送受信してみる</a></h2>
+<p><a href="https://www.raspberrypi.com/documentation/computers/os.html#gpio-and-the-40-pin-header">https://www.raspberrypi.com/documentation/computers/os.html#gpio-and-the-40-pin-header</a></p>
+<p>今回は GPIO 22 で赤外線の送信を、 GPIO 23 で赤外線を受信します。</p>
+<p>次の通りに設定します。設定内容の詳細は <a href="http://abyz.me.uk/rpi/pigpio/pigs.html">http://abyz.me.uk/rpi/pigpio/pigs.html</a> にあります。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#616E88;--shiki-light:#616E88"># GPIO 22 を出力(書込)モードに</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">echo</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4"> "</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">m 22 w</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">"</span><span style="color:#81A1C1;--shiki-light:#81A1C1"> &gt;</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /dev/pigpio</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88"># GPIO 22 の出力レベルを 0 に</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">echo</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4"> "</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">w 22 0</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">"</span><span style="color:#81A1C1;--shiki-light:#81A1C1"> &gt;</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /dev/pigpio</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88"># GPIO 23 を入力(読込)モードに</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">echo</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4"> "</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">m 23 r</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">"</span><span style="color:#81A1C1;--shiki-light:#81A1C1"> &gt;</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /dev/pigpio</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#616E88;--shiki-light:#616E88"># GPIO 23 をプルアップに</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">echo</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4"> "</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">pud 22 u</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">"</span><span style="color:#81A1C1;--shiki-light:#81A1C1"> &gt;</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /dev/pigpio</span></span></code></pre>
+<h3 id="赤外線の受信"><a href="#赤外線の受信">赤外線の受信</a></h3>
+<p><a href="https://akizukidenshi.com/catalog/g/gI-04659/">赤外線リモコン受信モジュール</a>を用います。</p>
+<table>
+<thead>
+<tr>
+<th align="left"></th>
+<th align="left">位置</th>
+<th align="left">接続先</th>
+<th align="left">物理番号</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">OUTPUT</td>
+<td align="left">左</td>
+<td align="left">GPIO 23</td>
+<td align="left">16</td>
+</tr>
+<tr>
+<td align="left">GROUND</td>
+<td align="left">中央</td>
+<td align="left">GROUND</td>
+<td align="left">6</td>
+</tr>
+<tr>
+<td align="left">VCC</td>
+<td align="left">右</td>
+<td align="left">3.3 V</td>
+<td align="left">1</td>
+</tr>
+</tbody>
+</table>
+<p>次の通り実行して受信した赤外線を記録します。各オプションの詳細は <code>irrp.py</code> 先頭のコメントにあります。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">python3</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ./irrp.py</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --record</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --gpio</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 23</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --post</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 130</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --file</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> codes.json</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> test</span></span></code></pre>
+<p>受信待機状態になります。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-txt"><span class="line"><span>Recording</span></span>
+<span class="line"><span>Press key for 'test'</span></span></code></pre>
+<p>そうしたら赤外線リモコン受信モジュールに向けて登録したいリモコン操作します。問題なく受信できれば <code>Okay</code> と表示されるはずです。</p>
+<p>確認の為再度受信待機状態になるので、再度リモコン操作します。問題なければ再度 <code>Okay</code> と表示されるはずです。因みに確認をスキップしたい場合は <code>--no-confirm</code> オプションを付与します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-txt"><span class="line"><span>Press key for 'test' to confirm</span></span>
+<span class="line"><span>Okay</span></span></code></pre>
+<p><code>codes.json</code> に受信した信号データが入っているはずです。</p>
+<pre><code class="language-json:codes.json">{"test": [1956, 1019, 5432, 1019, 1457, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 1457, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 1457, 531, 1457, 531, 488, 531, 1457, 531, 1457, 531, 1457, 531, 1457, 531, 488, 531, 488, 11215, 1956, 1019, 5432, 1019, 1457, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 1457, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 1457, 531, 1457, 531, 488, 531, 1457, 531, 1457, 531, 1457, 531, 1457, 531, 488, 531, 488, 11215, 1956, 1019, 5432, 1019, 1457, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 1457, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 488, 531, 1457, 531, 1457, 531, 488, 531, 1457, 531, 1457, 531, 1457, 531, 1457, 531, 488, 531, 488]}
+</code></pre>
+<h3 id="赤外線の送信"><a href="#赤外線の送信">赤外線の送信</a></h3>
+<p><a href="https://vintagechips.wordpress.com/2013/10/05/%E8%B5%A4%E5%A4%96%E7%B7%9Aled%E3%83%89%E3%83%A9%E3%82%A4%E3%83%96%E5%9B%9E%E8%B7%AF%E3%81%AE%E6%B1%BA%E5%AE%9A%E7%89%88/">こちら</a>を参考に回路を組みます。今回は赤外線 LED を 2 つにしました。</p>
+<p>次の通り実行すると信号データを送信します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">python3</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> ./irrp.py</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --play</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --gpio</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 22</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --file</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> codes.json</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> test</span></span></code></pre>
+<h3 id="長い信号データの送信"><a href="#長い信号データの送信">長い信号データの送信</a></h3>
+<p>エアコンの冷房の信号データを送信してみたら次のようなエラーになりました。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">$</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> python3</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> irrp.py</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --play</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --gpio</span><span style="color:#B48EAD;--shiki-light:#B48EAD"> 22</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> --file</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> codes.json</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> cooling</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">Traceback</span><span style="color:#D8DEE9FF;--shiki-light:#D8DEE9FF"> (most </span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">recent</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> call</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> last</span><span style="color:#D8DEE9FF;--shiki-light:#D8DEE9FF">):</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">  File</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4"> "</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">/home/ansanloms/irrp.py</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">"</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">,</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> line</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> 481,</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> in</span><span style="color:#81A1C1;--shiki-light:#81A1C1"> &lt;</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">modul</span><span style="color:#D8DEE9FF;--shiki-light:#D8DEE9FF">e</span><span style="color:#81A1C1;--shiki-light:#81A1C1">&gt;</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">    pi.wave_chain(wave</span><span style="color:#D8DEE9FF;--shiki-light:#D8DEE9FF">)</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">  File</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4"> "</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">/usr/lib/python3/dist-packages/pigpio.py</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">"</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">,</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> line</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> 2609,</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> in</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> wave_chain</span></span>
+<span class="line"><span style="color:#81A1C1;--shiki-light:#81A1C1">    return</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> _u2i</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">(</span><span style="color:#88C0D0;--shiki-light:#88C0D0">_pigpio_command_ext(</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">  File</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4"> "</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">/usr/lib/python3/dist-packages/pigpio.py</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">"</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">,</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> line</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> 1011,</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> in</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> _u2i</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">    raise</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> error</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">(</span><span style="color:#88C0D0;--shiki-light:#88C0D0">error_text(v</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">))</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">pigpio.error:</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4"> '</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">chain is too long</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">'</span></span></code></pre>
+<p><code>pigpio.error: 'chain is too long'</code> は、<a href="http://abyz.me.uk/rpi/pigpio/python.html">送信する信号データが長すぎる(600 エントリ以上)</a>際のエラーのようです。</p>
+<p>これを回避するには次の方法があるようです。</p>
+<ul>
+<li><a href="https://korintje.com/archives/28">信号データを圧縮する</a></li>
+<li><a href="http://www.neko.ne.jp/~freewing/raspberry_pi/raspberry_pi_gpio_pigpio_ir_remote_control/">信号データを分割する</a></li>
+</ul>
+<p>今回は信号データを圧縮する方法でやっていきます。</p>
+<p>最初は分割案でやっていこうとしたのですが、日立のエアコンだとイマイチどこで分割するべきか図りかねたので断念しました。</p>
+<h2 id="つづく"><a href="#つづく">つづく</a></h2>
+<p>とりあえず赤外線リモコンの代替を Raspberry Pi Zero WH に載せることができました。後は外部、例えば Google Home 等からこれらを操作できればと思います。</p>
+<h2 id="参考にしたドキュメント"><a href="#参考にしたドキュメント">参考にしたドキュメント</a></h2>
+<ul>
+<li><a href="https://qiita.com/takjg/items/e6b8af53421be54b62c9">https://qiita.com/takjg/items/e6b8af53421be54b62c9</a></li>
+<li><a href="https://vintagechips.wordpress.com/2013/10/05/%E8%B5%A4%E5%A4%96%E7%B7%9Aled%E3%83%89%E3%83%A9%E3%82%A4%E3%83%96%E5%9B%9E%E8%B7%AF%E3%81%AE%E6%B1%BA%E5%AE%9A%E7%89%88/">https://vintagechips.wordpress.com/2013/10/05/%E8%B5%A4%E5%A4%96%E7%B7%9Aled%E3%83%89%E3%83%A9%E3%82%A4%E3%83%96%E5%9B%9E%E8%B7%AF%E3%81%AE%E6%B1%BA%E5%AE%9A%E7%89%88/</a></li>
+<li><a href="https://bsblog.casareal.co.jp/archives/5010">https://bsblog.casareal.co.jp/archives/5010</a></li>
+<li><a href="https://bsblog.casareal.co.jp/archives/5891">https://bsblog.casareal.co.jp/archives/5891</a></li>
+<li><a href="https://korintje.com/archives/28">https://korintje.com/archives/28</a></li>
+<li><a href="http://www.neko.ne.jp/~freewing/raspberry_pi/raspberry_pi_gpio_pigpio_ir_remote_control/">http://www.neko.ne.jp/~freewing/raspberry_pi/raspberry_pi_gpio_pigpio_ir_remote_control/</a></li>
+</ul></div></article></div></div></body></html>

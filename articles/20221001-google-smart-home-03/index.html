@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Google Home から自前のスマートリモコンを操作しました - 03. インテントの実装</title><link rel="stylesheet" href="/blog/styles/palette.css"><link rel="stylesheet" href="/blog/styles/general.css"><link rel="stylesheet" href="/blog/styles/layout.css"><link rel="stylesheet" href="/blog/styles/top.css"><link rel="stylesheet" href="/blog/styles/article.css"></head><body><div class="container"><div class="content"><ul class="meta"><li class="item"><span class="label">Created at</span><span class="value">2022-09-30</span></li></ul><article class="article"><div><h1 id="google-home-から自前のスマートリモコンを操作しました---03-インテントの実装"><a href="#google-home-から自前のスマートリモコンを操作しました---03-インテントの実装">Google Home から自前のスマートリモコンを操作しました - 03. インテントの実装</a></h1>
+<p><a href="/blog/articles/20221001-google-smart-home-02/">このまえ</a>からの続きです。</p>
+<h2 id="デバイスとトレイト"><a href="#デバイスとトレイト">デバイスとトレイト</a></h2>
+<p><a href="https://developers.google.com/assistant/smarthome/concepts/devices-traits">https://developers.google.com/assistant/smarthome/concepts/devices-traits</a></p>
+<p>Smart Home Action では予め操作できる家電の種別が決定しており、それがデバイスになります。</p>
+<p>各デバイスでは操作できる内容があります。それがトレイトです。</p>
+<h2 id="インテントとフルフィルメント"><a href="#インテントとフルフィルメント">インテントとフルフィルメント</a></h2>
+<p><a href="https://developers.google.com/assistant/smarthome/concepts/intents">https://developers.google.com/assistant/smarthome/concepts/intents</a></p>
+<p>Smart Home Action と Google Assistant ないしは Home アプリとのやりとりをするインテント、要は API エンドポイントを構築します。</p>
+<p>インテント上にフルフィルメント、つまり各種の処理定義を記述していきます。</p>
+<table>
+<thead>
+<tr>
+<th align="left">フルフィルメント</th>
+<th align="left">概要</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left"><a href="https://developers.google.com/assistant/smarthome/concepts/intents#sync">action.devices.SYNC</a></td>
+<td align="left">操作可能なデバイス一覧の取得(スマートホームアプリセットアップ時の登録)。</td>
+</tr>
+<tr>
+<td align="left"><a href="https://developers.google.com/assistant/smarthome/concepts/intents#query">action.devices.QUERY</a></td>
+<td align="left">デバイスの状態を取得。</td>
+</tr>
+<tr>
+<td align="left"><a href="https://developers.google.com/assistant/smarthome/concepts/intents#execute">action.devices.EXECUTE</a></td>
+<td align="left">デバイスの操作。</td>
+</tr>
+<tr>
+<td align="left"><a href="https://developers.google.com/assistant/smarthome/concepts/intents#disconnect">action.devices.DISCONNECT</a></td>
+<td align="left">スマートホームアプリの解除。</td>
+</tr>
+</tbody>
+</table>
+<p>HTTP METHOD でいうなら、 SYNC: PUT / QUERY: GET / EXECUTE: POST / DISCONNECT: DELETE ってところでしょうか。知らんけど。</p>
+<h2 id="インテントの実装"><a href="#インテントの実装">インテントの実装</a></h2>
+<p><a href="https://developers.google.com/assistant/smarthome/develop/process-intents">https://developers.google.com/assistant/smarthome/develop/process-intents</a></p>
+<p>実際に functions 上へ実装していきます。</p>
+<blockquote>
+<p>以降の実装はこうもうろもろと「とりあえず」的なアレです。</p>
+</blockquote>
+<h3 id="actions-on-google-ライブラリのインストール"><a href="#actions-on-google-ライブラリのインストール">Actions on Google ライブラリのインストール</a></h3>
+<p>インテントとフルフィルメントは所謂 REST API ですが、これらの実装を簡素化できるライブラリがあるので導入します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">npm</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> i</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> actions-on-google</span></span></code></pre>
+<p>どうもライブラリ内の型定義に問題があるようでビルドできないので、 <code>tsconfig.json</code> を次の通り更新します。</p>
+<pre><code class="language-diff:functions/tsconfig.json">     "outDir": "lib",
+     "sourceMap": true,
+     "strict": true,
+-    "target": "es2017"
++    "target": "es2017",
++    "skipLibCheck": true
+   },
+   "compileOnSave": true,
+   "include": ["src"]
+</code></pre>
+<h3 id="インテントの定義"><a href="#インテントの定義">インテントの定義</a></h3>
+<p>functions の <code>/fulfillment</code> をインテントとします。</p>
+<pre><code class="language-ts:functions/src/index.ts">import { smarthome } from "actions-on-google";
+
+const app = smarthome({ debug: true });
+
+export const fulfillment = functions.region(region).https.onRequest(app);
+</code></pre>
+<h3 id="操作するデバイスの定義"><a href="#操作するデバイスの定義">操作するデバイスの定義</a></h3>
+<p>今回は天井照明を操作しようとおもいます。</p>
+<p>該当するデバイスは <a href="https://developers.google.com/assistant/smarthome/guides/light">LIGHT</a> になります。</p>
+<p>LIGHT には以下トレイトが定義されています。</p>
+<table>
+<thead>
+<tr>
+<th align="left">トレイト</th>
+<th align="center">実装必須</th>
+<th align="left">概要</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left"><a href="https://developers.google.com/assistant/smarthome/traits/onoff">action.devices.traits.OnOff</a></td>
+<td align="center">✅</td>
+<td align="left">ライトの ON および OFF を行う。</td>
+</tr>
+<tr>
+<td align="left"><a href="https://developers.google.com/assistant/smarthome/traits/colorsetting">action.devices.traits.ColorSetting</a></td>
+<td align="center"></td>
+<td align="left">ライトの色見を調整する。</td>
+</tr>
+<tr>
+<td align="left"><a href="https://developers.google.com/assistant/smarthome/traits/brightness">action.devices.traits.Brightness</a></td>
+<td align="center"></td>
+<td align="left">ライトの明るさを調整する。</td>
+</tr>
+</tbody>
+</table>
+<p><code>functions/src/configs/devices.ts</code> あたりに定義しておきます。</p>
+<pre><code class="language-typescript:functions/src/configs/devices.ts">import type { SmartHomeV1SyncDevices } from "actions-on-google";
+
+export const CeilingLight: SmartHomeV1SyncDevices = {
+  id: "ceiling_light",
+  type: "action.devices.types.LIGHT",
+  traits: ["action.devices.traits.OnOff"],
+  name: {
+    defaultNames: ["照明"],
+    name: "照明",
+    nicknames: ["照明"],
+  },
+  willReportState: true,
+  otherDeviceIds: [
+    {
+      deviceId: "ceiling_light",
+    },
+  ],
+};
+</code></pre>
+<p>定義内容は <a href="https://developers.google.com/assistant/smarthome/reference/rest/v1/devices/sync#device">https://developers.google.com/assistant/smarthome/reference/rest/v1/devices/sync#device</a> を参照ください。</p>
+<p>今回は照明の ON / OFF のみできるようにします。</p>
+<p><code>willReportState</code> は後述する HomeGraph API 上からデバイスを操作する際に必要な設定です。 <code>true</code> にしておきます。</p>
+<p><code>otherDeviceIds</code> はかなり後述にあるローカルフルフィルメントで必要な値です。とりあえず <code>id</code> と同一値を設定しておきます。</p>
+<h3 id="ユーザの認証処理"><a href="#ユーザの認証処理">ユーザの認証処理</a></h3>
+<p><a href="https://developers.google.com/assistant/smarthome/develop/process-intents#user-id">https://developers.google.com/assistant/smarthome/develop/process-intents#user-id</a></p>
+<p>インテントへのリクエストヘッダ <code>Authorization</code> に、予め用意した OAuth 2.0 サーバ(今回は Auth0)から提供される Bearer トークンがあるはずです。</p>
+<p>これを基に操作するユーザを判定します。 Auth0 の認証クライントを用意します。</p>
+<p>認証情報は <code>.env</code> に記述します。なので <a href="https://www.npmjs.com/package/dotenv">dotenv</a> も導入します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">npm</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> i</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> auth0</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> dotenv</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">npm</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> i</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> -D</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> @types/auth0</span></span></code></pre>
+<p><code>.env</code> に認証関連の情報を定義しておきます。</p>
+<pre><code class="language-bash:functions/.env">AUTH0_DOMAIN="[AUTH0_DOMAIN]"
+AUTH0_CLIENT_ID="[AUTH0_CLIENT_ID]"
+</code></pre>
+<p>リクエストヘッダの Authorization よりユーザ ID を特定します。今回は openid をユーザ ID とします。</p>
+<pre><code class="language-ts:functions/src/index.ts">import * as dotenv from "dotenv";
+dotenv.config();
+
+import { AuthenticationClient } from "auth0";
+
+const auth0 = new AuthenticationClient({
+  domain: process.env.AUTH0_DOMAIN || "",
+  clientId: process.env.AUTH0_CLIENT_ID || "",
+});
+
+const getAgentUserId = async (
+  headers: ActionOnGoogleHeaders
+): Promise&lt;string | undefined&gt; =&gt; {
+  const authorization = headers.authorization;
+  functions.logger.debug("getAgentUserId - authorization:", authorization);
+
+  const token =
+    typeof authorization === "string" ? authorization.substr(7) : undefined;
+  functions.logger.debug("getAgentUserId - token:", token);
+  if (typeof token === "undefined") {
+    return undefined;
+  }
+
+  const profile = await auth0.getProfile(token);
+  functions.logger.debug("getAgentUserId - profile:", profile);
+
+  const id =
+    typeof profile.sub === "string" ? (profile.sub as string) : undefined;
+  functions.logger.debug("getAgentUserId - id:", id);
+
+  return id;
+};
+</code></pre>
+<h3 id="各種フルフィルメントの実装とりあえず"><a href="#各種フルフィルメントの実装とりあえず">各種フルフィルメントの実装(とりあえず)</a></h3>
+<p>一旦スマートホームアプリと HOME アプリを連携するところまでみたいので、とりあえずフルフィルメントを実装します。</p>
+<p>認証するだけなら SYNC のみあればいいと思いますが、まぁ全部書いておきます。</p>
+<pre><code class="language-ts:functions/src/index.ts">app.onSync(async (body, headers) =&gt; {
+  const id = await getAgentUserId(headers);
+
+  return {
+    requestId: body.requestId,
+    payload: {
+      agentUserId: id || "",
+      devices: typeof id === "undefined" ? [] : [CeilingLight],
+    },
+  };
+});
+
+app.onQuery(async (body, headers) =&gt; {
+  const id = await getAgentUserId(headers);
+
+  return {
+    requestId: body.requestId,
+    payload: {
+      devices:
+        typeof id === "undefined"
+          ? {}
+          : {
+              [CeilingLight.id]: {
+                status: "SUCCESS",
+                online: true,
+                on: true,
+              },
+            },
+    },
+  };
+});
+
+app.onExecute(async (body, headers) =&gt; {
+  const id = await getAgentUserId(headers);
+
+  if (typeof id === "undefined") {
+    return {
+      requestId: body.requestId,
+      payload: { commands: [] },
+    };
+  }
+
+  return {
+    requestId: body.requestId,
+    payload: {
+      commands: [
+        {
+          ids: [CeilingLight.id],
+          status: "SUCCESS",
+          states: { on: true, online: true },
+        },
+      ],
+    },
+  };
+});
+
+app.onDisconnect(() =&gt; {
+  functions.logger.log("User account unlinked from Google Assistant");
+  return {};
+});
+</code></pre>
+<h2 id="つづく"><a href="#つづく">つづく</a></h2>
+<p>次回は作成したスマートホームアプリを自身の Home デバイスに追加します。</p></div></article></div></div></body></html>

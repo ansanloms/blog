@@ -1,0 +1,61 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font: 62.5% var(--font-family-default);
+  -webkit-text-size-adjust: 100%;
+     -moz-text-size-adjust: 100%;
+          text-size-adjust: 100%;
+  height: 100%;
+}
+
+body {
+  color-scheme: dark;
+  height: 100%;
+  font: 1.6rem var(--font-family-default);
+  -webkit-font-smoothing: antialiased;
+  color: var(--color-text);
+  background-color: var(--color-background);
+  line-height: 1.6;
+}
+
+a {
+  color: var(--color-link);
+  text-decoration: underline;
+
+  &:hover {
+    color: var(--color-hover);
+  }
+}
+
+ul,
+ol,
+li {
+  list-style: none;
+}
+
+iframe {
+  border: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}

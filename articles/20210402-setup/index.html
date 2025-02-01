@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>PC のセットアップをしました</title><link rel="stylesheet" href="/blog/styles/palette.css"><link rel="stylesheet" href="/blog/styles/general.css"><link rel="stylesheet" href="/blog/styles/layout.css"><link rel="stylesheet" href="/blog/styles/top.css"><link rel="stylesheet" href="/blog/styles/article.css"></head><body><div class="container"><div class="content"><ul class="meta"><li class="item"><span class="label">Created at</span><span class="value">2021-04-01</span></li></ul><article class="article"><div><h1 id="pc-のセットアップをしました"><a href="#pc-のセットアップをしました">PC のセットアップをしました</a></h1>
+<p>OS のクリーンインストールをしました。</p>
+<p>今後の為に PC のセットアップについてまとめようとおもいます。</p>
+<h2 id="環境"><a href="#環境">環境</a></h2>
+<p>Winodws 10 Pro バージョン 20H2 です。</p>
+<h2 id="かんがえていること"><a href="#かんがえていること">かんがえていること</a></h2>
+<ul>
+<li>CLI のうえでやっていきたいです。</li>
+<li>ある程度自動化したいです。</li>
+<li>あくまで Windows 上でやっていきたいです。</li>
+</ul>
+<h2 id="scoop-のインストール"><a href="#scoop-のインストール">scoop のインストール</a></h2>
+<p><a href="https://scoop.sh/">https://scoop.sh/</a></p>
+<p>scoop を導入します。 Windows 上でパッケージ管理できるすごいやつです。</p>
+<p>公式サイトにある通りインストールします。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-txt"><span class="line"><span>iwr -useb get.scoop.sh | iex</span></span></code></pre>
+<h3 id="パッケージのインストール"><a href="#パッケージのインストール">パッケージのインストール</a></h3>
+<p>あとはどんどんインストールしていきます。基本的に <code>%USERPROFILE%\scoop\apps</code> 下にインストールされていきます。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-txt"><span class="line"><span>scoop instal git</span></span>
+<span class="line"><span>scoop instal vim-nightly</span></span>
+<span class="line"><span>...</span></span></code></pre>
+<p>インストールできるアプリの設定(<a href="https://github.com/lukesampson/scoop/wiki/App-Manifests">Manifest</a>
+といいます)を纏めた単位を <a href="https://github.com/lukesampson/scoop/wiki/Buckets">Bucket</a>
+といい、公式や有志の方々が用意してくれた Bucket を追加することによりインストールできるアプリが増えます。また Manifest
+が用意されていないアプリに関しては自分で Bucket を用意したりします。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-txt"><span class="line"><span>scoop bucket add extras</span></span>
+<span class="line"><span>scoop bucket add versions</span></span>
+<span class="line"><span>scoop bucket add nightlies</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>scoop bucket add pleiades https://github.com/jfut/scoop-pleiades.git</span></span>
+<span class="line"><span>scoop bucket add ansanloms https://github.com/ansanloms/scoop-ansanloms.git</span></span>
+<span class="line"><span>...</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>scoop install googlechrome-dev</span></span>
+<span class="line"><span>scoop install windows-terminal</span></span>
+<span class="line"><span>scoop install pleiades2020-java-win-full</span></span>
+<span class="line"><span>...</span></span></code></pre>
+<p>これで必要なアプリはあらかた用意ができます。設定した Bucket および Manifest
+をメモっておけば次回のセットアップ時もスムーズにアレできてよいです。</p>
+<h3 id="パッケージのアンインストールと更新"><a href="#パッケージのアンインストールと更新">パッケージのアンインストールと更新</a></h3>
+<p>アンインストールや更新は次のとおりにします。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-txt"><span class="line"><span>scoop uninstall &lt;Manifest&gt;</span></span>
+<span class="line"><span>scoop update &lt;Manifest&gt;</span></span></code></pre>
+<p><code>scoop update *</code> でインストールしているアプリを全て更新します。朝 PC の前に座ったらおもむろに実行したりしなかったりします。</p>
+<p>scoop による更新は、基本的に現行インストールされているアプリとは別に新しいバージョンをインストールされます。
+<code>%USERPROFILE%\scoop\apps\&lt;Manifest&gt;</code> を見ると今までインストールしてきた全てのバージョンが確認できるはずです。例えば
+Android Studio とか容量が大きいアプリとかだと HDD
+を切迫する原因になりうるので、任意のタイミングで不要になったバージョンを削除する必要があったりします。</p>
+<h2 id="nyagos-のインストール"><a href="#nyagos-のインストール">nyagos のインストール</a></h2>
+<p><a href="https://github.com/zetamatta/nyagos">https://github.com/zetamatta/nyagos</a></p>
+<p>基本的に CLI のうえでやっていきたいです。けど cmd や PowerShell のうえはちょっとだけつらいです。とはいえ Cygwin とか WSL
+とかじゃなくて Windows のうえにいたいです。たとえば <code>C:\</code> てきなドライブレター UNC パスとか見えていたいです。</p>
+<p>そこで nyagos でやっていきます。 UNIX っぽいことができるとてもすごいコマンドラインシェルです。</p>
+<p>scoop の <code>main</code> Bucket にあります。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-txt"><span class="line"><span>scoop install nyagos</span></span></code></pre>
+<h2 id="msys2-のインストール"><a href="#msys2-のインストール">msys2 のインストール</a></h2>
+<p><a href="https://www.msys2.org/">https://www.msys2.org/</a></p>
+<p>Windows (nyagos)上でも <code>find</code> とか <code>grep</code> とかでやっていきたいときもあるので msys2
+を導入します。取り急ぎはその為だけにいれるのでそれなら <a href="https://github.com/bmatzelle/gow">Gow</a>
+とかでもいいんですけど、今後それ以上のことに使うつもりなので msys2 を入れます。</p>
+<p>scoop で入ります。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-txt"><span class="line"><span>scoop install msys2</span></span></code></pre>
+<h3 id="msys2-の設定"><a href="#msys2-の設定">msys2 の設定</a></h3>
+<p>初回起動後に一旦閉じて再度起動します。 Windows 上のホームディレクトリに相乗りしたいので <code>/etc/fstab</code> にその旨マウント設定を記述します。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">echo</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4"> "</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C">C:/Users /home</span><span style="color:#ECEFF4;--shiki-light:#ECEFF4">"</span><span style="color:#81A1C1;--shiki-light:#81A1C1"> &gt;&gt;</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> /etc/fstab</span></span></code></pre>
+<p>現行の各種パッケージを更新し、取り急ぎ <a href="https://packages.msys2.org/group/base-devel">base-devel</a>
+パッケージグループをインストールします。 base-devel には <code>grep</code> や <code>awk</code> 、 <code>sed</code> 等そういうのがはいっています。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">pacman</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> -Syuu</span></span>
+<span class="line"><span style="color:#88C0D0;--shiki-light:#88C0D0">pacman</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> -S</span><span style="color:#A3BE8C;--shiki-light:#A3BE8C"> base-devel</span></span></code></pre>
+<h3 id="nyagos-側の設定"><a href="#nyagos-側の設定">nyagos 側の設定</a></h3>
+<p>msys2 上に導入した各種コマンドを Windows (nyagos) 上で利用できるようにします。</p>
+<p>nyagos の各種設定は <code>%USERPROFILE%\.nyagos</code> に記述します。環境変数 <code>PATH</code> に msys2 のパスを追加します。</p>
+<pre><code class="language-lua:.nyagos">nyagos.env.path = nyagos.env.path .. ";" .. nyagos.env.homedrive .. nyagos.env.homepath .. "\\scoop\\apps\\msys2\\current\\usr\\bin"
+nyagos.env.path = nyagos.env.path .. ";" .. nyagos.env.homedrive .. nyagos.env.homepath .. "\\scoop\\apps\\msys2\\current\\mingw64\\bin"
+</code></pre>
+<p>DOS コマンドとバッティングするコマンドはエイリアス設定をします。けどなんかもっといい解決案があるはずです。</p>
+<pre><code class="language-lua:.nyagos">nyagos.alias.echo = [[~\scoop\apps\msys2\current\usr\bin\echo.exe]]
+nyagos.alias.find = [[~\scoop\apps\msys2\current\usr\bin\find.exe]]
+</code></pre>
+<p>これで nyagos 上から msys2 上に導入したコマンドが実行できるようになってとてもよいです。</p>
+<h3 id="nyagos-のプロンプトをいい感じにする"><a href="#nyagos-のプロンプトをいい感じにする">nyagos のプロンプトをいい感じにする</a></h3>
+<p>nyagos のプロンプト設定は <code>%USERPROFILE%\.nyagos</code> 上の nyagos.prompt
+で設定します。自前でどうにかするのもいいですが今回は <a href="https://starship.rs/">StarShip</a> でやっていきます。</p>
+<p>例によって scoop でインストールできます。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-txt"><span class="line"><span>scoop install starship</span></span></code></pre>
+<p><code>%USERPROFILE%\.nyagos</code> に次の通り追記します。 nyagos を再度起動するとプロンプトがいい感じになります。</p>
+<pre><code class="language-lua:.nyagos">nyagos.prompt = function(this)
+  -- ターミナルに表示するタイトル
+  -- 取り急ぎカレントディレクトリのパスを表示する
+  local title = "NYAGOS - " .. nyagos.getwd():gsub("\\", "/")
+
+  -- プロンプト starship を使う
+  local prompt = "\n" .. nyagos.eval("starship prompt 2&gt; nul") .. " "
+
+  return nyagos.default_prompt(prompt, title)
+end
+</code></pre>
+<h2 id="おわり"><a href="#おわり">おわり</a></h2>
+<p>よかったですね。</p></div></article></div></div></body></html>

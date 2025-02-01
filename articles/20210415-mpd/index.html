@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Music Player Daemon を導入しました</title><link rel="stylesheet" href="/blog/styles/palette.css"><link rel="stylesheet" href="/blog/styles/general.css"><link rel="stylesheet" href="/blog/styles/layout.css"><link rel="stylesheet" href="/blog/styles/top.css"><link rel="stylesheet" href="/blog/styles/article.css"></head><body><div class="container"><div class="content"><ul class="meta"><li class="item"><span class="label">Created at</span><span class="value">2021-04-14</span></li></ul><article class="article"><div><h1 id="music-player-daemon-を導入しました"><a href="#music-player-daemon-を導入しました">Music Player Daemon を導入しました</a></h1>
+<p>PC で音楽をきいています。</p>
+<p>いままでは <a href="https://www.foobar2000.org/">foobar2000</a> をつかっていたのですが、なんとなく CLI でやっていきをしたいとおもったので <a href="https://www.musicpd.org/">mpd</a> と <a href="https://www.musicpd.org/clients/mpc/">mpc</a> を導入することにしました。</p>
+<h2 id="環境"><a href="#環境">環境</a></h2>
+<p>Windows 10 Pro 64bit です。</p>
+<h2 id="mpd-のインストール"><a href="#mpd-のインストール">mpd のインストール</a></h2>
+<p><a href="https://www.musicpd.org/download/win32/">Windows のバイナリが配布されている</a>ので、これをそのまま使用しました。ついでに、<a href="https://github.com/ansanloms/scoop-ansanloms/blob/master/bucket/mpd.json">scoop でインストールできるように</a>しました。</p>
+<h2 id="mpd-の設定"><a href="#mpd-の設定">mpd の設定</a></h2>
+<p><code>%LOCALAPPDATA%\mpd\mpd.conf</code> に配置します。</p>
+<pre><code class="language-ini:mpd.conf"># ファイルの場所
+music_directory     "G:/music/library"
+
+# プレイリストの場所
+playlist_directory  "G:/music/mpd/playlists"
+
+# データベースの場所
+db_file             "G:/music/mpd/mpd.db"
+
+# ログの場所
+log_file            "C:/logs/mpd/mpd.log"
+</code></pre>
+<p>とりあえず起動することを確認しました。</p>
+<h2 id="mpc-の設定"><a href="#mpc-の設定">mpc の設定</a></h2>
+<p>mpc は Windows
+のバイナリを配布していないので、<a href="https://github.com/MusicPlayerDaemon/mpc">ソースコードからビルド</a>してみました。ただマルチバイト文字が化けてしまいました。</p>
+<p>Windows 上で mpc を用意するのは諦めて wsl (Ubutu)上に mpc をインストールすることにしました。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-txt"><span class="line"><span>sudo apt-get install mpc</span></span></code></pre>
+<p>Windows 上から使用しても問題なさそうです。</p>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-txt"><span class="line"><span>$ wsl mpc list album | grep 日本合唱曲全集</span></span>
+<span class="line"><span>日本合唱曲全集 41「嫁ぐ娘に」三善晃作品集 1</span></span>
+<span class="line"><span>日本合唱曲全集 42「縄文連祷」三善晃作品集 2</span></span>
+<span class="line"><span>日本合唱曲全集 43「三つの抒情」三善晃作品集 3</span></span>
+<span class="line"><span>日本合唱曲全集 44「クレーの絵本」三善晃作品集 4</span></span></code></pre>
+<h2 id="再生してみる"><a href="#再生してみる">再生してみる</a></h2>
+<pre class="shiki shiki-themes nord nord" style="background-color:#2e3440ff;--shiki-light-bg:#2e3440ff;color:#d8dee9ff;--shiki-light:#d8dee9ff" tabindex="0"><code class="language-txt"><span class="line"><span>$ wsl mpc listall | grep 三善晃 | wsl mpc add</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>$ wsl mpc playlist</span></span>
+<span class="line"><span>田中信昭: 東京混声合唱団 - 混声合唱組曲「嫁ぐ娘に」 - 1. 嫁ぐ日は近づき</span></span>
+<span class="line"><span>田中信昭: 東京混声合唱団 - 混声合唱組曲「嫁ぐ娘に」 - 2. あなたの生まれたのは</span></span>
+<span class="line"><span>田中信昭: 東京混声合唱団 - 混声合唱組曲「嫁ぐ娘に」 - 3. 戦いの日々</span></span>
+<span class="line"><span>田中信昭: 東京混声合唱団 - 混声合唱組曲「嫁ぐ娘に」 - 4. 時間はきらきらと</span></span>
+<span class="line"><span>田中信昭: 東京混声合唱団 - 混声合唱組曲「嫁ぐ娘に」 - 5. かどで</span></span>
+<span class="line"><span>田中信昭: 東京混声合唱団 - 混声合唱組曲「五つの童画」 - 1. 風見鳥</span></span>
+<span class="line"><span>...</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>$ wsl mpc play</span></span>
+<span class="line"><span>田中信昭: 東京混声合唱団 - 混声合唱組曲「嫁ぐ娘に」 - 1. 嫁ぐ日は近づき</span></span>
+<span class="line"><span>[playing] #1/64   0:00/3:26 (0%)</span></span>
+<span class="line"><span>volume: n/a   repeat: on    random: on    single: off   consume: off</span></span></code></pre>
+<p>問題なく再生できました。よかったですね。</p>
+<h2 id="おわり"><a href="#おわり">おわり</a></h2>
+<p>普段はクラシックを聴くんですけど、クラシックのアルバムってアルバム名に作曲者、曲名、アーティストまではいっているので <code>mpc listall</code> から grep やっていきができてよいってふとおもいました。</p></div></article></div></div></body></html>
