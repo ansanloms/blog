@@ -4,7 +4,7 @@ createdAt: "2022-10-01T03:00:00+09:00"
 
 # Google Home から自前のスマートリモコンを操作しました - 04. スマートホームアプリの登録
 
-[このまえ](./20221001-google-smart-home-03.md)からの続きです。
+[このまえ](../20221001-google-smart-home-03/index.md)からの続きです。
 
 ## アクション名の設定
 
@@ -12,7 +12,7 @@ createdAt: "2022-10-01T03:00:00+09:00"
 
 Action Console の対象プロジェクトに遷移し、上記メニューの[Develop]->[Invocation]を選択します。
 
-![Actions](/assets/images/20221001-google-smart-home-04/actions-console-invocation.png)
+![Actions](./actions-console-invocation.png)
 
 設定したら右上の[Save]を押下します。
 
@@ -31,7 +31,7 @@ firebase deploy
 
 Action Console の対象プロジェクトに遷移し、上記メニューの[Develop]->[Actions]を選択します。
 
-![Actions](/assets/images/20221001-google-smart-home-04/actions-console-actions.png)
+![Actions](./actions-console-actions.png)
 
 |                   | 値                                                    |
 | :---------------- | :---------------------------------------------------- |
@@ -50,7 +50,7 @@ Action Console の対象プロジェクトに遷移し、上記メニューの[D
 
 ### OAuth Client Information
 
-![OAuth Client Information](/assets/images/20221001-google-smart-home-04/actions-console-oauth-client-information.png)
+![OAuth Client Information](./actions-console-oauth-client-information.png)
 
 次のように設定します。
 
@@ -69,7 +69,7 @@ Action Console の対象プロジェクトに遷移し、上記メニューの[D
 
 ### Configure your client (optional)
 
-![Configure your client](/assets/images/20221001-google-smart-home-04/actions-console-configure-your-client.png)
+![Configure your client](./actions-console-configure-your-client.png)
 
 認証時に取得できるユーザ情報を指定します。とりあえず以下を設定しておきます。実際使うのは openid だけなはずです。
 
@@ -86,27 +86,27 @@ Action Console の対象プロジェクトに遷移し、上記メニューの[D
 
 アプリ上の[Settings]を押下します。
 
-![Settings](/assets/images/20221001-google-smart-home-04/home-settings.png)
+![Settings](./home-settings.png)
 
 ページ下部の[Works with Google]を押下します。
 
-![Works with Google](/assets/images/20221001-google-smart-home-04/home-works-with-google.png)
+![Works with Google](./home-works-with-google.png)
 
 設定したアクション名のアプリがあるはずなので選択します。
 
-![Home Control](/assets/images/20221001-google-smart-home-04/home-home-control.png)
+![Home Control](./home-home-control.png)
 
 連携処理に進みます。[Continue]を押下します。
 
-![Link](/assets/images/20221001-google-smart-home-04/home-link.png)
+![Link](./home-link.png)
 
 認証します。 Auth0 上に登録したアカウントでログインします。
 
-![](/assets/images/20221001-google-smart-home-04/home-login.png)
+![](./home-login.png)
 
 問題なければ設定したデバイスが登録されます。
 
-![](/assets/images/20221001-google-smart-home-04/home-add-devices.png)
+![](./home-add-devices.png)
 
 これで手元の Google Home から虚無にある照明を操作できるようになりました。フルフィルメントの設定がとりあえずなので正常には動作しません。
 

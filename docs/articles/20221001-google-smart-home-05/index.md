@@ -4,7 +4,7 @@ createdAt: "2022-10-01T04:00:00+09:00"
 
 # Google Home から自前のスマートリモコンを操作しました - 05. フルフィルメントの実装
 
-[このまえ](./20221001-google-smart-home-04.md)からの続きです。
+[このまえ](../20221001-google-smart-home-04/index.md)からの続きです。
 
 ## HomeGraph の有効化
 

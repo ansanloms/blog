@@ -4,7 +4,7 @@ createdAt: "2022-11-18T00:00:00+09:00"
 
 # Raspberry Pi 上に RAID 1 構成を組みました
 
-[このまえ](./20210504-raspberry-pi-nas-hdd.md)構築した NAS の HDD を RAID 1 構成のものに変えます。
+[このまえ](../20210504-raspberry-pi-nas-hdd/index.md)構築した NAS の HDD を RAID 1 構成のものに変えます。
 
 ## 用意したもの
 

@@ -4,7 +4,7 @@ createdAt: "2022-10-01T00:00:00+09:00"
 
 # Google Home から自前のスマートリモコンを操作しました - 01. プロジェクト構築
 
-[このまえ](./20220924-raspberry-pi-smart-remote-controller.md)作ったリモコンを Google Home から操作できるようにします。
+[このまえ](../20220924-raspberry-pi-smart-remote-controller/index.md)作ったリモコンを Google Home から操作できるようにします。
 
 触ったことがない firebase の素振りも兼ねています。
 
@@ -26,15 +26,15 @@ Google Home から Google Assistant を介して Raspberry PI 上に構築した
 | Choose a language for your action | Japanese             |
 | Choose your country or region     | Japan                |
 
-![Create Action project](/assets/images/20221001-google-smart-home-01/actions-console-create-project.png)
+![Create Action project](./actions-console-create-project.png)
 
 `What kind of Action do you want to build?` の画面にて Smart Home を選択して Start Building を押下します。
 
-![Get started](/assets/images/20221001-google-smart-home-01/actions-console-get-started.png)
+![Get started](./actions-console-get-started.png)
 
 ここまで実施すると Actions Console にプロジェクトができていると同時に、 [Firebase console](https://console.firebase.google.com/) 上にもプロジェクトができているはずです。
 
-![Get started](/assets/images/20221001-google-smart-home-01/firebase-console-project.png)
+![Get started](./firebase-console-project.png)
 
 ## Firebase cli のインストール
 

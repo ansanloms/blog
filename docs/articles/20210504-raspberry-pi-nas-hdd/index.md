@@ -4,13 +4,13 @@ createdAt: "2021-05-04T00:00:00+09:00"
 
 # Raspberry Pi 4 に NAS を構築しました(HDD の準備)
 
-[先日セットアップした Raspberry Pi 4](./20210503-raspberry-pi.md) で NAS をやっていきます。
+[先日セットアップした Raspberry Pi 4](../20210503-raspberry-pi/index.md) で NAS をやっていきます。
 
 ## 用意したもの
 
 - Raspberry Pi 4
 
-[先日セットアップした Raspberry Pi 4](./20210503-raspberry-pi.md) です。
+[先日セットアップした Raspberry Pi 4](../20210503-raspberry-pi/index.md) です。
 
 - HDD
 

@@ -16,7 +16,7 @@ Raspberry Pi 4 (Ubuntu Server 21.04) でテレビを見られるようにしま�
 
 ## 用意したもの
 
-- [先日セットアップした Raspberry Pi 4](./20210503-raspberry-pi.md)
+- [先日セットアップした Raspberry Pi 4](../20210503-raspberry-pi/index.md)
 - TV チューナー:
   - [PLEX PX-S1UD](https://www.amazon.co.jp/dp/B0141NFWSG)
   - [PLEX PX-Q1UD](https://www.amazon.co.jp/dp/B079YD3QT3)

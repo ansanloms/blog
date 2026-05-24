@@ -4,13 +4,13 @@ createdAt: "2021-05-05T01:00:00+09:00"
 
 # Raspberry Pi 4 に NAS を構築しました(Samba の設定)
 
-[このまえ](./20210504-raspberry-pi-nas-hdd.md)のつづきです。
+[このまえ](../20210504-raspberry-pi-nas-hdd/index.md)のつづきです。
 
 ## 実施内容
 
 ### HDD のマウントまで
 
-[このまえの記事](./20210504-raspberry-pi-nas-hdd.md)を見てください。
+[このまえの記事](../20210504-raspberry-pi-nas-hdd/index.md)を見てください。
 
 ### Samba のインストール
 

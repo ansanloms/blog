@@ -154,7 +154,7 @@ $ xzcat ubuntu-22.04.1-preinstalled-server-arm64+raspi.img.xz | sudo dd bs=4M of
 
 書き込んだら、起動時の Wi-Fi 接続とかの為に cloud-init の設定を書き換える必要があります。
 
-適当なところに mount します。後は[このまえ](/articles/20210503-raspberry-pi)のように cloud-init
+適当なところに mount します。後は[このまえ](../20210503-raspberry-pi/index.md)のように cloud-init
 の設定を書き換えます。
 
 ```bash

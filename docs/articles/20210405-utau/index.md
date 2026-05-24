@@ -6,7 +6,7 @@ createdAt: "2021-04-05T00:00:00+09:00"
 
 [UTAU](http://utau2008.web.fc2.com/) であそんでいます。とてもたのしいです。
 
-[PC のセットアップは基本的に scoop でやっている](/articles/20210402-setup)ので、 UTAU も scoop でインストールしたいです。
+[PC のセットアップは基本的に scoop でやっている](../20210402-setup/index.md)ので、 UTAU も scoop でインストールしたいです。
 
 なので Bucket を用意しました。
 

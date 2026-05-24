@@ -213,4 +213,4 @@ sudo apt upgrade
 
 これからこれでいろいろやっていきたいとおもいます。
 
-![Raspberry Pi 4](/assets/images/20210503-raspberry-pi/raspberry-pi.png)
+![Raspberry Pi 4](./raspberry-pi.png)

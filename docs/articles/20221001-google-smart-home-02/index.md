@@ -4,7 +4,7 @@ createdAt: "2022-10-01T01:00:00+09:00"
 
 # Google Home から自前のスマートリモコンを操作しました - 02. 認証処理
 
-[このまえ](./20221001-google-smart-home-01.md)からの続きです。
+[このまえ](../20221001-google-smart-home-01/index.md)からの続きです。
 
 ## ユーザ認証サーバ構築
 
@@ -22,7 +22,7 @@ Auth0 アカウントを作成しておきます。
 
 アカウント作成時にデフォルトで Tenant をつくっているはずですなので、それを利用してもいいとおもいます。
 
-![Create Tenant](/assets/images/20221001-google-smart-home-02/auth0-create-tenant.png)
+![Create Tenant](./auth0-create-tenant.png)
 
 - Tenant Domain: これがそのまま認証 URL や token URL 等のドメインになります。
 - Region: ホスト先を選択します。
@@ -34,7 +34,7 @@ Auth0 アカウントを作成しておきます。
 
 既に規定の Application がありますが、[+ Create Application]を押下して別途新たに作成します。もちろん規定の Application を流用してもいいと思います。
 
-![Create Application](/assets/images/20221001-google-smart-home-02/auth0-create-application.png)
+![Create Application](./auth0-create-application.png)
 
 - Name: なにかわかりやすい名前。今回は `Smart home Action` にしました。
 - Choose an application type: `Regular Web Applications` を選択します。
