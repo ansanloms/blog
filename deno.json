@@ -1,39 +1,103 @@
 {
-  "$schema": "https://deno.land/x/deno/cli/schemas/config-file.v1.json",
-  "fmt": {
-    "proseWrap": "preserve"
-  },
+  "$schema": "https://raw.githubusercontent.com/denoland/deno/refs/heads/main/cli/schemas/config-file.v1.json",
   "exclude": [
     "_site/",
     "_cache/",
-    ".cache/",
-    "node_modules"
+    ".cache/"
   ],
-  "nodeModulesDir": "auto",
+  "fmt": {
+    "proseWrap": "preserve"
+  },
   "imports": {
-    "@proofdict/textlint-rule-proofdict": "npm:@proofdict/textlint-rule-proofdict@^3.1.2",
-    "lume/": "https://deno.land/x/lume@v2.5.1/",
-    "lume-theme-blog/": "https://raw.githubusercontent.com/ansanloms/lume-theme-blog/v0.0.1/",
-    "textlint": "npm:textlint@^14.4.2",
-    "textlint-rule-preset-ja-spacing": "npm:textlint-rule-preset-ja-spacing@^2.4.3",
-    "textlint-rule-preset-ja-technical-writing": "npm:textlint-rule-preset-ja-technical-writing@^12.0.2"
+    "@proofdict/textlint-rule-proofdict": "npm:@proofdict/textlint-rule-proofdict@3.1.2",
+    "@textlint-ja/textlint-rule-preset-ai-writing": "npm:@textlint-ja/textlint-rule-preset-ai-writing@1.7.0",
+    "lume/": "https://cdn.jsdelivr.net/gh/lumeland/lume@3.2.4/",
+    "lume/jsx-runtime": "https://cdn.jsdelivr.net/gh/oscarotero/ssx@0.1.15/jsx-runtime.ts",
+    "lume-theme-blog/": "https://raw.githubusercontent.com/ansanloms/lume-theme-blog/tags/0.1.0/",
+    "textlint": "npm:textlint@15.7.1",
+    "textlint-rule-preset-ja-spacing": "npm:textlint-rule-preset-ja-spacing@2.4.3",
+    "textlint-rule-preset-ja-technical-writing": "npm:textlint-rule-preset-ja-technical-writing@12.0.2",
+    "textlint-rule-preset-jtf-style": "npm:textlint-rule-preset-jtf-style@3.0.3"
   },
   "tasks": {
-    "lume": "echo \"import 'lume/cli.ts'\" | deno run -A -",
-    "textlint": "echo \"import 'textlint/bin/textlint.js'\" | deno run -A -",
-    "build": "deno task lume",
-    "serve": "deno task lume -s",
-    "lint": "deno lint && deno task lint:textlint",
-    "lint:textlint": "deno task textlint ./",
-    "fix": "deno fmt && deno task fix:textlint; deno task lint",
-    "fix:textlint": "deno task textlint ./ --fix"
+    "lume": {
+      "description": "Run Lume command",
+      "command": "deno run -P=lume lume/cli.ts"
+    },
+    "build": {
+      "description": "Build the site for production",
+      "command": "deno task lume"
+    },
+    "serve": {
+      "description": "Run and serve the site for development",
+      "command": "deno task lume -s"
+    },
+    "textlint": {
+      "description": "Run textlint command",
+      "command": "deno --quiet run --allow-env --allow-read --allow-sys --allow-write --allow-net textlint/bin/textlint.js"
+    },
+    "lint": "deno task lint:textlint && deno task lint:deno",
+    "lint:deno": "deno lint && deno fmt --check",
+    "lint:textlint": "deno task textlint ./ --ignore-path .gitignore",
+    "fix": "deno task fix:textlint && deno task fix:deno; deno task lint",
+    "fix:deno": "deno lint --fix && deno fmt",
+    "fix:textlint": "deno task textlint ./ --ignore-path .gitignore --fix"
+  },
+  "permissions": {
+    "lume": {
+      "read": true,
+      "write": [
+        "./"
+      ],
+      "import": [
+        "cdn.jsdelivr.net:443",
+        "jsr.io:443",
+        "deno.land:443",
+        "esm.sh:443",
+        "raw.githubusercontent.com:443"
+      ],
+      "net": [
+        "0.0.0.0",
+        "cdn.jsdelivr.net:443",
+        "data.jsdelivr.com:443",
+        "jsr.io:443",
+        "deno.land:443",
+        "esm.sh:443",
+        "registry.npmjs.org:443",
+        "unpkg.com:443",
+        "raw.githubusercontent.com:443"
+      ],
+      "env": true,
+      "run": true,
+      "ffi": true,
+      "sys": true
+    }
   },
   "compilerOptions": {
-    "jsx": "react-jsx",
-    "jsxImportSource": "npm:react",
-    "jsxImportSourceTypes": "npm:@types/react",
     "types": [
       "lume/types.ts"
+    ],
+    "jsx": "react-jsx",
+    "jsxImportSource": "lume"
+  },
+  "unstable": [
+    "temporal",
+    "fmt-component"
+  ],
+  "allowScripts": {
+    "deny": [
+      "npm:sharp"
     ]
+  },
+  "lint": {
+    "plugins": [
+      "jsr:@aireone/deno-lint-curly",
+      "https://cdn.jsdelivr.net/gh/lumeland/lume@3.2.4/lint.ts"
+    ],
+    "rules": {
+      "exclude": [
+        "no-import-prefix"
+      ]
+    }
   }
 }

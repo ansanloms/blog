@@ -8,7 +8,7 @@ createdAt: "2022-10-01T04:00:00+09:00"
 
 ## HomeGraph の有効化
 
-例えば現状照明が点いているか等、デバイスの状態を管理する必要があります。
+例えば現状照明が点いているか等、デバイスの状態を管理します。
 
 これには [HomeGraph](https://developers.google.com/assistant/smarthome/concepts/homegraph) を利用します。
 

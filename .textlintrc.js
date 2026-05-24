@@ -1,6 +1,5 @@
 module.exports = {
   rules: {
-    // @see https://github.com/textlint-ja/textlint-rule-preset-ja-technical-writing
     "preset-ja-technical-writing": {
       // 文の長さ。
       "sentence-length": {
@@ -14,10 +13,10 @@ module.exports = {
 
       // 敬体と常体の設定。
       "no-mix-dearu-desumasu": {
-        // 本文(Body)。
+        // 見出し(Header)。
         preferInHeader: "ですます",
 
-        // 見出し(Header)。
+        // 本文(Body)。
         preferInBody: "ですます",
 
         // 箇条書き(List)。
@@ -27,21 +26,23 @@ module.exports = {
         strict: true,
       },
 
-      // 感嘆符と疑問符を許可する。
+      // 感嘆符と疑問符の設定。
       "no-exclamation-question-mark": false,
 
-      // 弱い表現を許可する。
+      // 弱い表現を禁止するかどうか。
       "ja-no-weak-phrase": false,
 
       // 助詞の連続をの設定。
-      "no-doubled-joshi": {
-        // 助詞の token 同士の間隔値が 1 以下ならエラーにする。
-        // 間隔値は 1 から開始される。
-        min_interval: 1,
+      // 「かどうか」とかあるし文章伝わる割と対応しんどいので一旦無効で。
+      "no-doubled-joshi": false,
+
+      // 文末の句点忘れを --fix で自動的に補完する。
+      "ja-no-mixed-period": {
+        forceAppendPeriod: true,
       },
     },
 
-    // @see https://github.com/textlint-ja/textlint-rule-preset-ja-spacing
+    // https://github.com/textlint-ja/textlint-rule-preset-ja-spacing
     "preset-ja-spacing": {
       // 全角半角間にスペースを空ける。
       "ja-space-between-half-and-full-width": {
@@ -49,7 +50,19 @@ module.exports = {
       },
     },
 
-    // @see https://github.com/proofdict/proofdict/tree/master/packages/%40proofdict/textlint-rule-proofdict
+    // https://github.com/textlint-ja/textlint-rule-preset-JTF-style
+    "preset-jtf-style": {
+      "1.1.3.箇条書き": false,
+      "2.1.5.カタカナ": true,
+      "3.1.1.全角文字と半角文字の間": false,
+      "4.2.6.ハイフン(-)": false,
+      "4.2.7.コロン(：)": false,
+      "4.3.1.丸かっこ（）": false,
+      "4.3.2.大かっこ［］": false,
+      "4.3.7.山かっこ<>": false,
+    },
+
+    // https://github.com/proofdict/proofdict/tree/master/packages/@proofdict/textlint-rule-proofdict
     "@proofdict/proofdict": {
       dicts: [
         {
@@ -57,6 +70,13 @@ module.exports = {
           autoUpdateInterval: 1000,
         },
       ],
+    },
+
+    // https://github.com/textlint-ja/textlint-rule-preset-ai-writing
+    "@textlint-ja/preset-ai-writing": {
+      "ai-tech-writing-guideline": {
+        "severity": "info",
+      },
     },
   },
 };

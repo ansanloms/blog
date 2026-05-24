@@ -26,7 +26,7 @@ Ubuntu Server 20.04.2 LTS を導入してやっていこうとおもいます。
 
 - [Amazon ベーシック USB ケーブル 0.9m (タイプ C - USB-A オス 3.1 Gen2)](https://www.amazon.co.jp/dp/B07PXRC27L)
 
-電源ケーブルです。なんでもよかった。
+電源ケーブルです。なんでもよかったです。
 
 ### 買っていないもの
 
