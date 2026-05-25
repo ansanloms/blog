@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Raspberry pi に Deno をインストールしました</title><script type="module" src="/blog/scripts/color-scheme.mjs"></script><link rel="stylesheet" href="/blog/styles/palette.css"><link rel="stylesheet" href="/blog/styles/general.css"><link rel="stylesheet" href="/blog/styles/layout.css"><link rel="stylesheet" href="/blog/styles/article.css"><link rel="stylesheet" href="/blog/styles/shiki.css"></head><body class="container"><section class="content"><article class="article"><h1 id="raspberry-pi-に-deno-をインストールしました"><a href="#raspberry-pi-に-deno-をインストールしました">Raspberry pi に Deno をインストールしました</a></h1>
+<h2 id="第三者のビルドを利用する"><a href="#第三者のビルドを利用する">第三者のビルドを利用する</a></h2>
+<p>64 bit ARM 用のビルドが以下で配布されています。</p>
+<p><a href="https://github.com/LukeChannings/deno-arm64">https://github.com/LukeChannings/deno-arm64</a></p>
+<p>32 bit ARM 上でも<a href="https://github.com/LukeChannings/deno-arm64#what-about-32-bit-arm">一応利用できますがバグがある</a>とのことです。</p>
+<h2 id="自前でビルドする"><a href="#自前でビルドする">自前でビルドする</a></h2>
+<h3 id="rust-のインストール"><a href="#rust-のインストール">Rust のインストール</a></h3>
+<p><a href="https://www.rust-lang.org/learn/get-started">https://www.rust-lang.org/learn/get-started</a></p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-bash"><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">curl</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> --proto</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> '=https'</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> --tlsv1.2</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> -sSf</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> https://sh.rustup.rs</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> |</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0"> sh</span></span>
+<span class="line"><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">source</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> $HOME</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">/.cargo/env</span></span></code></pre>
+<h3 id="deno-のインストール"><a href="#deno-のインストール">Deno のインストール</a></h3>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-bash"><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">sudo</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> apt</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> build-essential</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> libfuse-dev</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">cargo</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> deno</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> --locked</span></span></code></pre></article></section><script type="module">import mermaid from "/blog/mermaid/mermaid.esm.min.mjs";
+import { run } from "/blog/scripts/mermaid.mjs";
+
+await run({
+  mermaid,
+  config: {"light":{"theme":"default"},"dark":{"theme":"dark"}},
+  icons: [{"name":"logos","url":"https://unpkg.com/@iconify-json/logos@1.2.11/icons.json"},{"name":"aws","url":"https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/refs/tags/v23.0/dist/aws-icons-mermaid.json"}],
+  querySelector: "pre > code[data-language='mermaid']",
+})</script></body></html>

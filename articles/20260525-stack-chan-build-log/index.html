@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ｽﾀｯｸﾁｬﾝ ビルドログ</title><script type="module" src="/blog/scripts/color-scheme.mjs"></script><link rel="stylesheet" href="/blog/styles/palette.css"><link rel="stylesheet" href="/blog/styles/general.css"><link rel="stylesheet" href="/blog/styles/layout.css"><link rel="stylesheet" href="/blog/styles/article.css"><link rel="stylesheet" href="/blog/styles/shiki.css"></head><body class="container"><section class="content"><article class="article"><h1 id="ｽﾀｯｸﾁｬﾝ-ビルドログ"><a href="#ｽﾀｯｸﾁｬﾝ-ビルドログ">ｽﾀｯｸﾁｬﾝ ビルドログ</a></h1>
+<h2 id="用意したもの"><a href="#用意したもの">用意したもの</a></h2>
+<ul>
+<li><a href="https://docs.m5stack.com/ja/core/CoreS3">M5Stack CoreS3</a></li>
+<li><a href="https://docs.m5stack.com/ja/accessory/servo_kit">Servo Kit 180°</a> x2</li>
+<li><a href="https://docs.m5stack.com/ja/accessory/cable/grove_cable">Grove Cable (5cm)</a></li>
+<li><a href="https://docs.m5stack.com/ja/module/M5GO3%20Bottom">M5GO Bottom3</a></li>
+<li><a href="https://www.switch-science.com/products/8905">Stack-chan_Takao_Base</a></li>
+<li>microSDHC 32GB (アキヨドで買おうとしたら 1 万くらいしてビビったので急遽知り合いに恵んでもらった)</li>
+</ul>
+<h2 id="開発環境"><a href="#開発環境">開発環境</a></h2>
+<p>Windows 11 / WSL 2 (Ubuntu) で実施します。</p>
+<h3 id="platformio-core-cli"><a href="#platformio-core-cli">PlatformIO Core CLI</a></h3>
+<p><a href="https://platformio.org/install/cli">https://platformio.org/install/cli</a></p>
+<p><span class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>pio</span></span></code></span> で CoreS3 にファームウェアをアップロードします。</p>
+<p>今回は Nix / home-manager でインストールしてます。</p>
+<h3 id="usbipd-win"><a href="#usbipd-win">usbipd-win</a></h3>
+<p><a href="https://learn.microsoft.com/ja-jp/windows/wsl/connect-usb">https://learn.microsoft.com/ja-jp/windows/wsl/connect-usb</a></p>
+<p>WSL 2 上で USB デバイスを接続する為のツールです。</p>
+<p>Windows 側に winget をつかってインストールします。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-powershell"><span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">winget install usbipd</span></span></code></pre>
+<h2 id="手順"><a href="#手順">手順</a></h2>
+<h3 id="cores3-を-wsl-2-に接続する"><a href="#cores3-を-wsl-2-に接続する">CoreS3 を WSL 2 に接続する</a></h3>
+<p>usbipd で USB を WSL 2 にアタッチします。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-bash"><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">usbipd.exe</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> list</span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D">                           # CoreS3 の BUSID を確認</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">sudo.exe</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> usbipd.exe</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> bind</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> --busid</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> &lt;</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">BUSI</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">D</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">&gt;</span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D">  # 初回のみ</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">usbipd.exe</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> attach</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> --wsl</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> --busid</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> &lt;</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">BUSI</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">D</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">&gt;</span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D">   # WSL 2 にアタッチ</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">ls</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> /dev/ttyACM</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">*</span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D">                           # または /dev/ttyUSB* で認識確認</span></span></code></pre>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-bash"><span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">&gt;</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> usbipd.exe list</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">Connected:</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">BUSID</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">  VID:PID</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">    DEVICE</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">                                                        STATE</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">5-3</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">    303a:1001</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">  USB</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> シリアル</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> デバイス</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> (COM3), USB JTAG/serial debug unit      Not shared</span></span></code></pre>
+<p>今回は BUSID は <span class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>5-3</span></span></code></span> でした。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-bash"><span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">&gt;</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> sudo.exe usbipd.exe bind --busid 5-3</span></span></code></pre>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-bash"><span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">&gt;</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> usbipd.exe attach --wsl --busid 5-3</span></span></code></pre>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-bash"><span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">&gt;</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> ls /dev/ttyACM</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">*</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">/dev/ttyACM0</span></span></code></pre>
+<p><span class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>/dev/ttyACM0</span></span></code></span> にアタッチできました。</p>
+<h3 id="cores3-にテスト用のファームウェアを書き込む"><a href="#cores3-にテスト用のファームウェアを書き込む">CoreS3 にテスト用のファームウェアを書き込む</a></h3>
+<p>今回は <a href="https://github.com/mongonta0716/stack-chan-tester">mongonta0716/stack-chan-tester</a> を使わせてもらいます。</p>
+<p>任意の場所に clone しビルドします。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-bash"><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">pio</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> run</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> -e</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> m5stack-cores3</span></span></code></pre>
+<p>書き込みします。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-bash"><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">pio</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> run</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> -e</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> m5stack-cores3</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> -t</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> upload</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> --upload-port</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> /dev/ttyACM0</span></span></code></pre>
+<blockquote>
+<p>[!INFO]</p>
+<p>もしも書き込みできない場合は、リセットボタンを 3 秒間押し続けて、ダウンロードモード(緑の LED が点滅している状態)にしてから書き込みます。</p>
+</blockquote>
+<p>できました。 CoreS3 にお顔が表示されます。</p>
+<p><img src="/blog/articles/20260525-stack-chan-build-log/init-burned.jpg" alt="書き込み後"></p>
+<h3 id="サーボを動かす"><a href="#サーボを動かす">サーボを動かす</a></h3>
+<p>Takao_Base と Servo Kit 180° を接続してサーボを動かします。</p>
+<ol>
+<li>Grove Cable を使って CoreS3 の Port.A (USB-C 端子の右の赤いとこ)と Takao_Base を接続</li>
+<li>Servo Kit 180° のサーボ 2 つを Takao_Base に接続</li>
+</ol>
+<ul>
+<li>H1 端子: 水平方向(足側)のサーボ</li>
+<li>V2 端子: 上下方向(筐体側)のサーボ</li>
+<li>GND 側(サーボの配線の色は茶色)を合わせる</li>
+</ul>
+<ol start="3">
+<li>Takao_Base の USB-C に給電</li>
+</ol>
+<p>CoreS3 のディスプレイ下部左から A / B / C ボタンとなっています。B ボタン(中央)をタッチするとサーボが動きだします。</p>
+<p><img src="/blog/articles/20260525-stack-chan-build-log/servo-test.jpg" alt="サーボのテスト"></p>
+<h3 id="ai-stack-chan-ex-のビルドと書き込み"><a href="#ai-stack-chan-ex-のビルドと書き込み">AI Stack-chan Ex のビルドと書き込み</a></h3>
+<p><a href="https://github.com/ronron-gh/AI_StackChan_Ex">ronron-gh/AI_StackChan_Ex</a> を使わせてもらいます。</p>
+<p>任意の場所に clone しビルドします。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-bash"><span class="line"><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">cd</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> ./firmware</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">pio</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> run</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> -e</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> m5stack-cores3</span></span></code></pre>
+<p>書き込みします。</p>
+<blockquote>
+<p>[!INFO]</p>
+<p>もしも USB を取り外ししていた場合は、先に <span class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>usbipd</span></span></code></span> のアタッチが必要です。</p>
+</blockquote>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-bash"><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">pio</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> run</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> -e</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> m5stack-cores3</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> -t</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> upload</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> --upload-port</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> /dev/ttyACM0</span></span></code></pre>
+<h3 id="microsd-の用意"><a href="#microsd-の用意">microSD の用意</a></h3>
+<p>まずはフォーマットします。</p>
+<div class="admonition caution">
+<p class="admonitionTitle caution">CAUTION</p>
+<p></p>
+<p>microSD 内のデータは削除されます。</p>
+</div>
+<p>PowerShell 上で以下を実行します。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-powershell"><span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D"># まず microSD のドライブレターを確認。</span></span>
+<span class="line"><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">Get-Volume</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D"># FAT32 でフォーマット (例: D ドライブの場合)</span></span>
+<span class="line"><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">Format-Volume</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> -</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">DriveLetter D </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">-</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">FileSystem FAT32 </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">-</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">NewFileSystemLabel </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"STACKCHAN"</span></span></code></pre>
+<p>フォーマットできました。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-powershell"><span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">&gt;</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> Get-Volume</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> D</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">DriveLetter FriendlyName FileSystemType DriveType HealthStatus OperationalStatus SizeRemaining     Size</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">-----------</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> ------------</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> --------------</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> ---------</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> ------------</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> -----------------</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> -------------</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">     ----</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">D           STACKCHAN    FAT32          Removable Healthy      OK                     </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">28.77</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> GB </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">28.77</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> GB</span></span></code></pre>
+<p>そしたら <span class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>ronron-gh/AI_StackChan_Ex</span></span></code></span> 配下の <span class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>Copy-to-SD</span></span></code></span> の各種値を書き換えます。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0" data-filename="Copy-to-SD/app/AiStackChanEx/SC_ExConfig.yaml"><code class="language-diff"><span class="line"><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7">--- a/Copy-to-SD/</span><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7" class="highlighted-word">app</span><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7">/AiStackChanEx/SC_ExConfig.yaml</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+++ b/Copy-to-SD/</span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D" class="highlighted-word">app</span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">/AiStackChanEx/SC_ExConfig.yaml</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-light-font-weight:bold;--shiki-dark:#B392F0;--shiki-dark-font-weight:bold">@@ -4,18 +4,18 @@</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> llm:</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">   type: 0                            # 0:ChatGPT  1:ModuleLLM  2:ModuleLLM(Function Calling)</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> tts:</span></span>
+<span class="line"><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7">-  type: 0                            # 0:VOICEVOX  1:ElevenLabs  2:OpenAI TTS  3:AquesTalk 4:ModuleLLM</span></span>
+<span class="line"><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7">-  model: ""                          # VOICEVOX, AquesTalk (modelは未対応)</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+  type: 2                            # 0:VOICEVOX  1:ElevenLabs  2:OpenAI TTS  3:AquesTalk 4:ModuleLLM</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+  model: "tts-1"                     # OpenAI TTS</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+  #model: ""                          # VOICEVOX, AquesTalk (modelは未対応)</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">   #model: "eleven_multilingual_v2"    # ElevenLabs</span></span>
+<span class="line"><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7">-  #model: "tts-1"                     # OpenAI TTS</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">   #model: "melotts-ja-jp"             # ModuleLLM (日本語)  ※モデル指定なしの場合は英語</span></span>
+<span class="line"><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7">-  voice: "3"                         # VOICEVOX (ずんだもん)</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+  voice: "alloy"                     # OpenAI TTS</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+  #voice: "3"                         # VOICEVOX (ずんだもん)</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">   #voice: "AZnzlk1XvdvUeBnXmlld"      # ElevenLabs</span></span>
+<span class="line"><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7">-  #voice: "alloy"                     # OpenAI TTS</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">   #voice: ""                          # AquesTalk, ModuleLLM (voiceは未対応)</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> stt:</span></span>
+<span class="line"><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7">-  type: 0                            # 0:Google STT  1:OpenAI Whisper  2:ModuleLLM(ASR)  3:ModuleLLM(Whisper)</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+  type: 1                            # 0:Google STT  1:OpenAI Whisper  2:ModuleLLM(ASR)  3:ModuleLLM(Whisper)</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> wakeword:</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">   type: 0                            # 0:SimpleVox  1:ModuleLLM(KWS)</span></span></code></pre>
+<p>今回は OpenAI の TTS / STT(Whisper) をつかいます。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0" data-filename="Copy-to-SD/yaml/SC_BasicConfig.yaml"><code class="language-diff"><span class="line"><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7">--- a/Copy-to-SD/</span><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7" class="highlighted-word">yaml</span><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7">/SC_BasicConfig.</span><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7" class="highlighted-word">yaml</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+++ b/Copy-to-SD/</span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D" class="highlighted-word">yaml</span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">/SC_BasicConfig.</span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D" class="highlighted-word">yaml</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-light-font-weight:bold;--shiki-dark:#B392F0;--shiki-dark-font-weight:bold">@@ -6,8 +6,8 @@</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> servo:</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">     # CoreS3 PortA X:1,Y:2 PortB X:8,Y:9 PortC X:18,Y:17</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">     # Stack-chanPCB Core1 X:5,Y:2 Core2 X:19,Y27</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">     # When using SCS0009, x:RX, y:TX (not used).(StackchanRT Version:Core1 x16,y17, Core2: x13,y14)</span></span>
+<span class="line"><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7">-    x: 33</span></span>
+<span class="line"><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7">-    y: 32</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+    x: 1</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+    y: 2</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">   center:</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">     x: 90</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">     y: 90</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-light-font-weight:bold;--shiki-dark:#B392F0;--shiki-dark-font-weight:bold">@@ -44,6 +44,6 @@</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> balloon:</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">   - "Je suis Stack-chan"</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> led_lr: 0 # 0:stereo, 1:left_only, 2:right_only</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> led_pin: 15 # GoBottom1:15 GoBottom2:25</span></span>
+<span class="line"><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7">-takao_base: false # Whether to use takaobase to feed power from the rear connector.(Stack-chan_Takao_Base  https://ssci.to/8905)</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+takao_base: true # Whether to use takaobase to feed power from the rear connector.(Stack-chan_Takao_Base  https://ssci.to/8905)</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> servo_type: "PWM" # "PWM": SG90PWMServo, "SCS": Feetech SCS0009</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> secret_config_show: true                               # Whether personal information is output to the log or not.</span></span></code></pre>
+<p>CoreS3 の Port.A にあわせてサーボピンの番号を変更します。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0" data-filename="Copy-to-SD/yaml/SC_SecConfig.yaml"><code class="language-diff"><span class="line"><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7">--- a/Copy-to-SD/</span><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7" class="highlighted-word">yaml</span><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7">/SC_SecConfig.</span><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7" class="highlighted-word">yaml</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+++ b/Copy-to-SD/</span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D" class="highlighted-word">yaml</span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">/SC_SecConfig.</span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D" class="highlighted-word">yaml</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-light-font-weight:bold;--shiki-dark:#B392F0;--shiki-dark-font-weight:bold">@@ -1,10 +1,10 @@</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> # 個人情報用の設定ファイル</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> wifi:</span></span>
+<span class="line"><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7">-  ssid: "********"</span></span>
+<span class="line"><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7">-  password: "********"</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+  ssid: "********"</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+  password: "********"</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> apikey:</span></span>
+<span class="line"><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7">-  stt: "********"       # ApiKey of SpeechToText Service</span></span>
+<span class="line"><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7">-  aiservice: "********" # ApiKey of AIService</span></span>
+<span class="line"><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7">-  tts: "********"       # ApiKey of TextToSpeech Service</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+  stt: "sk-****"       # ApiKey of SpeechToText Service</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+  aiservice: "sk-****" # ApiKey of AIService</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+  tts: "sk-****"       # ApiKey of TextToSpeech Service</span></span></code></pre>
+<p>Wi-Fi (2.4 GHz) と OpenAI の API キーを設定します。</p>
+<p>これらを microSD に書き込みます。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-powershell"><span class="line"><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">Copy-Item</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> -</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">Recurse </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">-</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">Force \\wsl$</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">\Ubuntu\path\to\ronron-gh\AI_StackChan_Ex\Copy-to</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">-</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">SD\</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">*</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> D:\</span></span></code></pre>
+<h3 id="起動"><a href="#起動">起動</a></h3>
+<p>ついでなのでこのタイミングで M5GO Bottom3 も繋げます。</p>
+<p>起動し、OpenAI TTS / Whisper をつかった音声応答ができれば成功です。よかったですね。</p>
+<p><img src="/blog/articles/20260525-stack-chan-build-log/completed.jpg" alt="完成"></p></article></section><script type="module">import mermaid from "/blog/mermaid/mermaid.esm.min.mjs";
+import { run } from "/blog/scripts/mermaid.mjs";
+
+await run({
+  mermaid,
+  config: {"light":{"theme":"default"},"dark":{"theme":"dark"}},
+  icons: [{"name":"logos","url":"https://unpkg.com/@iconify-json/logos@1.2.11/icons.json"},{"name":"aws","url":"https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/refs/tags/v23.0/dist/aws-icons-mermaid.json"}],
+  querySelector: "pre > code[data-language='mermaid']",
+})</script></body></html>

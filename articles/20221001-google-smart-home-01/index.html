@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Google Home から自前のスマートリモコンを操作しました - 01. プロジェクト構築</title><script type="module" src="/blog/scripts/color-scheme.mjs"></script><link rel="stylesheet" href="/blog/styles/palette.css"><link rel="stylesheet" href="/blog/styles/general.css"><link rel="stylesheet" href="/blog/styles/layout.css"><link rel="stylesheet" href="/blog/styles/article.css"><link rel="stylesheet" href="/blog/styles/shiki.css"></head><body class="container"><section class="content"><article class="article"><h1 id="google-home-から自前のスマートリモコンを操作しました---01-プロジェクト構築"><a href="#google-home-から自前のスマートリモコンを操作しました---01-プロジェクト構築">Google Home から自前のスマートリモコンを操作しました - 01. プロジェクト構築</a></h1>
+<p><a href="/blog/articles/20220924-raspberry-pi-smart-remote-controller/">このまえ</a>作ったリモコンを Google Home から操作できるようにします。</p>
+<p>触ったことがない firebase の素振りも兼ねています。</p>
+<h2 id="構成概要"><a href="#構成概要">構成概要</a></h2>
+<p><a href="https://developers.google.com/assistant/smarthome/overview">Smart Home platform</a> を構築して、そこで Raspberry PI 上に構築した自前のスマートリモコンを操作します。</p>
+<p>Google Home から Google Assistant を介して Raspberry PI 上に構築した自前のスマートリモコンを操作できるようにします。</p>
+<h2 id="スマートホームのアクションを作成"><a href="#スマートホームのアクションを作成">スマートホームのアクションを作成</a></h2>
+<p><a href="https://developers.google.com/assistant/smarthome/develop/create">https://developers.google.com/assistant/smarthome/develop/create</a></p>
+<p><a href="https://console.actions.google.com/">Actions Console</a> にアクセスし、 New Project から Actions プロジェクトを作成します。</p>
+<table>
+<thead>
+<tr>
+<th align="left"></th>
+<th align="left">値</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Project Name</td>
+<td align="left">任意のプロジェクト名</td>
+</tr>
+<tr>
+<td align="left">Choose a language for your action</td>
+<td align="left">Japanese</td>
+</tr>
+<tr>
+<td align="left">Choose your country or region</td>
+<td align="left">Japan</td>
+</tr>
+</tbody>
+</table>
+<p><img src="/blog/articles/20221001-google-smart-home-01/actions-console-create-project.png" alt="Create Action project"></p>
+<p><span class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>What kind of Action do you want to build?</span></span></code></span> の画面にて Smart Home を選択して Start Building を押下します。</p>
+<p><img src="/blog/articles/20221001-google-smart-home-01/actions-console-get-started.png" alt="Get started"></p>
+<p>ここまで実施すると Actions Console にプロジェクトができていると同時に、 <a href="https://console.firebase.google.com/">Firebase console</a> 上にもプロジェクトができているはずです。</p>
+<p><img src="/blog/articles/20221001-google-smart-home-01/firebase-console-project.png" alt="Get started"></p>
+<h2 id="firebase-cli-のインストール"><a href="#firebase-cli-のインストール">Firebase cli のインストール</a></h2>
+<p>Node.js と Firebase cli をインストールしておきます。</p>
+<p>Node.js のバージョン管理には <a href="https://volta.sh/">Volta</a> を利用しています。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-bash"><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">winget</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> Volta.Volta</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">winget</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> Google.FirebaseCLI</span></span></code></pre>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>&gt; node -v</span></span>
+<span class="line"><span>v16.17.1</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>&gt; npm -v</span></span>
+<span class="line"><span>8.15.1</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>&gt; firebase --version</span></span>
+<span class="line"><span>11.14.2</span></span></code></pre>
+<p>Google の開発アカウントでログインしておきます。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-bash"><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">firebase</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> login</span></span></code></pre>
+<h2 id="スマートホーム操作アプリの構築"><a href="#スマートホーム操作アプリの構築">スマートホーム操作アプリの構築</a></h2>
+<p>スマートホーム操作のもろもろはこの Firebase プロジェクト上に構築していきます。</p>
+<h3 id="firebase-プロジェクトの初期化"><a href="#firebase-プロジェクトの初期化">Firebase プロジェクトの初期化</a></h3>
+<p>プロジェクトの作業ディレクトリを作成します。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-bash"><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">mkdir</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> smart-home</span></span>
+<span class="line"><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">cd</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> smart-home</span></span></code></pre>
+<p>Firebase プロジェクトを作成します。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-bash"><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">firebase</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> init</span></span></code></pre>
+<p>やっていきます。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>&gt; firebase init</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>     ######## #### ########  ######## ########     ###     ######  ########</span></span>
+<span class="line"><span>     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##</span></span>
+<span class="line"><span>     ######    ##  ########  ######   ########  #########  ######  ######</span></span>
+<span class="line"><span>     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##</span></span>
+<span class="line"><span>     ##       #### ##     ## ######## ########  ##     ##  ######  ########</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>You're about to initialize a Firebase project in this directory:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  C:\dev\smart-home</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Before we get started, keep in mind:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>  * You are currently outside your home directory</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>? Are you ready to proceed? (Y/n)</span></span></code></pre>
+<p>Firebase 機能は一旦確実に使う Functions のみ選択します。必要になったら <span class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>firebase use --add</span></span></code></span> で追加していくかんじで。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>? Which Firebase features do you want to set up for this directory? Press Space to select features, then Enter to confirm your choices. (Press &lt;space&gt; to select, &lt;a&gt; to toggle all,</span></span>
+<span class="line"><span> &lt;i&gt; to invert selection, and &lt;enter&gt; to proceed)</span></span>
+<span class="line"><span> ( ) Realtime Database: Configure a security rules file for Realtime Database and (optionally) provision default instance</span></span>
+<span class="line"><span> ( ) Firestore: Configure security rules and indexes files for Firestore</span></span>
+<span class="line"><span>&gt;(*) Functions: Configure a Cloud Functions directory and its files</span></span>
+<span class="line"><span> ( ) Hosting: Configure files for Firebase Hosting and (optionally) set up GitHub Action deploys</span></span>
+<span class="line"><span> ( ) Hosting: Set up GitHub Action deploys</span></span>
+<span class="line"><span> ( ) Storage: Configure a security rules file for Cloud Storage</span></span>
+<span class="line"><span> ( ) Emulators: Set up local emulators for Firebase products</span></span>
+<span class="line"><span>(Move up and down to reveal more choices)</span></span></code></pre>
+<p>Actions Console でプロジェクトを作成した際に同時に作成された Firebase プロジェクトがあるので、それに関連付けます。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>? Please select an option: (Use arrow keys)</span></span>
+<span class="line"><span>&gt; Use an existing project</span></span>
+<span class="line"><span>  Create a new project</span></span>
+<span class="line"><span>  Add Firebase to an existing Google Cloud Platform project</span></span>
+<span class="line"><span>  Don't set up a default project</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>? Select a default Firebase project for this directory:</span></span>
+<span class="line"><span>&gt; smart-home-sample02 (smart-home-sample02)</span></span></code></pre>
+<p>Functions の設定をしていきます。</p>
+<ul>
+<li>使用言語は TypeScript</li>
+<li>ESLint を導入</li>
+<li>npm 依存をインストール</li>
+</ul>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>? What language would you like to use to write Cloud Functions? TypeScript</span></span>
+<span class="line"><span>? Do you want to use ESLint to catch probable bugs and enforce style? Yes</span></span>
+<span class="line"><span>? Do you want to install dependencies with npm now? Yes</span></span></code></pre>
+<p>完了しました。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>+  Firebase initialization complete!</span></span></code></pre>
+<h3 id="functions-素振り"><a href="#functions-素振り">Functions 素振り</a></h3>
+<p>とりあえず Hello World していきます。</p>
+<p><span class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>functions/src/index.ts</span></span></code></span> 上に既のコードがあります。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0" data-filename="functions/src/index.ts"><code class="language-typescript"><span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">import</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> *</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> as</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> functions </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">from</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> "firebase-functions"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D">// Start writing Firebase Functions</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D">// https://firebase.google.com/docs/functions/typescript</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">export</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> const</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> helloWorld</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> =</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> functions.https.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">onRequest</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">((</span><span style="--shiki-light:#E36209;--shiki-dark:#FFAB70">request</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, </span><span style="--shiki-light:#E36209;--shiki-dark:#FFAB70">response</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">) </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=&gt;</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">  functions.logger.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">info</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"Hello logs!"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, {structuredData: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">true</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">});</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">  response.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">send</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"Hello from Firebase!"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">});</span></span></code></pre>
+<h4 id="ローカル上で起動"><a href="#ローカル上で起動">ローカル上で起動</a></h4>
+<p>deploy する前に、ローカル上に functions をエミュレートして確認してみます。</p>
+<p>まずはコードをビルドします。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-bash"><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">npm</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> run</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> build</span></span></code></pre>
+<p>続いてエミュレータを起動します。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-bash"><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">firebase</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> emulators:start</span></span></code></pre>
+<p>これで local 上に funcitions の検証ができます。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-bash"><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">$</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> curl</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> http://127.0.0.1:5001/smart-home-sample02/us-central1/helloWorld</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">Hello</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> from</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> Firebase!</span></span></code></pre>
+<h4 id="deploy"><a href="#deploy">Deploy</a></h4>
+<p>local で確認できたので、実際に deploy してみます。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-bash"><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">firebase</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> deploy</span></span></code></pre>
+<p>エラーになりました。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>Error: Your project smart-home-sample02 must be on the Blaze (pay-as-you-go) plan to complete this command. Required API artifactregistry.googleapis.com can't be enabled until the upgrade is complete. To upgrade, visit the following URL:</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>https://console.firebase.google.com/project/smart-home-sample02/usage/details</span></span></code></pre>
+<p>料金プランを変更する必要があるようです。 Blaze プランにします。</p>
+<p>無料枠内の利用に留まる筈なので、余程変な使い方をしないかぎりお金はかからないはずです。けど一応 <a href="https://console.cloud.google.com/">Cloud Console</a> 上の予算とアラートからアラートを設定しておいたほうがいいとおもいます。</p>
+<p>料金プランを変更したら、あらためて deploy してみます。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>+  Deploy complete!</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Project Console: https://console.firebase.google.com/project/smart-home-sample02/overview</span></span></code></pre>
+<p>うまくいきました。 fuctions の関数を実行してみます。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>$ curl https://us-central1-smart-home-sample02.cloudfunctions.net/helloWorld</span></span>
+<span class="line"><span>Hello from Firebase!</span></span></code></pre>
+<p>できました。</p>
+<h3 id="functions-開発事前準備"><a href="#functions-開発事前準備">Functions 開発事前準備</a></h3>
+<p>本格的に開発を始めるまえにもろもろ準備をしていきます。</p>
+<h4 id="nodejs-バージョン固定"><a href="#nodejs-バージョン固定">Node.js バージョン固定</a></h4>
+<p>Volta には、<a href="https://docs.volta.sh/guide/#why-volta">プロジェクト毎に利用する Node.js / npm のバージョンを固定する機能</a>があります。</p>
+<p>これで <a href="https://cloud.google.com/functions/docs/concepts/nodejs-runtime">Functions で利用する Node ランタイム</a>にあわせてバージョンを固定します。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-bash"><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">volta</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> pin</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> node@16</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">volta</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> pin</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> npm@8</span></span></code></pre>
+<p>バージョンを確認してみます。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>&gt; node -v</span></span>
+<span class="line"><span>v16.18.1</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>&gt; npm -v</span></span>
+<span class="line"><span>8.19.3</span></span></code></pre>
+<p>package.json に固定バージョンが追記されます。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0" data-filename="functions/package.json"><code class="language-diff"><span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+  "volta": {</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+    "node": "16.18.1",</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+    "npm": "8.19.3"</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+  }</span></span></code></pre>
+<h4 id="prettier-の導入"><a href="#prettier-の導入">Prettier の導入</a></h4>
+<p>ESLint とは別に、コードフォーマッタの <a href="https://prettier.io/">Prettier</a> を導入します。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-bash"><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">npm</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> i</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> -D</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> prettier</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> eslint-config-prettier</span></span></code></pre>
+<p>.eslintrc.js の <span class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>extends</span></span></code></span> に <span class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>prettier</span></span></code></span> を追記します。これによって ESLint 上の Prettier と競合するルールは無効になります。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0" data-filename="functions/.eslintrc.js"><code class="language-diff"><span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">     "plugin:import/typescript",</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">     "google",</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">     "plugin:@typescript-eslint/recommended",</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+    "prettier",</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">   ],</span></span></code></pre>
+<p>npm script の順次実行ができる <span class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>npm-run-all</span></span></code></span> を導入し、 lint のコマンドも更新します。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-bash"><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">npm</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> i</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> -D</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> npm-run-all</span></span></code></pre>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0" data-filename="functions/package.json"><code class="language-diff"><span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">   "scripts": {</span></span>
+<span class="line"><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7">-    "lint": "eslint --ext .js,.ts .",</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+    "lint": "run-p --continue-on-error lint:*",</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+    "lint:prettier": "prettier --loglevel warn --ignore-path .gitignore --check .",</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+    "lint:eslint": "eslint --ext \".js,.ts\" --ignore-path .gitignore .",</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+    "fix": "run-p --continue-on-error fix:*",</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+    "fix:prettier": "prettier --loglevel warn --ignore-path .gitignore --write .",</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+    "fix:eslint": "eslint --cache --ext \".js,.ts\" --ignore-path .gitignore --fix .",</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">     "build": "tsc",</span></span></code></pre>
+<p>これで <span class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>npm run fix</span></span></code></span> を実行すると ESLint と Prettier による Lint &amp; Format がかかるはずです。</p>
+<h4 id="依存のアップデート"><a href="#依存のアップデート">依存のアップデート</a></h4>
+<p>とりあえず雑にアップデートしておきます。別に誰かが使うわけでもないし。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-bash"><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">npx</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> npm-check-updates</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> -u</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">rm</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> -rfv</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> node_modules</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">\ </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">package-lock.json</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">npm</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> install</span></span></code></pre>
+<h4 id="デプロイ先のロケーションを変更する"><a href="#デプロイ先のロケーションを変更する">デプロイ先のロケーションを変更する</a></h4>
+<p><a href="https://firebase.google.com/docs/functions/locations#best_practices_for_changing_region">https://firebase.google.com/docs/functions/locations#best_practices_for_changing_region</a></p>
+<p>デフォルトのロケーションは <span class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>us-central1</span></span></code></span> なので、明示的に <span class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>asia-northeast1</span></span></code></span> を指定するようにします。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0" data-filename="functions/src/index.ts"><code class="language-diff"><span class="line"><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7">-export const helloWorld = functions.https.onRequest((request, response) =&gt; {</span></span>
+<span class="line"><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7">-  functions.logger.info("Hello logs!", { structuredData: true });</span></span>
+<span class="line"><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7">-  response.send("Hello from Firebase!");</span></span>
+<span class="line"><span style="--shiki-light:#B31D28;--shiki-dark:#FDAEB7">-});</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+const region = "asia-northeast1";</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+export const helloWorld = functions</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+  .region(region)</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+  .https.onRequest((request, response) =&gt; {</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+    functions.logger.info("Hello logs!", { structuredData: true });</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+    response.send("Hello from Firebase!");</span></span>
+<span class="line"><span style="--shiki-light:#22863A;--shiki-dark:#85E89D">+  });</span></span></code></pre>
+<p>デプロイしてみます。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-bash"><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">firebase</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> deploy</span></span></code></pre>
+<p><span class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>us-central1</span></span></code></span> 上のリソースを削除するか聞かれるはずです。削除します。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>? Would you like to proceed with deletion? Selecting no will continue the rest of the deployments. Yes</span></span>
+<span class="line"><span>i  functions: creating Node.js 16 function helloWorld(asia-northeast1)...</span></span>
+<span class="line"><span>i  functions: deleting Node.js 16 function helloWorld(us-central1)...</span></span></code></pre>
+<p>デプロイできました。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>+  Deploy complete!</span></span></code></pre>
+<p>実行してみます。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>&gt; curl https://asia-northeast1-smart-home-sample02.cloudfunctions.net/helloWorld</span></span>
+<span class="line"><span>Hello from Firebase!</span></span></code></pre>
+<h2 id="つづく"><a href="#つづく">つづく</a></h2>
+<p>ここまででとりあえずスマートホーム操作アプリ構築の事前準備が完了しました。</p>
+<p>次は認証処理を用意してきます。</p></article></section><script type="module">import mermaid from "/blog/mermaid/mermaid.esm.min.mjs";
+import { run } from "/blog/scripts/mermaid.mjs";
+
+await run({
+  mermaid,
+  config: {"light":{"theme":"default"},"dark":{"theme":"dark"}},
+  icons: [{"name":"logos","url":"https://unpkg.com/@iconify-json/logos@1.2.11/icons.json"},{"name":"aws","url":"https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/refs/tags/v23.0/dist/aws-icons-mermaid.json"}],
+  querySelector: "pre > code[data-language='mermaid']",
+})</script></body></html>

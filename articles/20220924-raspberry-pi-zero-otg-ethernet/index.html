@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Raspberry Pi Zero WH を OTG でセットアップしました</title><script type="module" src="/blog/scripts/color-scheme.mjs"></script><link rel="stylesheet" href="/blog/styles/palette.css"><link rel="stylesheet" href="/blog/styles/general.css"><link rel="stylesheet" href="/blog/styles/layout.css"><link rel="stylesheet" href="/blog/styles/article.css"><link rel="stylesheet" href="/blog/styles/shiki.css"></head><body class="container"><section class="content"><article class="article"><h1 id="raspberry-pi-zero-wh-を-otg-でセットアップしました"><a href="#raspberry-pi-zero-wh-を-otg-でセットアップしました">Raspberry Pi Zero WH を OTG でセットアップしました</a></h1>
+<p>Raspberry Pi Zero WH を買いました。</p>
+<h2 id="作業環境"><a href="#作業環境">作業環境</a></h2>
+<ul>
+<li>Windows 10 Pro</li>
+</ul>
+<h2 id="実施内容"><a href="#実施内容">実施内容</a></h2>
+<h3 id="microsd-に-os-を書き込む"><a href="#microsd-に-os-を書き込む">microSD に OS を書き込む</a></h3>
+<p>いつもどおり Raspberry Pi Imager で microSD に書き込みます。 OS は Raspberry Pi OS Lite (32 bit) にしました。</p>
+<p>SSH を使いたいので、書き込む際に右下の歯車から次の通り詳細設定をします。</p>
+<ul>
+<li>「SSH を有効にする」にチェック。
+<ul>
+<li>「公開鍵認証のみを許可する」を選択し、 authorized_keys を入力。</li>
+</ul>
+</li>
+<li>「ユーザ名とパスワードを設定する」にチェック。
+<ul>
+<li>任意のユーザ名およびパスワードを入力。</li>
+</ul>
+</li>
+</ul>
+<h3 id="usb-on-the-go-および-usb-ethernet--rndis-gadget-の有効化"><a href="#usb-on-the-go-および-usb-ethernet--rndis-gadget-の有効化">USB On-The-Go および USB Ethernet / RNDIS Gadget の有効化</a></h3>
+<p>書き込んだ microSD を再度マウントさせ、 <span class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>config.txt</span></span></code></span> を開き以下を追記し、 USB OTG (USB On-The-Go) を有効にします。</p>
+<p><a href="https://usb.org/usb-on-the-go">USB On-The-Go</a> とは、 USB 機器どうしを直接接続する規格です。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0" data-filename="config.txt"><code class="language-txt"><span class="line"><span>dtoverlay=dwc2</span></span></code></pre>
+<p>続いて <span class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>cmdline.txt</span></span></code></span> 内の <span class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>rootwait</span></span></code></span> 後に以下を追記し、 USB Ethernet / RNDIS Gadget を有効にします。</p>
+<p>USB Ethernet / RNDIS Gadget とは、 <a href="http://www.linux-usb.org/gadget/">Linux-USB Gadget</a> という Linux 上の USB 機器になんらかの機能を追加する仕組みを用いて、 USB でイーサネット的なことができるようにするモノです。</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0" data-filename="cmdline.txt"><code class="language-txt"><span class="line"><span>modules-load=dwc2,g_ether</span></span></code></pre>
+<h3 id="bonjour-のインストール"><a href="#bonjour-のインストール">Bonjour のインストール</a></h3>
+<p>Windows 側に Bonjour をインストールします。 Bonjour とは DNS とかそういう設定とかをせず、 IP アドレスへいいかんじにホスト名を割り当てるモノです。</p>
+<p>正直入れなくていいなら入れたくないんですけど、この後 Windows に繋げた Raspberry Pi (の USB Ethernet)の IP が分からなかったので、これで名前解決てきなことをします。</p>
+<p><a href="https://support.apple.com/kb/dl999">https://support.apple.com/kb/dl999</a></p>
+<p>なお Raspberry Pi OS でのデフォルトのホスト名は <span class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>raspberrypi</span></span></code></span> になります。</p>
+<h3 id="raspberry-pi-を-windows-に-usb-で接続する"><a href="#raspberry-pi-を-windows-に-usb-で接続する">Raspberry Pi を Windows に USB で接続する</a></h3>
+<p>Raspberry Pi Zero の USB ポート(内側)と Windows の USB を接続します。初回起動でもろもろ動くはずなので 5 分程待ちます。</p>
+<p>初回起動後、 Windows のデバイスマネージャに <span class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>ポート(COM と LPT)</span></span></code></span> &gt; <span class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>USB シリアルデバイス(COM n)</span></span></code></span> があるはずです。</p>
+<h3 id="otp-のドライバをインストール"><a href="#otp-のドライバをインストール">OTP のドライバをインストール</a></h3>
+<p><a href="https://caron.ws/wp-content/uploads/telechargement/RPI%20Driver%20OTG.zip">RPI Driver OTG</a>をダウンロードし、任意の場所に展開しておきます。</p>
+<p><span class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>USB シリアルデバイス(COM n)</span></span></code></span> の右クリックし「ドライバーの更新(P)」を選択し、 RPI Driver OTG をインストールします。</p>
+<p>そうすると Windows にはイーサネットアダプタとして認識されるはずです。デバイスマネージャに <span class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>ネットワーク アダプター</span></span></code></span> &gt; <span class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>USB Ethernet/RNDIS Gadget</span></span></code></span> があるはずです。</p>
+<p>また <span class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>コントロール パネル\ネットワークとインターネット\ネットワーク接続</span></span></code></span> にもイーサネットアダプタが確認できるはずです。</p>
+<h3 id="ssh-接続してみる"><a href="#ssh-接続してみる">SSH 接続してみる</a></h3>
+<p><span class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code class="language-txt"><span class="line"><span>ssh ユーザ名@raspberrypi.local</span></span></code></span> で接続できるはずです。あとはよしなに。</p>
+<h2 id="おわり"><a href="#おわり">おわり</a></h2>
+<p>よかったですね。</p>
+<h2 id="参考にしたドキュメント"><a href="#参考にしたドキュメント">参考にしたドキュメント</a></h2>
+<ul>
+<li><a href="https://qiita.com/msquare33/items/dc6fc9098f50d9b9dbf2">https://qiita.com/msquare33/items/dc6fc9098f50d9b9dbf2</a></li>
+<li><a href="https://caron.ws/diy-cartes-microcontroleurs/raspberrypi/pi-zero-otg-ethernet/">https://caron.ws/diy-cartes-microcontroleurs/raspberrypi/pi-zero-otg-ethernet/</a></li>
+</ul></article></section><script type="module">import mermaid from "/blog/mermaid/mermaid.esm.min.mjs";
+import { run } from "/blog/scripts/mermaid.mjs";
+
+await run({
+  mermaid,
+  config: {"light":{"theme":"default"},"dark":{"theme":"dark"}},
+  icons: [{"name":"logos","url":"https://unpkg.com/@iconify-json/logos@1.2.11/icons.json"},{"name":"aws","url":"https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/refs/tags/v23.0/dist/aws-icons-mermaid.json"}],
+  querySelector: "pre > code[data-language='mermaid']",
+})</script></body></html>
