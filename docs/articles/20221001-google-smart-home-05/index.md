@@ -76,7 +76,7 @@ const homegraph = google.homegraph({
 
 前回のとりあえず処理から特に変更ないです。
 
-```ts:functions/src/index.ts
+```typescript:functions/src/index.ts
 app.onSync(async (body, headers) => {
   const id = await getAgentUserId(headers);
 
@@ -98,7 +98,7 @@ app.onSync(async (body, headers) => {
 
 HomeGraph 上にあるデバイスの状態を取得し、レスポンスボディに含めます。
 
-```ts:functions/src/index.ts
+```typescript:functions/src/index.ts
 app.onQuery(async (body, headers) => {
   const id = await getAgentUserId(headers);
 
@@ -160,7 +160,7 @@ app.onQuery(async (body, headers) => {
 
 HomeGraph 上にあるデバイスの状態を更新するには [Report State](https://developers.google.com/assistant/smarthome/develop/report-state) を利用します。
 
-```ts:functions/src/index.ts
+```typescript:functions/src/index.ts
 app.onExecute(async (body, headers) => {
   const id = await getAgentUserId(headers);
 
@@ -215,7 +215,7 @@ app.onExecute(async (body, headers) => {
 
 前回のとりあえず処理から特に変更ないです。
 
-```ts:functions/src/index.ts
+```typescript:functions/src/index.ts
 app.onDisconnect(() => {
   functions.logger.log("User account unlinked from Google Assistant");
   return {};

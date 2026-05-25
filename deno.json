@@ -13,7 +13,7 @@
     "@textlint-ja/textlint-rule-preset-ai-writing": "npm:@textlint-ja/textlint-rule-preset-ai-writing@1.7.0",
     "lume/": "https://cdn.jsdelivr.net/gh/lumeland/lume@3.2.4/",
     "lume/jsx-runtime": "https://cdn.jsdelivr.net/gh/oscarotero/ssx@0.1.15/jsx-runtime.ts",
-    "lume-theme-blog/": "https://raw.githubusercontent.com/ansanloms/lume-theme-blog/tags/0.1.0/",
+    "lume-theme-blog/": "https://raw.githubusercontent.com/ansanloms/lume-theme-blog/tags/0.1.1/",
     "textlint": "npm:textlint@15.7.1",
     "textlint-rule-preset-ja-spacing": "npm:textlint-rule-preset-ja-spacing@2.4.3",
     "textlint-rule-preset-ja-technical-writing": "npm:textlint-rule-preset-ja-technical-writing@12.0.2",

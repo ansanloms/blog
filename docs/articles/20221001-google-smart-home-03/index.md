@@ -65,7 +65,7 @@ npm i actions-on-google
 
 functions の `/fulfillment` をインテントとします。
 
-```ts:functions/src/index.ts
+```typescript:functions/src/index.ts
 import { smarthome } from "actions-on-google";
 
 const app = smarthome({ debug: true });
@@ -142,7 +142,7 @@ AUTH0_CLIENT_ID="[AUTH0_CLIENT_ID]"
 
 リクエストヘッダの Authorization よりユーザ ID を特定します。今回は openid をユーザ ID とします。
 
-```ts:functions/src/index.ts
+```typescript:functions/src/index.ts
 import * as dotenv from "dotenv";
 dotenv.config();
 
@@ -183,7 +183,7 @@ const getAgentUserId = async (
 
 認証するだけなら SYNC のみあればいいと思いますが、まぁ全部書いておきます。
 
-```ts:functions/src/index.ts
+```typescript:functions/src/index.ts
 app.onSync(async (body, headers) => {
   const id = await getAgentUserId(headers);
 
