@@ -1,5 +1,5 @@
 import lume from "@lumeland/lume";
-import blog from "lume-theme-blog";
+import blog from "@ansanloms/lume-theme-blog";
 
 const site = lume({
   src: "./docs",

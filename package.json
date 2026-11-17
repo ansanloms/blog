@@ -5,15 +5,15 @@
     "build": "lume build",
     "serve": "lume build -s",
     "check": "tsc --noEmit",
-    "lint": "npm run lint:textlint && oxlint . && oxfmt --check .",
-    "fix": "npm run fix:textlint; oxlint . --fix && oxfmt .; npm run lint",
+    "lint": "npm run lint:textlint; a=$?; oxlint .; b=$?; oxfmt --check .; c=$?; exit $((a|b|c))",
+    "fix": "npm run fix:textlint; oxlint . --fix; oxfmt .; npm run lint",
     "lint:textlint": "textlint ./ --ignore-path .gitignore",
     "fix:textlint": "textlint ./ --ignore-path .gitignore --fix"
   },
   "dependencies": {
+    "@ansanloms/lume-theme-blog": "github:ansanloms/lume-theme-blog#0.2.2",
     "@lumeland/lume": "4.0.2",
-    "@lumeland/ssx": "0.1.16",
-    "lume-theme-blog": "github:ansanloms/lume-theme-blog#0.2.1"
+    "@lumeland/ssx": "0.1.16"
   },
   "devDependencies": {
     "@proofdict/textlint-rule-proofdict": "3.1.2",
