@@ -75,7 +75,7 @@ module.exports = {
     // https://github.com/textlint-ja/textlint-rule-preset-ai-writing
     "@textlint-ja/preset-ai-writing": {
       "ai-tech-writing-guideline": {
-        "severity": "info",
+        severity: "info",
       },
     },
   },

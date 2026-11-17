@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "NodeNext",
+    "module": "NodeNext",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "target": "esnext",
+    "jsx": "react-jsx",
+    "jsxImportSource": "@lumeland/ssx",
+    "types": ["node"],
+    "skipLibCheck": true
+  },
+  "include": ["_config.ts"]
+}
