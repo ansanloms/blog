@@ -1,0 +1,7 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "rules": {
+    "curly": "error"
+  },
+  "ignorePatterns": ["_site", "_cache", "node_modules", "package-lock.json"]
+}
