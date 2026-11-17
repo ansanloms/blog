@@ -1,0 +1,30 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "lume build",
+    "serve": "lume build -s",
+    "check": "tsc --noEmit",
+    "lint": "npm run lint:textlint; a=$?; oxlint .; b=$?; oxfmt --check .; c=$?; exit $((a|b|c))",
+    "fix": "npm run fix:textlint; oxlint . --fix; oxfmt .; npm run lint",
+    "lint:textlint": "textlint ./ --ignore-path .gitignore",
+    "fix:textlint": "textlint ./ --ignore-path .gitignore --fix"
+  },
+  "dependencies": {
+    "@ansanloms/lume-theme-blog": "github:ansanloms/lume-theme-blog#0.2.2",
+    "@lumeland/lume": "4.0.2",
+    "@lumeland/ssx": "0.1.16"
+  },
+  "devDependencies": {
+    "@proofdict/textlint-rule-proofdict": "3.1.2",
+    "@textlint-ja/textlint-rule-preset-ai-writing": "1.7.0",
+    "@types/node": "24.19.2",
+    "oxfmt": "0.76.0",
+    "oxlint": "1.94.0",
+    "textlint": "15.7.1",
+    "textlint-rule-preset-ja-spacing": "2.4.3",
+    "textlint-rule-preset-ja-technical-writing": "12.0.2",
+    "textlint-rule-preset-jtf-style": "3.0.3",
+    "typescript": "7.0.2"
+  }
+}
