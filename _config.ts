@@ -1,16 +1,13 @@
-import lume from "lume/mod.ts";
-import blog from "lume-theme-blog/mod.ts";
-import basePath from "lume/plugins/base_path.ts";
+import lume from "@lumeland/lume";
+import blog from "@ansanloms/lume-theme-blog";
 
 const site = lume({
   src: "./docs",
   location: new URL("https://ansanloms.github.io/blog"),
 });
 
-site
-  .copy([".jpg", ".jpeg", ".gif", ".png", ".svg", ".webp", ".csv"])
-  .use(basePath())
-  .use(blog({
+site.copy([".jpg", ".jpeg", ".gif", ".png", ".svg", ".webp", ".csv"]).use(
+  blog({
     /**
      * markdown の設定。
      */
@@ -31,6 +28,7 @@ site
         exclude: ["mermaid"],
       },
     },
-  }));
+  }),
+);
 
 export default site;
