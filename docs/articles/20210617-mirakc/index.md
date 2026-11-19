@@ -1,6 +1,6 @@
 ---
 createdAt: "2021-06-18T00:00:00+09:00"
-updatedAt: "2023-12-27T00:00:00+09:00"
+updatedAt: "2026-11-17T00:00:00+09:00"
 ---
 
 # Raspberry Pi 4 に mirakc を導入しました
@@ -13,6 +13,7 @@ Raspberry Pi 4 (Ubuntu Server 21.04) でテレビを見られるようにしま�
 - 2022-11-03: PLEX PX-W3U4 向けの手順を追記しました。あわせて EPGStation の導入についても追加しました。
 - 2023-12-27: docker を用いた導入方法を追記しました。
 - 2024-07-02: PLEX PX-W3U4 のドライバは <https://github.com/tsukumijima/px4_drv> を用いるように更新しました。
+- 2026-11-17: Raspberry Pi 5 (Ubuntu Server 24.04) で組み直したので、PLEX PX-W3U4 のドライバと docker-tv-recorder の導入手順を更新しました。
 
 ## 用意したもの
 
@@ -70,10 +71,12 @@ sudo /sbin/sysctl --system
 公式より品質が良いと言われる、非公式のドライバ <https://github.com/tsukumijima/px4_drv> を導入します。
 
 ```bash
-sudo apt install linux-headers-6.8.0-1008-raspi
-wget https://github.com/tsukumijima/px4_drv/releases/download/v0.4.5/px4-drv-dkms_0.4.5_all.deb
-sudo apt install -y ./px4-drv-dkms_0.4.5_all.deb
+sudo apt install dkms linux-headers-$(uname -r)
+wget https://github.com/tsukumijima/px4_drv/releases/download/v0.7.1/px4-drv-dkms_0.7.1_all.deb
+sudo apt install -y ./px4-drv-dkms_0.7.1_all.deb
 ```
+
+ファームウェアの `it930x-firmware.bin` と udev のルールの `99-px4video.rules` も、パッケージが入れてくれます。
 
 カーネルモジュールがロードされていることを確認します。
 
@@ -126,49 +129,27 @@ sudo systemctl start pcscd
 あとは [docker を 導入](https://docs.docker.com/engine/install/ubuntu/)して、`docker compose up` するだけです。
 
 ```bash
-cd /usr/local/src
-sudo git clone https://github.com/ansanloms/docker-tv-recorder.git
+mkdir -p ~/dev/github.com/ansanloms
+cd ~/dev/github.com/ansanloms
+git clone https://github.com/ansanloms/docker-tv-recorder.git
 cd ./docker-tv-recorder
-cp .env.sample .env
-vim .env    # 録画保存先を設定
-sudo docker compose up
+cp .env.example .env
+vim .env    # 録画保存先 (RECORDING_DIR) を設定
+docker compose up -d
 ```
 
-別途ターミナル上で API にアクセスできるか確認します。
+ユーザを docker グループに入れているので `sudo` は付けていません。
+
+API にアクセスできるか確認します。
 
 ```bash
-curl http://localhost:40772/api/version
+$ curl http://localhost:40772/api/version
+{"current":"3.4.92","latest":"3.4.92"}
 ```
 
-### docker-tv-recorder をサービスに登録する
+### 自動起動
 
-systemd の設定ファイル `/etc/systemd/system/tv-recorder.service` を用意します。
-
-```bash
-sudo vim /etc/systemd/system/tv-recorder.service
-```
-
-```ini:/etc/systemd/system/tv-recorder.service
-[Unit]
-Description = tv-recorder
-Requires = tv-recorder.service
-
-[Service]
-Type = simple
-ExecStartPre = /usr/bin/docker compose --file /usr/local/src/docker-tv-recorder/compose.yaml down --volumes
-ExecStart = /usr/bin/docker compose --file /usr/local/src/docker-tv-recorder/compose.yaml up
-ExecStop = /usr/bin/docker compose --file /usr/local/src/docker-tv-recorder/compose.yaml down --volumes
-
-[Install]
-WantedBy = multi-user.target
-```
-
-有効にし、起動してみます。
-
-```bash
-sudo systemctl enable tv-recorder
-sudo systemctl start tv-recorder
-```
+`compose.yaml` で各コンテナに `restart: unless-stopped` を指定したので、以前のように systemd のサービスとして登録するのはやめました。
 
 ## 各種アプリケーションの導入(旧版: docker を用いない方法)
 
