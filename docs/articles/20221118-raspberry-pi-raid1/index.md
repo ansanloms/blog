@@ -1,10 +1,15 @@
 ---
 createdAt: "2022-11-18T00:00:00+09:00"
+updatedAt: "2026-11-17T00:00:00+09:00"
 ---
 
 # Raspberry Pi 上に RAID 1 構成を組みました
 
 [このまえ](../20210504-raspberry-pi-nas-hdd/index.md)構築した NAS の HDD を RAID 1 構成のものに変えます。
+
+## 更新履歴
+
+- 2026-11-17: Raspberry Pi 5 (Ubuntu Server 24.04) に OS を入れ直したので、[既存の RAID 1 を組み直す手順](#os-を入れ直したとき)を追記しました。
 
 ## 用意したもの
 
@@ -543,3 +548,67 @@ $ sudo mount -t ext4 /dev/sdd1 /mnt/old_media
 ```bash
 $ nohup rsync -av /mnt/old_media/. /mnt/media/. &
 ```
+
+## OS を入れ直したとき
+
+Raspberry Pi 5 に Ubuntu Server 24.04 を入れ直したときの手順です。RAID 1 の構成情報は各 HDD に書かれているので、作り直さずにそのまま使えます。
+
+`mdadm --create` や `mkfs` を実行するとデータが消えるので、ここでは実行しません。
+
+### HDD を接続する
+
+Ubuntu Server 24.04 には mdadm が最初から入っています。HDD を繋ぐと自動で RAID アレイが組み立てられました。
+
+```bash
+$ cat /proc/mdstat
+Personalities : [raid0] [raid1] [raid6] [raid5] [raid4] [raid10]
+md127 : active (auto-read-only) raid1 sda1[0] sdb1[1]
+      7813893440 blocks super 1.2 [2/2] [UU]
+      bitmap: 0/59 pages [0KB], 65536KB chunk
+
+unused devices: <none>
+```
+
+デバイス名は `/dev/md127` になりました。`auto-read-only` は最初に書き込んだ時点で外れます。
+
+### RAID 情報を保存する
+
+RAID 情報を `/etc/mdadm/mdadm.conf` に追記し、initramfs を更新します。
+
+```bash
+$ sudo mdadm --examine --scan | sudo tee -a /etc/mdadm/mdadm.conf
+ARRAY /dev/md/0  metadata=1.2 UUID=xxxxxxxx:xxxxxxxx:xxxxxxxx:xxxxxxxx
+
+$ sudo update-initramfs -u
+```
+
+### マウントする
+
+デバイス名が変わっても困らないように、`fstab` にはファイルシステムの UUID で書きます。UUID は `lsblk -o NAME,FSTYPE,UUID` で確認できます。
+
+```bash
+$ sudo vim /etc/fstab
+```
+
+```conf
+# media
+UUID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx /mnt/media ext4 defaults,nofail 0 2
+```
+
+`nofail` を付けておくと、HDD が繋がっていないときも起動が止まりません。Raspberry Pi は画面を繋がずに使っているので、起動が止まると SSH で入れなくなります。
+
+マウントして確認します。
+
+```bash
+$ sudo mkdir -p /mnt/media
+$ sudo systemctl daemon-reload
+$ sudo mount /mnt/media
+
+$ findmnt /mnt/media
+TARGET     SOURCE     FSTYPE OPTIONS
+/mnt/media /dev/md127 ext4   rw,relatime,stripe=8191
+```
+
+以前のデータがそのまま見えれば完了です。
+
+再起動すると、デバイス名は `mdadm.conf` のとおり `/dev/md0` になりました。`fstab` は UUID で書いているので、デバイス名が変わってもそのままマウントされます。
